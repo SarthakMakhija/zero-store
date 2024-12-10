@@ -5,9 +5,23 @@ type Value struct {
 	value []byte
 }
 
+// DecodeValueFrom sets the provided byte slice as its value.
+// It is mainly called from external.SkipList.
+func DecodeValueFrom(buffer []byte) Value {
+	return Value{
+		value: buffer,
+	}
+}
+
 // NewValue creates a new instance of Value
 func NewValue(value []byte) Value {
 	return Value{value: value}
+}
+
+// EncodeTo writes the raw byte slice to the provided buffer.
+// It is mainly called from external.SkipList.
+func (value Value) EncodeTo(buffer []byte) uint32 {
+	return uint32(copy(buffer, value.value))
 }
 
 // IsEmpty returns true if the Value is empty.

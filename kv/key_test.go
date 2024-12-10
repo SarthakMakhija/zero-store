@@ -14,3 +14,30 @@ func TestRawStringFromKey(t *testing.T) {
 	key := NewKey([]byte("store-type"))
 	assert.Equal(t, "store-type", key.RawString())
 }
+
+func TestRawKeyIsEmpty(t *testing.T) {
+	key := NewKey(nil)
+	assert.True(t, key.IsRawKeyEmpty())
+}
+
+func TestRawSizeInBytes(t *testing.T) {
+	key := NewKey([]byte("store-type"))
+	assert.Equal(t, 10, key.RawSizeInBytes())
+}
+
+func TestEncodedBytes(t *testing.T) {
+	key := NewKey([]byte("store-type"))
+	decodedKey := DecodeKeyFrom(key.EncodedBytes())
+
+	assert.Equal(t, "store-type", decodedKey.RawString())
+}
+
+func TestEncodedSizeInBytes(t *testing.T) {
+	key := NewKey([]byte("store-type"))
+	assert.Equal(t, 10, key.EncodedSizeInBytes())
+}
+
+func TestEncodedSizeInBytesForAnEmptyKey(t *testing.T) {
+	key := NewKey(nil)
+	assert.Equal(t, 0, key.EncodedSizeInBytes())
+}
