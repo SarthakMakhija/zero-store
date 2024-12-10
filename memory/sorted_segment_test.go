@@ -54,3 +54,31 @@ func TestSortedSegmentWithADelete(t *testing.T) {
 	assert.False(t, ok)
 	assert.Equal(t, kv.EmptyValue, value)
 }
+
+func TestSortedSegmentAllEntries(t *testing.T) {
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
+	_ = sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	_ = sortedSegment.Set(kv.NewStringKey("bolt"), kv.NewStringValue("kv"))
+	_ = sortedSegment.Set(kv.NewStringKey("etcd"), kv.NewStringValue("distributed"))
+
+	var keys []kv.Key
+	var values []kv.Value
+	sortedSegment.AllEntries(func(key kv.Key, value kv.Value) {
+		keys = append(keys, key)
+		values = append(values, value)
+	})
+
+	assert.Equal(t, []kv.Key{
+		kv.NewStringKey("bolt"),
+		kv.NewStringKey("consensus"),
+		kv.NewStringKey("etcd"),
+	}, keys)
+
+	assert.Equal(t, []kv.Value{
+		kv.NewStringValue("kv"),
+		kv.NewStringValue("raft"),
+		kv.NewStringValue("distributed"),
+	}, values)
+}
+
+//TODO: add tests for keys with timestamps
