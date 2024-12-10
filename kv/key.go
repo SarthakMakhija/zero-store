@@ -4,6 +4,8 @@ import (
 	"bytes"
 )
 
+var EmptyKey = Key{key: nil}
+
 type Key struct {
 	key []byte
 }
@@ -49,6 +51,11 @@ func (key Key) EncodedSizeInBytes() int {
 func CompareKeys(userKey, systemKey Key) int {
 	//TODO: compare using timestamp.
 	return bytes.Compare(userKey.key, systemKey.key)
+}
+
+// IsRawKeyEqualTo returns true if the raw key two keys is the same.
+func (key Key) IsRawKeyEqualTo(other Key) bool {
+	return bytes.Compare(key.key, other.key) == 0
 }
 
 // RawString returns the string representation of raw key.

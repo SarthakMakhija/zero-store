@@ -1,5 +1,7 @@
 package kv
 
+var EmptyValue = Value{value: nil}
+
 // Value is a tiny wrapper over raw []byte slice.
 type Value struct {
 	value []byte
@@ -37,6 +39,11 @@ func (value Value) String() string {
 // SizeInBytes returns the length of the raw byte slice.
 func (value Value) SizeInBytes() int {
 	return len(value.value)
+}
+
+// SizeAsUint32 returns the length of the raw byte slice as uint32.
+func (value Value) SizeAsUint32() uint32 {
+	return uint32(len(value.value))
 }
 
 // Bytes returns the raw value.

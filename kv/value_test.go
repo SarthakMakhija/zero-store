@@ -20,6 +20,11 @@ func TestSizeInBytesOfValue(t *testing.T) {
 	assert.Equal(t, 22, value.SizeInBytes())
 }
 
+func TestSizeAsUint32OfValue(t *testing.T) {
+	value := NewStringValue("zero disk architecture")
+	assert.Equal(t, uint32(22), value.SizeAsUint32())
+}
+
 func TestValueIsEmpty(t *testing.T) {
 	value := NewStringValue("")
 	assert.True(t, value.IsEmpty())

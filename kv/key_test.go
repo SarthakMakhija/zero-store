@@ -20,6 +20,16 @@ func TestRawKeyIsEmpty(t *testing.T) {
 	assert.True(t, key.IsRawKeyEmpty())
 }
 
+func TestRawKeyIsEqualTo(t *testing.T) {
+	key := NewStringKey("consensus")
+	assert.True(t, key.IsRawKeyEqualTo(NewStringKey("consensus")))
+}
+
+func TestRawKeyIsNotEqualTo(t *testing.T) {
+	key := NewStringKey("consensus")
+	assert.False(t, key.IsRawKeyEqualTo(NewStringKey("raft")))
+}
+
 func TestRawSizeInBytes(t *testing.T) {
 	key := NewKey([]byte("store-type"))
 	assert.Equal(t, 10, key.RawSizeInBytes())
