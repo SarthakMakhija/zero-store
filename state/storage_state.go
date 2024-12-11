@@ -68,9 +68,11 @@ func (state *StorageState) spawnObjectStoreMovement() {
 		for {
 			select {
 			case segment := <-state.segmentsReadyToMoveToObjectStore:
-				//println("segment id", segment.Id())
 				//TODO: move to object storage
 				state.inactiveSegments = append(state.inactiveSegments, segment)
+				if len(state.inactiveSegments) > int(state.options.maximumInactiveSegments) {
+					state.inactiveSegments = state.inactiveSegments[1:]
+				}
 			case <-state.closeChannel:
 				return
 			}

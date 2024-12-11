@@ -9,10 +9,9 @@ func (state *StorageState) HasInactiveSegments() bool {
 	return len(state.inactiveSegments) > 0
 }
 
-// sortedSegmentIds returns the sorted segment ids,  it is only for testing.
-func (state *StorageState) sortedSegmentIds() []uint64 {
-	ids := make([]uint64, 0, 1+len(state.inactiveSegments))
-	ids = append(ids, state.activeSegment.Id())
+// sortedInactiveSegmentIds returns the sorted segment ids for inactive segments,  it is only for testing.
+func (state *StorageState) sortedInactiveSegmentIds() []uint64 {
+	ids := make([]uint64, 0, len(state.inactiveSegments))
 	for _, segment := range state.inactiveSegments {
 		ids = append(ids, segment.Id())
 	}
