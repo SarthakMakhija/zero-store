@@ -9,7 +9,7 @@ type StorageState struct {
 	activeSegment                    *memory.SortedSegment
 	inactiveSegments                 []*memory.SortedSegment
 	segmentIdGenerator               *SegmentIdGenerator
-	segmentsReadyToMoveToColdStorage chan *memory.SortedSegment
+	segmentsReadyToMoveToObjectStore chan *memory.SortedSegment
 	closeChannel                     chan struct{}
 	options                          StorageOptions
 }
@@ -19,12 +19,12 @@ func NewStorageState(options StorageOptions) *StorageState {
 	storageState := &StorageState{
 		activeSegment:                    memory.NewSortedSegment(segmentIdGenerator.NextId(), options.sortedSegmentSizeInBytes),
 		segmentIdGenerator:               segmentIdGenerator,
-		segmentsReadyToMoveToColdStorage: make(chan *memory.SortedSegment, 64),
+		segmentsReadyToMoveToObjectStore: make(chan *memory.SortedSegment, 64),
 		closeChannel:                     make(chan struct{}),
 		options:                          options,
 	}
 
-	storageState.spawnColdStorageMovement()
+	storageState.spawnObjectStoreMovement()
 	return storageState
 }
 
@@ -48,10 +48,10 @@ func (state *StorageState) Set(batch *kv.Batch) {
 }
 
 // mayBeFreezeActiveSegment may freeze the active memory.SortedSegment if it does not have required size.
-// It creates a new memory.SortedSegment, and sends the previously active memory.SortedSegment to be moved to cold storage.
+// It creates a new memory.SortedSegment, and sends the previously active memory.SortedSegment to be moved to object store.
 func (state *StorageState) mayBeFreezeActiveSegment(sizeInBytes int) {
 	if !state.activeSegment.CanFit(int64(sizeInBytes)) {
-		state.segmentsReadyToMoveToColdStorage <- state.activeSegment
+		state.segmentsReadyToMoveToObjectStore <- state.activeSegment
 		state.activeSegment = memory.NewSortedSegment(state.segmentIdGenerator.NextId(), state.options.sortedSegmentSizeInBytes)
 	}
 }
@@ -61,13 +61,13 @@ func (state *StorageState) Close() {
 	close(state.closeChannel)
 }
 
-// spawnColdStorageMovement starts a goroutine that moves the segments reads to move to cold storage to object store.
-// It also adds the segment to the collection of inactiveSegments, after it is moved to the cold storage.
-func (state *StorageState) spawnColdStorageMovement() {
+// spawnObjectStoreMovement starts a goroutine that moves the segments ready to move to object store.
+// It also adds the segment to the collection of inactiveSegments, after it is moved to the object store.
+func (state *StorageState) spawnObjectStoreMovement() {
 	go func() {
 		for {
 			select {
-			case segment := <-state.segmentsReadyToMoveToColdStorage:
+			case segment := <-state.segmentsReadyToMoveToObjectStore:
 				//println("segment id", segment.Id())
 				//TODO: move to object storage
 				state.inactiveSegments = append(state.inactiveSegments, segment)

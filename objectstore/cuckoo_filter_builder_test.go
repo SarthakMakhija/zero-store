@@ -1,4 +1,4 @@
-package coldstore
+package objectstore
 
 import (
 	"github.com/SarthakMakhija/zero-store/kv"
