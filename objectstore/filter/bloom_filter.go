@@ -1,11 +1,11 @@
-package objectstore
+package filter
 
 import (
 	"github.com/SarthakMakhija/zero-store/kv"
 	"github.com/bits-and-blooms/bloom/v3"
 )
 
-// BloomFilter is a wrapper over bloom.BloomFilter.
+// BloomFilter is a wrapper over filter.BloomFilter.
 type BloomFilter struct {
 	filter *bloom.BloomFilter
 }

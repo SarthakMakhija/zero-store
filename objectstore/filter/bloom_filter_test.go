@@ -1,4 +1,4 @@
-package objectstore
+package filter
 
 import (
 	"github.com/SarthakMakhija/zero-store/kv"

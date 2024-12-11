@@ -8,7 +8,7 @@
     - SegmentCache (or maybe block cache)
     - Key Cache
     - KeyRange Cache
-8. Persistent segment with bloom filter/cuckoo filter at page boundary
+8. Persistent segment with bloom filter at page boundary
 9. Client interface
 10. Hide all non-client abstractions
 11. Compaction
