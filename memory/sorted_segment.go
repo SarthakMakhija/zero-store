@@ -32,7 +32,7 @@ func NewSortedSegment(id uint64, sizeInBytes int64) *SortedSegment {
 // transaction.
 func (segment *SortedSegment) Get(key kv.Key) (kv.Value, bool) {
 	value, ok := segment.entries.Get(key)
-	if !ok || value.IsEmpty() {
+	if !ok || value.IsDeleted() {
 		return kv.EmptyValue, false
 	}
 	return value, true
@@ -46,7 +46,7 @@ func (segment *SortedSegment) Set(key kv.Key, value kv.Value) error {
 
 // Delete is an append operation. It involves writing the key/value pair with kv.EmptyValue in the Skiplist.
 func (segment *SortedSegment) Delete(key kv.Key) error {
-	return segment.Set(key, kv.EmptyValue)
+	return segment.Set(key, kv.NewDeletedValue())
 }
 
 // AllEntries returns all the keys present in the Segment.

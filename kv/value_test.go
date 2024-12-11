@@ -17,12 +17,14 @@ func TestRawStringFromValue(t *testing.T) {
 
 func TestSizeInBytesOfValue(t *testing.T) {
 	value := NewStringValue("zero disk architecture")
-	assert.Equal(t, 22, value.SizeInBytes())
+	expectedSize := 22 + deletedByteSize
+	assert.Equal(t, expectedSize, value.SizeInBytes())
 }
 
 func TestSizeAsUint32OfValue(t *testing.T) {
 	value := NewStringValue("zero disk architecture")
-	assert.Equal(t, uint32(22), value.SizeAsUint32())
+	expectedSize := 22 + deletedByteSize
+	assert.Equal(t, uint32(expectedSize), value.SizeAsUint32())
 }
 
 func TestValueIsEmpty(t *testing.T) {
@@ -32,10 +34,21 @@ func TestValueIsEmpty(t *testing.T) {
 
 func TestEncodeValue(t *testing.T) {
 	value := NewStringValue("zero disk architecture")
-	buffer := make([]byte, len(value.String()))
+	buffer := make([]byte, value.SizeAsUint32())
 
 	value.EncodeTo(buffer)
 	decodedValue := DecodeValueFrom(buffer)
 
 	assert.Equal(t, "zero disk architecture", decodedValue.String())
+}
+
+func TestEncodeADeletedValue(t *testing.T) {
+	value := NewDeletedValue()
+	buffer := make([]byte, value.SizeAsUint32())
+
+	value.EncodeTo(buffer)
+	decodedValue := DecodeValueFrom(buffer)
+
+	assert.Equal(t, "", decodedValue.String())
+	assert.True(t, value.IsDeleted())
 }
