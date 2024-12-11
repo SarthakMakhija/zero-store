@@ -99,3 +99,12 @@ func (batch *Batch) Length() int {
 func (batch *Batch) Pairs() []RawKeyValuePair {
 	return batch.pairs
 }
+
+// SizeInBytes returns the size of the Batch in bytes.
+func (batch *Batch) SizeInBytes() int {
+	sizeInBytes := 0
+	for _, pair := range batch.pairs {
+		sizeInBytes += len(pair.Key()) + pair.Value().SizeInBytes()
+	}
+	return sizeInBytes
+}
