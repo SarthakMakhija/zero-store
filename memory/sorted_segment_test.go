@@ -15,7 +15,7 @@ func TestEmptySortedSegment(t *testing.T) {
 
 func TestSortedSegmentWithASingleKey(t *testing.T) {
 	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
-	_ = sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 
 	value, ok := sortedSegment.Get(kv.NewStringKey("consensus"))
 	assert.True(t, ok)
@@ -32,8 +32,8 @@ func TestSortedSegmentWithANonExistentKey(t *testing.T) {
 
 func TestSortedSegmentWithMultipleKeys(t *testing.T) {
 	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
-	_ = sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	_ = sortedSegment.Set(kv.NewStringKey("storage"), kv.NewStringValue("NVMe"))
+	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegment.Set(kv.NewStringKey("storage"), kv.NewStringValue("NVMe"))
 
 	value, ok := sortedSegment.Get(kv.NewStringKey("consensus"))
 	assert.True(t, ok)
@@ -47,8 +47,8 @@ func TestSortedSegmentWithMultipleKeys(t *testing.T) {
 func TestSortedSegmentWithADelete(t *testing.T) {
 	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
 
-	_ = sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	_ = sortedSegment.Delete(kv.NewStringKey("consensus"))
+	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegment.Delete(kv.NewStringKey("consensus"))
 
 	value, ok := sortedSegment.Get(kv.NewStringKey("consensus"))
 	assert.False(t, ok)
@@ -57,9 +57,9 @@ func TestSortedSegmentWithADelete(t *testing.T) {
 
 func TestSortedSegmentAllEntries(t *testing.T) {
 	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
-	_ = sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	_ = sortedSegment.Set(kv.NewStringKey("bolt"), kv.NewStringValue("kv"))
-	_ = sortedSegment.Set(kv.NewStringKey("etcd"), kv.NewStringValue("distributed"))
+	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegment.Set(kv.NewStringKey("bolt"), kv.NewStringValue("kv"))
+	sortedSegment.Set(kv.NewStringKey("etcd"), kv.NewStringValue("distributed"))
 
 	var keys []kv.Key
 	var values []kv.Value

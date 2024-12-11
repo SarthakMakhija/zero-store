@@ -39,14 +39,13 @@ func (segment *SortedSegment) Get(key kv.Key) (kv.Value, bool) {
 }
 
 // Set sets the key/value pair in the system. It involves writing the key/value pair in the Skiplist.
-func (segment *SortedSegment) Set(key kv.Key, value kv.Value) error {
+func (segment *SortedSegment) Set(key kv.Key, value kv.Value) {
 	segment.entries.Put(key, value)
-	return nil
 }
 
 // Delete is an append operation. It involves writing the key/value pair with kv.EmptyValue in the Skiplist.
-func (segment *SortedSegment) Delete(key kv.Key) error {
-	return segment.Set(key, kv.NewDeletedValue())
+func (segment *SortedSegment) Delete(key kv.Key) {
+	segment.Set(key, kv.NewDeletedValue())
 }
 
 // AllEntries returns all the keys present in the Segment.
