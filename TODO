@@ -1,0 +1,18 @@
+1. Transactions and its impact on Get
+2. Key should support timestamp
+3. Recovery
+4. Manifest
+5. Scan
+6. Performance testing
+7. Cache
+    - SegmentCache (or maybe block cache)
+    - Key Cache
+    - KeyRange Cache
+8. Persistent segment with bloom filter/cuckoo filter at page boundary
+9. Client interface
+10. Hide all non-client abstractions
+11. Compaction
+12. Segment Cleaner (remove segments if their reference count is zero)
+13. Set should allow clients to wait till the entire in-memory segment becomes durable
+14. Persistent segment
+15. Mutex in StorageState
