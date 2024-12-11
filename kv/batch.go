@@ -5,28 +5,32 @@ import (
 	"errors"
 )
 
-type keyValuePairKind int
+type KeyValuePairKind int
 
 const (
 	KeyValuePairKindPut    = 1
 	KeyValuePairKindDelete = 2
 )
 
-// RawKeyValuePair represents the key/value pair with keyValuePairKind.
+// RawKeyValuePair represents the key/value pair with KeyValuePairKind.
 type RawKeyValuePair struct {
 	key   []byte
 	value Value
-	kind  keyValuePairKind
+	kind  KeyValuePairKind
 }
 
 // Key returns the key.
-func (kv RawKeyValuePair) Key() []byte {
-	return kv.key
+func (pair RawKeyValuePair) Key() []byte {
+	return pair.key
 }
 
 // Value returns the value.
-func (kv RawKeyValuePair) Value() Value {
-	return kv.value
+func (pair RawKeyValuePair) Value() Value {
+	return pair.value
+}
+
+func (pair RawKeyValuePair) Kind() KeyValuePairKind {
+	return pair.kind
 }
 
 var DuplicateKeyInBatchErr = errors.New("batch already contains the key")
@@ -89,4 +93,9 @@ func (batch *Batch) IsEmpty() bool {
 // Length returns the number of RawKeyValuePair(s) in the Batch.
 func (batch *Batch) Length() int {
 	return len(batch.pairs)
+}
+
+// Pairs returns all the RawKeyValuePair(s) in the Batch.
+func (batch *Batch) Pairs() []RawKeyValuePair {
+	return batch.pairs
 }
