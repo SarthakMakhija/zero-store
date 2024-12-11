@@ -53,6 +53,14 @@ func (value Value) EncodeTo(buffer []byte) {
 	buffer[numberOfBytesCopied] = value.deleted
 }
 
+// EncodedBytes encodes the value.
+func (value Value) EncodedBytes() []byte {
+	buffer := make([]byte, value.SizeInBytes())
+	value.EncodeTo(buffer)
+
+	return buffer
+}
+
 // IsEmpty returns true if the Value is empty.
 func (value Value) IsEmpty() bool {
 	return len(value.Bytes()) == 0

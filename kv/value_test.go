@@ -32,7 +32,7 @@ func TestValueIsEmpty(t *testing.T) {
 	assert.True(t, value.IsEmpty())
 }
 
-func TestEncodeValue(t *testing.T) {
+func TestEncodeValue1(t *testing.T) {
 	value := NewStringValue("zero disk architecture")
 	buffer := make([]byte, value.SizeAsUint32())
 
@@ -42,12 +42,27 @@ func TestEncodeValue(t *testing.T) {
 	assert.Equal(t, "zero disk architecture", decodedValue.String())
 }
 
-func TestEncodeADeletedValue(t *testing.T) {
+func TestEncodeValue2(t *testing.T) {
+	value := NewStringValue("zero disk architecture")
+	decodedValue := DecodeValueFrom(value.EncodedBytes())
+
+	assert.Equal(t, "zero disk architecture", decodedValue.String())
+}
+
+func TestEncodeADeletedValue1(t *testing.T) {
 	value := NewDeletedValue()
 	buffer := make([]byte, value.SizeAsUint32())
 
 	value.EncodeTo(buffer)
 	decodedValue := DecodeValueFrom(buffer)
+
+	assert.Equal(t, "", decodedValue.String())
+	assert.True(t, value.IsDeleted())
+}
+
+func TestEncodeADeletedValue2(t *testing.T) {
+	value := NewDeletedValue()
+	decodedValue := DecodeValueFrom(value.EncodedBytes())
 
 	assert.Equal(t, "", decodedValue.String())
 	assert.True(t, value.IsDeleted())

@@ -46,6 +46,12 @@ func (key Key) EncodedSizeInBytes() int {
 	return len(key.key) //TODO: handle timestamp
 }
 
+// CompareKeys compares two keys.
+// TODO: will change to include timestamp.
+func (key Key) CompareKeys(other Key) int {
+	return bytes.Compare(key.key, other.key)
+}
+
 // CompareKeys compares the user provided key and the instance of the Key existing in the system.
 // It is mainly called from external.SkipList.
 func CompareKeys(userKey, systemKey Key) int {
