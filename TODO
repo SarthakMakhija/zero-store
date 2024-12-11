@@ -18,3 +18,5 @@
 15. Mutex in StorageState
 16. Validate key and value size; look at the size in block/block builder
     (also add other validations in client facing APIs)
+17. Documentation
+18. Metrics
