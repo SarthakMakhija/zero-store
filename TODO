@@ -16,3 +16,5 @@
 13. Set should allow clients to wait till the entire in-memory segment becomes durable
 14. Persistent segment
 15. Mutex in StorageState
+16. Validate key and value size; look at the size in block/block builder
+    (also add other validations in client facing APIs)
