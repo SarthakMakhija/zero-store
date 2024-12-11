@@ -6,15 +6,15 @@ import (
 	"testing"
 )
 
-const testSortedSegmentSize = 1 << 10
+const testSortedSegmentSizeInBytes = 1 << 10
 
 func TestEmptySortedSegment(t *testing.T) {
-	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
 	assert.True(t, sortedSegment.IsEmpty())
 }
 
 func TestSortedSegmentWithASingleKey(t *testing.T) {
-	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
 	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 
 	value, ok := sortedSegment.Get(kv.NewStringKey("consensus"))
@@ -23,7 +23,7 @@ func TestSortedSegmentWithASingleKey(t *testing.T) {
 }
 
 func TestSortedSegmentWithANonExistentKey(t *testing.T) {
-	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
 
 	value, ok := sortedSegment.Get(kv.NewStringKey("consensus"))
 	assert.False(t, ok)
@@ -31,7 +31,7 @@ func TestSortedSegmentWithANonExistentKey(t *testing.T) {
 }
 
 func TestSortedSegmentWithMultipleKeys(t *testing.T) {
-	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
 	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegment.Set(kv.NewStringKey("storage"), kv.NewStringValue("NVMe"))
 
@@ -45,7 +45,7 @@ func TestSortedSegmentWithMultipleKeys(t *testing.T) {
 }
 
 func TestSortedSegmentWithADelete(t *testing.T) {
-	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
 
 	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegment.Delete(kv.NewStringKey("consensus"))
@@ -56,7 +56,7 @@ func TestSortedSegmentWithADelete(t *testing.T) {
 }
 
 func TestSortedSegmentAllEntries(t *testing.T) {
-	sortedSegment := NewSortedSegment(1, testSortedSegmentSize)
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
 	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegment.Set(kv.NewStringKey("bolt"), kv.NewStringValue("kv"))
 	sortedSegment.Set(kv.NewStringKey("etcd"), kv.NewStringValue("distributed"))
@@ -79,6 +79,19 @@ func TestSortedSegmentAllEntries(t *testing.T) {
 		kv.NewStringValue("raft"),
 		kv.NewStringValue("distributed"),
 	}, values)
+}
+
+func TestSortedSegmentHasEnoughSpaceToFitTheRequiredSize(t *testing.T) {
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
+	assert.True(t, sortedSegment.CanFit(500))
+}
+
+func TestSortedSegmentDoesNotHaveEnoughSpaceToFitTheRequiredSize(t *testing.T) {
+	sortedSegmentSizeInBytes := int64(200)
+	sortedSegment := NewSortedSegment(1, sortedSegmentSizeInBytes)
+
+	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	assert.False(t, sortedSegment.CanFit(20))
 }
 
 //TODO: add tests for keys with timestamps

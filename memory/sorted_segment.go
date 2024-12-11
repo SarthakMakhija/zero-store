@@ -64,6 +64,11 @@ func (segment *SortedSegment) IsEmpty() bool {
 	return segment.entries.Empty()
 }
 
+// CanFit returns true if the SortedSegment has the size enough for the requiredSizeInBytes.
+func (segment *SortedSegment) CanFit(requiredSizeInBytes int64) bool {
+	return segment.SizeInBytes()+requiredSizeInBytes+int64(external.MaxNodeSize) < segment.sizeInBytes
+}
+
 // SizeInBytes returns the size of the SortedSegment.
 func (segment *SortedSegment) SizeInBytes() int64 {
 	return segment.entries.MemSize()
