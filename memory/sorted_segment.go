@@ -28,8 +28,6 @@ func NewSortedSegment(id uint64, sizeInBytes int64) *SortedSegment {
 }
 
 // Get returns the value for the key if found.
-// It accepts a versioned key (kv.Key) and returns the key such that the commit-timestamp of the key <= begin-timestamp of the
-// transaction.
 func (segment *SortedSegment) Get(key kv.Key) (kv.Value, bool) {
 	value, ok := segment.entries.Get(key)
 	if !ok || value.IsDeleted() {

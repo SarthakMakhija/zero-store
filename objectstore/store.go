@@ -42,11 +42,7 @@ func (store Store) Get(pathSuffix string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	buffer, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, err
-	}
-	return buffer, nil
+	return store.readAll(reader)
 }
 
 func (store Store) GetRange(pathSuffix string, startOffset int64, length int64) ([]byte, error) {
@@ -54,15 +50,19 @@ func (store Store) GetRange(pathSuffix string, startOffset int64, length int64) 
 	if err != nil {
 		return nil, err
 	}
+	return store.readAll(reader)
+}
+
+func (store Store) Close() {
+	_ = store.definition.Close()
+}
+
+func (store Store) readAll(reader io.ReadCloser) ([]byte, error) {
 	buffer, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
 	return buffer, nil
-}
-
-func (store Store) Close() {
-	_ = store.definition.Close()
 }
 
 func (store Store) objectPath(pathSuffix string) string {
