@@ -23,7 +23,6 @@ const DefaultBlockSize = 4 * kb
 // Please check Block.SeekToKey().
 type Builder struct {
 	keyValueBeginOffsets []uint16
-	firstKey             kv.Key
 	blockSize            uint
 	data                 []byte
 }
@@ -51,9 +50,6 @@ func (builder *Builder) Add(key kv.Key, value kv.Value) bool {
 		return false
 	}
 
-	if builder.firstKey.IsRawKeyEmpty() {
-		builder.firstKey = key
-	}
 	builder.keyValueBeginOffsets = append(builder.keyValueBeginOffsets, uint16(len(builder.data)))
 	keyValueBuffer := make([]byte, ReservedKeySize+ReservedValueSize+key.EncodedSizeInBytes()+value.SizeInBytes())
 

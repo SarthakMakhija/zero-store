@@ -47,7 +47,7 @@ func (filter *BloomFilter) asBytes() ([]byte, error) {
 	if _, err := filter.filter.WriteTo(writer); err != nil {
 		return nil, err
 	}
-	// Flush the writer to ensure all data is written to the buffer
+	// Flush the writer to ensure all data is written to the buffer.
 	if err := writer.Flush(); err != nil {
 		return nil, err
 	}
