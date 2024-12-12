@@ -1,8 +1,7 @@
-package table
+package block
 
 import (
 	"encoding/binary"
-	"github.com/SarthakMakhija/zero-store/objectstore/block"
 )
 
 // FooterBlock is the footer block of the persistent sorted segment.
@@ -12,6 +11,7 @@ type FooterBlock struct {
 }
 
 // NewFooterBlock creates a new footer block.
+// TODO: what if the block size is big like 1Mib?
 func NewFooterBlock(blockSize uint) *FooterBlock {
 	return &FooterBlock{
 		blockSize: blockSize,
@@ -42,10 +42,10 @@ func (footerBlock *FooterBlock) encode() []byte {
 	buffer := make([]byte, footerBlock.blockSize)
 	binary.LittleEndian.PutUint16(buffer[:], uint16(len(footerBlock.offsets)))
 
-	index := block.Uint16Size
+	index := Uint16Size
 	for _, offset := range footerBlock.offsets {
 		binary.LittleEndian.PutUint32(buffer[index:], offset)
-		index += block.Uint32Size
+		index += Uint32Size
 	}
 	return buffer
 }
@@ -55,10 +55,10 @@ func decodeFooterBlock(buffer []byte, blockSize uint) *FooterBlock {
 	numberOfOffsets := binary.LittleEndian.Uint16(buffer[:])
 	offsets := make([]uint32, 0, numberOfOffsets)
 
-	indexInBuffer := block.Uint16Size
+	indexInBuffer := Uint16Size
 	for offsetIndex := 0; offsetIndex < int(numberOfOffsets); offsetIndex++ {
 		offsets = append(offsets, binary.LittleEndian.Uint32(buffer[indexInBuffer:]))
-		indexInBuffer += block.Uint32Size
+		indexInBuffer += Uint32Size
 	}
 	return &FooterBlock{
 		offsets:   offsets,
