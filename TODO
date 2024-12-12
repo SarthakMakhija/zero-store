@@ -8,15 +8,15 @@
     - SegmentCache (or maybe block cache)
     - Key Cache
     - KeyRange Cache
-8. Persistent segment with bloom filter at page boundary
-9. Client interface
-10. Hide all non-client abstractions
-11. Compaction
-12. Segment Cleaner (remove segments if their reference count is zero)
-13. Set should allow clients to wait till the entire in-memory segment becomes durable
-14. Persistent segment
-15. Mutex in StorageState
-16. Validate key and value size; look at the size in block/block builder
+8. Client interface
+9. Hide all non-client abstractions
+10. Compaction
+11. Segment Cleaner (remove segments if their reference count is zero)
+12. Set should allow clients to wait till the entire in-memory segment becomes durable
+13. Persistent segment
+14. Mutex in StorageState
+15. Validate key and value size; look at the size in block/block builder
     (also add other validations in client facing APIs)
-17. Documentation
-18. Metrics
+16. Documentation
+17. Metrics
+18. Documentation
