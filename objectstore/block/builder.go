@@ -46,6 +46,7 @@ func NewBlockBuilder(blockSize uint) *Builder {
 // 2) Storing the begin-offset of the key/value pair in keyValueBeginOffsets.
 // 3) Storing the key/value pair.
 func (builder *Builder) Add(key kv.Key, value kv.Value) bool {
+	//TODO: what if key and value size is greater than block size?
 	if uint(builder.size()+key.EncodedSizeInBytes()+value.SizeInBytes()+Uint16Size*2 /* key_len, value_len */) > builder.blockSize {
 		return false
 	}

@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"fmt"
 	"github.com/SarthakMakhija/zero-store/kv"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -53,4 +54,17 @@ func TestEncodeAndDecodeBloomFilter(t *testing.T) {
 	assert.True(t, filter.mayHave(kv.NewStringKey("consensus")))
 	assert.True(t, filter.mayHave(kv.NewStringKey("storage")))
 	assert.True(t, filter.mayHave(kv.NewStringKey("zero disk")))
+}
+
+func TestS(t *testing.T) {
+	builder := NewBloomFilterBuilder()
+	for count := 0; count < 10_000; count++ {
+		builder.Add(kv.NewStringKey(fmt.Sprintf("consensus%d", count)))
+	}
+
+	buffer, err := builder.Build().asBytes()
+	assert.Nil(t, err)
+
+	//12008
+	println(len(buffer))
 }
