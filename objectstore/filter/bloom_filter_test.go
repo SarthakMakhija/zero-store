@@ -44,7 +44,7 @@ func TestEncodeAndDecodeBloomFilter(t *testing.T) {
 	builder.Add(kv.NewStringKey("storage"))
 	builder.Add(kv.NewStringKey("zero disk"))
 
-	buffer, err := builder.Build().asBytes()
+	buffer, err := builder.Build().Encode()
 	assert.Nil(t, err)
 
 	filter, err := decodeBloomFilter(buffer)

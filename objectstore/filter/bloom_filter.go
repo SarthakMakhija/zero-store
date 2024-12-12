@@ -39,8 +39,8 @@ func (filter *BloomFilter) mayHave(key kv.Key) bool {
 	return filter.filter.Test(key.RawBytes())
 }
 
-// asBytes returns the bloom filter bits as byte slice.
-func (filter *BloomFilter) asBytes() ([]byte, error) {
+// Encode returns the bloom filter bits as byte slice.
+func (filter *BloomFilter) Encode() ([]byte, error) {
 	var buffer bytes.Buffer
 	writer := bufio.NewWriter(&buffer)
 
