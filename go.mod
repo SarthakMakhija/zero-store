@@ -7,6 +7,8 @@ require (
 	github.com/thanos-io/objstore v0.0.0-20241128114755-8d266b990716
 )
 
+require github.com/klauspost/compress v1.17.11 // indirect
+
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.19.1 // indirect
