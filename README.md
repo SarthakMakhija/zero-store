@@ -3,6 +3,6 @@
 
 Zero disk architecture based key/value store. 
 
-**zero-store** can be considered as a collection of sorted segments on object storage like S3. Below image shows the high-level architecture.
+**zero-store** can be considered as a collection of sorted segments on an object storage like S3. Below image shows the high-level architecture.
 
 <img width="911" alt="zero-store architecture" src="https://github.com/user-attachments/assets/0223ebf5-a6f4-4d77-9a3a-ea33799e7d7d">
