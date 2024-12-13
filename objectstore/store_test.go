@@ -8,89 +8,107 @@ import (
 )
 
 func TestSetTheObjectToStore(t *testing.T) {
-	objectName := t.Name()
+	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
 	assert.Nil(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
 		store.Close()
-		_ = os.Remove(objectName)
+		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(objectName, []byte("raft is a consensus protocol")))
+	assert.Nil(t, store.Set(pathSuffix, []byte("raft is a consensus protocol")))
 }
 
 func TestSetAndGetTheObject(t *testing.T) {
-	objectName := t.Name()
+	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
 	assert.Nil(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
 		store.Close()
-		_ = os.Remove(objectName)
+		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(objectName, []byte("paxos is also a consensus protocol")))
+	assert.Nil(t, store.Set(pathSuffix, []byte("paxos is also a consensus protocol")))
 
-	buffer, err := store.Get(objectName)
+	buffer, err := store.Get(pathSuffix)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "paxos is also a consensus protocol", string(buffer))
 }
 
 func TestAttemptToStoreAnObjectAtAnExistingPath(t *testing.T) {
-	objectName := t.Name()
+	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
 	assert.Nil(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
 		store.Close()
-		_ = os.Remove(objectName)
+		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(objectName, []byte("raft is a consensus protocol")))
+	assert.Nil(t, store.Set(pathSuffix, []byte("raft is a consensus protocol")))
 
-	err = store.Set(objectName, []byte("raft is a consensus protocol"))
+	err = store.Set(pathSuffix, []byte("raft is a consensus protocol"))
 	assert.True(t, errors.Is(err, errObjectExists))
 }
 
 func TestGetRangeOfAnObjectFromFirstOffset(t *testing.T) {
-	objectName := t.Name()
+	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
 	assert.Nil(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
 		store.Close()
-		_ = os.Remove(objectName)
+		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(objectName, []byte("VSR is a consensus protocol")))
+	assert.Nil(t, store.Set(pathSuffix, []byte("VSR is a consensus protocol")))
 
-	buffer, err := store.GetRange(objectName, 0, 3)
+	buffer, err := store.GetRange(pathSuffix, 0, 3)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "VSR", string(buffer))
 }
 
 func TestGetRangeOfAnObjectFromSomeWhereInMiddle(t *testing.T) {
-	objectName := t.Name()
+	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
 	assert.Nil(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
 		store.Close()
-		_ = os.Remove(objectName)
+		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(objectName, []byte("VSR is a protocol")))
+	assert.Nil(t, store.Set(pathSuffix, []byte("VSR is a protocol")))
 
-	buffer, err := store.GetRange(objectName, 9, 5)
+	buffer, err := store.GetRange(pathSuffix, 9, 5)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "proto", string(buffer))
+}
+
+func TestGetSizeOfObject(t *testing.T) {
+	pathSuffix := t.Name()
+	storeDefinition, err := NewFileSystemStoreDefinition(".")
+	assert.Nil(t, err)
+
+	store := NewStore(".", storeDefinition)
+	defer func() {
+		store.Close()
+		_ = os.Remove(pathSuffix)
+	}()
+
+	assert.Nil(t, store.Set(pathSuffix, []byte("paxos is also a consensus protocol")))
+	size, err := store.SizeInBytes(pathSuffix)
+	assert.Nil(t, err)
+
+	assert.Equal(t, int64(34), size)
 }

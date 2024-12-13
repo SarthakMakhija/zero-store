@@ -53,6 +53,14 @@ func (store Store) GetRange(pathSuffix string, startOffset int64, length int64) 
 	return store.readAll(reader)
 }
 
+func (store Store) SizeInBytes(pathSuffix string) (int64, error) {
+	attributes, err := store.definition.Attributes(context.Background(), store.objectPath(pathSuffix))
+	if err != nil {
+		return 0, err
+	}
+	return attributes.Size, nil
+}
+
 func (store Store) Close() {
 	_ = store.definition.Close()
 }
