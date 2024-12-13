@@ -7,7 +7,8 @@ import (
 )
 
 var ReservedKeySize = int(unsafe.Sizeof(uint16(0)))
-var ReservedValueSize = int(unsafe.Sizeof(uint16(0)))
+var ReservedValueSize = int(unsafe.Sizeof(uint32(0)))
+
 var Uint16Size = int(unsafe.Sizeof(uint16(0)))
 var Uint32Size = int(unsafe.Sizeof(uint32(0)))
 
@@ -48,7 +49,7 @@ func NewBlockBuilder(blockSize uint) *Builder {
 // 3) Storing the key/value pair.
 func (builder *Builder) Add(key kv.Key, value kv.Value) bool {
 	//TODO: what if key and value size is greater than block size?
-	if uint(builder.size()+key.EncodedSizeInBytes()+value.SizeInBytes()+Uint16Size*2 /* key_len, value_len */) > builder.blockSize {
+	if uint(builder.size()+key.EncodedSizeInBytes()+value.SizeInBytes()+ReservedKeySize+ReservedValueSize) > builder.blockSize {
 		return false
 	}
 
@@ -58,7 +59,7 @@ func (builder *Builder) Add(key kv.Key, value kv.Value) bool {
 	binary.LittleEndian.PutUint16(keyValueBuffer[:], uint16(key.EncodedSizeInBytes()))
 	copy(keyValueBuffer[ReservedKeySize:], key.EncodedBytes())
 
-	binary.LittleEndian.PutUint16(keyValueBuffer[ReservedKeySize+key.EncodedSizeInBytes():], uint16(value.SizeInBytes()))
+	binary.LittleEndian.PutUint32(keyValueBuffer[ReservedKeySize+key.EncodedSizeInBytes():], value.SizeAsUint32())
 	copy(keyValueBuffer[ReservedKeySize+key.EncodedSizeInBytes()+ReservedValueSize:], value.EncodedBytes())
 
 	builder.data = append(builder.data, keyValueBuffer...)

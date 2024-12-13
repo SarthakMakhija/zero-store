@@ -86,8 +86,8 @@ func (iterator *Iterator) seekToOffset(keyValueBeginOffset uint16) {
 	keySize := binary.LittleEndian.Uint16(data[:])
 	key := kv.DecodeKeyFrom(data[ReservedKeySize : uint16(ReservedKeySize)+keySize])
 
-	valueSize := binary.LittleEndian.Uint16(data[ReservedKeySize+key.EncodedSizeInBytes():])
-	valueOffsetStart := uint16(ReservedKeySize) + keySize + uint16(ReservedValueSize)
+	valueSize := binary.LittleEndian.Uint32(data[ReservedKeySize+key.EncodedSizeInBytes():])
+	valueOffsetStart := uint32(uint16(ReservedKeySize) + keySize + uint16(ReservedValueSize))
 	value := kv.DecodeValueFrom(data[valueOffsetStart : valueOffsetStart+valueSize])
 
 	iterator.key = key

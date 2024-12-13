@@ -6,6 +6,12 @@ import (
 	"testing"
 )
 
+func TestAttemptToAddAKeyValueToBlockBuilderWithInsufficientSpaceLeftWithBuilder(t *testing.T) {
+	blockBuilder := NewBlockBuilder(40)
+	assert.True(t, blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft")))
+	assert.False(t, blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft")))
+}
+
 func TestEncodeAndDecodeBlockWithASingleKeyValue(t *testing.T) {
 	blockBuilder := NewBlockBuilder(1024)
 	blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
