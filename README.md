@@ -1,7 +1,7 @@
 # zero-store
 [![ZeroStoreCI](https://github.com/SarthakMakhija/zero-store/actions/workflows/build.yml/badge.svg)](https://github.com/SarthakMakhija/zero-store/actions/workflows/build.yml)
 
-Zero disk architecture based key/value store. 
+Zero disk architecture based embedded key/value store. 
 
 **zero-store** can be considered as a collection of sorted segments on an object storage like S3. Below image shows the high-level architecture.
 
