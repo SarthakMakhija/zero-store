@@ -18,7 +18,7 @@ func NewFooterBlock(blockSize uint) *FooterBlock {
 	}
 }
 
-// addOffset adds the offset in the footer block.
+// AddOffset adds the offset in the footer block.
 // Footer block contains the following information:
 // - begin-offset of the block meta information
 // - end-offset of the block meta information
@@ -26,11 +26,11 @@ func NewFooterBlock(blockSize uint) *FooterBlock {
 // - end-offset of the bloom filter
 // This method does not check if the footer block has sufficient space to contain the given offset.
 // At this stage, the block does not contain too much information, so this check is left out.
-func (footerBlock *FooterBlock) addOffset(offset uint32) {
+func (footerBlock *FooterBlock) AddOffset(offset uint32) {
 	footerBlock.offsets = append(footerBlock.offsets, offset)
 }
 
-// encode encodes the FooterBlock as byte slice.
+// Encode encodes the FooterBlock as byte slice.
 // Encoding includes:
 /*
   -----------------------------------------------------------
@@ -38,7 +38,7 @@ func (footerBlock *FooterBlock) addOffset(offset uint32) {
   -----------------------------------------------------------
                                     <----for each offset---->
 */
-func (footerBlock *FooterBlock) encode() []byte {
+func (footerBlock *FooterBlock) Encode() []byte {
 	buffer := make([]byte, footerBlock.blockSize)
 	binary.LittleEndian.PutUint16(buffer[:], uint16(len(footerBlock.offsets)))
 
@@ -50,8 +50,8 @@ func (footerBlock *FooterBlock) encode() []byte {
 	return buffer
 }
 
-// decodeFooterBlock decodes the byte slice and returns an instance of FooterBlock.
-func decodeFooterBlock(buffer []byte, blockSize uint) *FooterBlock {
+// DecodeToFooterBlock decodes the byte slice and returns an instance of FooterBlock.
+func DecodeToFooterBlock(buffer []byte, blockSize uint) *FooterBlock {
 	numberOfOffsets := binary.LittleEndian.Uint16(buffer[:])
 	offsets := make([]uint32, 0, numberOfOffsets)
 
