@@ -92,6 +92,28 @@ func (metaList *MetaList) Length() int {
 	return len(metaList.list)
 }
 
+// MaybeBlockMetaContaining returns the block meta that may contain the given key.
+// It compares the key with the StartingKey of the block meta.
+// It returns the instance of Meta where the given key is greater than or equal to the starting key.
+func (metaList *MetaList) MaybeBlockMetaContaining(key kv.Key) (Meta, int) {
+	low, high := 0, metaList.Length()-1
+	possibleIndex := low
+	for low <= high {
+		mid := low + (high-low)/2
+		meta := metaList.list[mid]
+		switch key.CompareKeys(meta.StartingKey) { //TODO: replace compare with CompareWithTimestamp ..
+		case -1:
+			high = mid - 1
+		case 0:
+			return meta, mid
+		case 1:
+			possibleIndex = mid
+			low = mid + 1
+		}
+	}
+	return metaList.list[possibleIndex], possibleIndex
+}
+
 // DecodeToBlockMetaList decodes the MetaList from the byte slice.
 // Please look at MetaList.Encode() to understand the encoding of MetaList.
 func DecodeToBlockMetaList(buffer []byte, enableCompression bool) (*MetaList, error) {
