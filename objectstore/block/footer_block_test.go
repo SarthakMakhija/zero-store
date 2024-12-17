@@ -29,7 +29,7 @@ func TestEncodeAndDecodeAFooterBlockWithAFewOffsets(t *testing.T) {
 	assert.Equal(t, uint32(580), decodedFooterBlock.offsets[2])
 }
 
-func TestGetOffsetAtValidIndex(t *testing.T) {
+func TestGetOffsetAsInt64AtValidIndex(t *testing.T) {
 	footerBlock := NewFooterBlock(DefaultBlockSize)
 	footerBlock.AddOffset(18)
 
@@ -38,11 +38,29 @@ func TestGetOffsetAtValidIndex(t *testing.T) {
 	assert.Equal(t, int64(18), offset)
 }
 
-func TestGetOffsetAtAnInvalidIndex(t *testing.T) {
+func TestGetOffsetAsInt64AtAnInvalidIndex(t *testing.T) {
 	footerBlock := NewFooterBlock(DefaultBlockSize)
 	footerBlock.AddOffset(18)
 
 	offset, ok := footerBlock.GetOffsetAsInt64At(90)
 	assert.False(t, ok)
 	assert.Equal(t, int64(0), offset)
+}
+
+func TestGetOffsetAtValidIndex(t *testing.T) {
+	footerBlock := NewFooterBlock(DefaultBlockSize)
+	footerBlock.AddOffset(18)
+
+	offset, ok := footerBlock.GetOffsetAt(0)
+	assert.True(t, ok)
+	assert.Equal(t, uint32(18), offset)
+}
+
+func TestGetOffsetAtAnInvalidIndex(t *testing.T) {
+	footerBlock := NewFooterBlock(DefaultBlockSize)
+	footerBlock.AddOffset(18)
+
+	offset, ok := footerBlock.GetOffsetAt(90)
+	assert.False(t, ok)
+	assert.Equal(t, uint32(0), offset)
 }

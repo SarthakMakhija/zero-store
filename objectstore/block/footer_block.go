@@ -33,10 +33,20 @@ func (footerBlock *FooterBlock) AddOffset(offset uint32) {
 // GetOffsetAsInt64At returns the offset at the given index.
 // If the index is beyond the total available indices for offsets, 0, false is returned
 func (footerBlock *FooterBlock) GetOffsetAsInt64At(index uint) (int64, bool) {
+	offset, ok := footerBlock.GetOffsetAt(index)
+	if !ok {
+		return 0, false
+	}
+	return int64(offset), true
+}
+
+// GetOffsetAt returns the offset at the given index.
+// If the index is beyond the total available indices for offsets, 0, false is returned
+func (footerBlock *FooterBlock) GetOffsetAt(index uint) (uint32, bool) {
 	if index >= uint(len(footerBlock.offsets)) {
 		return 0, false
 	}
-	return int64(footerBlock.offsets[index]), true
+	return footerBlock.offsets[index], true
 }
 
 // Encode encodes the FooterBlock as byte slice.
