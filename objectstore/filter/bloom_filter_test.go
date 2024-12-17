@@ -11,7 +11,7 @@ func TestAddASingleKeyToBloomFilter(t *testing.T) {
 	builder.Add(kv.NewStringKey("consensus"))
 
 	filter := builder.Build()
-	assert.True(t, filter.mayHave(kv.NewStringKey("consensus")))
+	assert.True(t, filter.MayContain(kv.NewStringKey("consensus")))
 }
 
 func TestAddAFewKeysToBloomFilter(t *testing.T) {
@@ -21,9 +21,9 @@ func TestAddAFewKeysToBloomFilter(t *testing.T) {
 	builder.Add(kv.NewStringKey("zero disk"))
 
 	filter := builder.Build()
-	assert.True(t, filter.mayHave(kv.NewStringKey("consensus")))
-	assert.True(t, filter.mayHave(kv.NewStringKey("storage")))
-	assert.True(t, filter.mayHave(kv.NewStringKey("zero disk")))
+	assert.True(t, filter.MayContain(kv.NewStringKey("consensus")))
+	assert.True(t, filter.MayContain(kv.NewStringKey("storage")))
+	assert.True(t, filter.MayContain(kv.NewStringKey("zero disk")))
 }
 
 func TestNonExistingKeysInBloomFilter(t *testing.T) {
@@ -33,9 +33,9 @@ func TestNonExistingKeysInBloomFilter(t *testing.T) {
 	builder.Add(kv.NewStringKey("zero disk"))
 
 	filter := builder.Build()
-	assert.False(t, filter.mayHave(kv.NewStringKey("disk")))
-	assert.False(t, filter.mayHave(kv.NewStringKey("cloud")))
-	assert.False(t, filter.mayHave(kv.NewStringKey("raw")))
+	assert.False(t, filter.MayContain(kv.NewStringKey("disk")))
+	assert.False(t, filter.MayContain(kv.NewStringKey("cloud")))
+	assert.False(t, filter.MayContain(kv.NewStringKey("raw")))
 }
 
 func TestEncodeAndDecodeBloomFilter(t *testing.T) {
@@ -47,10 +47,10 @@ func TestEncodeAndDecodeBloomFilter(t *testing.T) {
 	buffer, err := builder.Build().Encode()
 	assert.Nil(t, err)
 
-	filter, err := decodeBloomFilter(buffer)
+	filter, err := DecodeToBloomFilter(buffer)
 	assert.Nil(t, err)
 
-	assert.True(t, filter.mayHave(kv.NewStringKey("consensus")))
-	assert.True(t, filter.mayHave(kv.NewStringKey("storage")))
-	assert.True(t, filter.mayHave(kv.NewStringKey("zero disk")))
+	assert.True(t, filter.MayContain(kv.NewStringKey("consensus")))
+	assert.True(t, filter.MayContain(kv.NewStringKey("storage")))
+	assert.True(t, filter.MayContain(kv.NewStringKey("zero disk")))
 }
