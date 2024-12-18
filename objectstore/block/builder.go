@@ -8,6 +8,7 @@ import (
 
 var ReservedKeySize = int(unsafe.Sizeof(uint16(0)))
 var ReservedValueSize = int(unsafe.Sizeof(uint32(0)))
+var KeyValueOffsetSize = int(unsafe.Sizeof(uint16(0)))
 
 var Uint16Size = int(unsafe.Sizeof(uint16(0)))
 var Uint32Size = int(unsafe.Sizeof(uint32(0)))
@@ -51,7 +52,7 @@ func NewBlockBuilder(blockSize uint) *Builder {
 // 3) Storing the key/value pair.
 func (builder *Builder) Add(key kv.Key, value kv.Value) bool {
 	//TODO: what if key and value size is greater than block size?
-	if uint(builder.size()+key.EncodedSizeInBytes()+value.SizeInBytes()+ReservedKeySize+ReservedValueSize) > builder.blockSize {
+	if uint(builder.size()+key.EncodedSizeInBytes()+value.SizeInBytes()+ReservedKeySize+ReservedValueSize+KeyValueOffsetSize) > builder.blockSize {
 		return false
 	}
 
@@ -67,7 +68,6 @@ func (builder *Builder) Add(key kv.Key, value kv.Value) bool {
 	n := copy(builder.data[builder.index:], keyValueBuffer)
 	builder.index += n
 
-	//builder.data = append(builder.data, keyValueBuffer...)
 	return true
 }
 
@@ -85,10 +85,10 @@ func (builder *Builder) Build() Block {
 }
 
 // size returns the size of the builder.
-// The size includes: the size of encoded key/values (builder.data) + size of N keyValueBeginOffsets.
+// The size includes: the size of encoded key/values (builder.data) + size of N keyValueBeginOffsets + Reserved bytes.
 func (builder *Builder) size() int {
 	return len(builder.data[:builder.index]) +
 		len(builder.keyValueBeginOffsets)*Uint16Size +
 		Uint16Size + //block uses last 2 bytes for the number of begin offsets
-		Uint16Size //block uses 2 bytes before the last 2 bytes for the number of start offset of begin offsets
+		Uint16Size //block uses 2 bytes before the last 2 bytes for the start offset of begin offsets
 }

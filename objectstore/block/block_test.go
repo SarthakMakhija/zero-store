@@ -13,6 +13,13 @@ func TestAttemptToAddAKeyValueToBlockBuilderWithInsufficientSpaceLeftWithBuilder
 	assert.False(t, blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft")))
 }
 
+func TestAddTwoKeyValuesToBlockBuilderUsingUpTheCompleteSpace(t *testing.T) {
+	blockBuilder := NewBlockBuilder(48)
+	assert.True(t, blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft")))
+	assert.True(t, blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft")))
+	assert.Equal(t, 48, blockBuilder.size())
+}
+
 func TestEncodeAndDecodeBlockWithASingleKeyValueAndSeekToTheFirstKey(t *testing.T) {
 	blockBuilder := NewBlockBuilder(1024)
 	blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
