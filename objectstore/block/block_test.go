@@ -12,7 +12,31 @@ func TestAttemptToAddAKeyValueToBlockBuilderWithInsufficientSpaceLeftWithBuilder
 	assert.False(t, blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft")))
 }
 
-func TestEncodeAndDecodeBlockWithASingleKeyValue(t *testing.T) {
+func TestEncodeAndDecodeBlockWithASingleKeyValueAndSeekToTheFirstKey(t *testing.T) {
+	blockBuilder := NewBlockBuilder(1024)
+	blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	blockBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("etcd"))
+
+	block := blockBuilder.Build()
+	buffer := block.Encode()
+
+	decodedBlock := DecodeToBlock(buffer)
+	iterator := decodedBlock.SeekToFirst()
+	defer iterator.Close()
+
+	assert.True(t, iterator.IsValid())
+	assert.Equal(t, "consensus", iterator.Key().RawString())
+	assert.Equal(t, "raft", iterator.Value().String())
+
+	_ = iterator.Next()
+	assert.Equal(t, "distributed", iterator.Key().RawString())
+	assert.Equal(t, "etcd", iterator.Value().String())
+
+	_ = iterator.Next()
+	assert.False(t, iterator.IsValid())
+}
+
+func TestEncodeAndDecodeBlockWithASingleKeyValueAndSeekToTheKey(t *testing.T) {
 	blockBuilder := NewBlockBuilder(1024)
 	blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 

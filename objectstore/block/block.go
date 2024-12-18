@@ -63,6 +63,16 @@ func DecodeToBlock(data []byte) Block {
 	}
 }
 
+// SeekToFirst creates an iterator (/block iterator) that is positioned at the first offset in the block.
+func (block Block) SeekToFirst() *Iterator {
+	iterator := &Iterator{
+		block:       block,
+		offsetIndex: 0,
+	}
+	iterator.seekToOffsetIndex(iterator.offsetIndex)
+	return iterator
+}
+
 // SeekToKey creates an iterator (/block iterator) that is positioned at a key which is greater or equal to the given key.
 func (block Block) SeekToKey(key kv.Key) *Iterator {
 	iterator := &Iterator{

@@ -40,7 +40,7 @@ func (iterator *Iterator) Next() error {
 // Close does nothing.
 func (iterator *Iterator) Close() {}
 
-// seekToOffsetIndex seeks to the offset identify by the index of keyValueBeginOffsets slice.
+// seekToOffsetIndex seeks to the offset identified by the index of keyValueBeginOffsets (in iterator.block.keyValueBeginOffsets) slice.
 // If index >= len(iterator.block.keyValueBeginOffsets), iterator is marked invalid.
 func (iterator *Iterator) seekToOffsetIndex(index uint16) {
 	if index >= uint16(len(iterator.block.keyValueBeginOffsets)) {
@@ -53,7 +53,7 @@ func (iterator *Iterator) seekToOffsetIndex(index uint16) {
 }
 
 // seekToGreaterOrEqual seeks to the key greater than or equal to the given key.
-// It leverages binary search within keyValueBeginOffsets to perform seek.
+// It leverages binary search within keyValueBeginOffsets (in iterator.block.keyValueBeginOffsets) to perform seek.
 func (iterator *Iterator) seekToGreaterOrEqual(key kv.Key) {
 	low := 0
 	high := len(iterator.block.keyValueBeginOffsets) - 1
