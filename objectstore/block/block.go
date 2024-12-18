@@ -46,9 +46,7 @@ func (block Block) Encode() []byte {
 // DecodeToBlock decodes the given byte slice to the Block.
 //
 // The last 2 bytes denote the number of keyValueBeginOffsets.
-// The size of keyValueBeginOffsets = number of keyValueBeginOffsets * 2 bytes (each offset is an uint16).
-// So, the (length of the data) minus (size of keyValueBeginOffsets) minus (2 bytes which denote the number of keyValueBeginOffsets)
-// give the start offset of keyValueBeginOffsets or the end offset of key/value encoded data.
+// The 2 bytes prior to the last 2 bytes denote the start offset of keyValueBeginOffsets.
 func DecodeToBlock(data []byte) Block {
 	numberOfOffsets := binary.LittleEndian.Uint16(data[len(data)-Uint16Size:])
 	startOfOffsets := binary.LittleEndian.Uint16(data[len(data)-Uint16Size-Uint16Size:])
