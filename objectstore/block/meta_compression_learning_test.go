@@ -13,9 +13,9 @@ func TestCompressionRatio(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
 	for blockCount := 0; blockCount < 100; blockCount++ {
 		blockMetaList.Add(Meta{
-			BlockStartingOffset: uint32(4196 * blockCount),
-			StartingKey:         kv.NewStringKey("zero disk architecture"),
-			EndingKey:           kv.NewStringKey("zero disk architecture is interesting"),
+			BlockBeginOffset: uint32(4196 * blockCount),
+			StartingKey:      kv.NewStringKey("zero disk architecture"),
+			EndingKey:        kv.NewStringKey("zero disk architecture is interesting"),
 		})
 	}
 	uncompressedBuffer := blockMetaList.Encode()
@@ -23,9 +23,9 @@ func TestCompressionRatio(t *testing.T) {
 	blockMetaList = NewBlockMetaList(enableCompression)
 	for blockCount := 0; blockCount < 100; blockCount++ {
 		blockMetaList.Add(Meta{
-			BlockStartingOffset: uint32(4196 * blockCount),
-			StartingKey:         kv.NewStringKey("zero disk architecture"),
-			EndingKey:           kv.NewStringKey("zero disk architecture is interesting"),
+			BlockBeginOffset: uint32(4196 * blockCount),
+			StartingKey:      kv.NewStringKey("zero disk architecture"),
+			EndingKey:        kv.NewStringKey("zero disk architecture is interesting"),
 		})
 	}
 	compressedBuffer := blockMetaList.Encode()

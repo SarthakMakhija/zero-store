@@ -10,9 +10,9 @@ import (
 // Meta represents a block metadata including the starting (/first), ending (/last) key and the starting offset
 // of a block.
 type Meta struct {
-	BlockStartingOffset uint32
-	StartingKey         kv.Key
-	EndingKey           kv.Key
+	BlockBeginOffset uint32
+	StartingKey      kv.Key
+	EndingKey        kv.Key
 }
 
 // MetaList is a collection of metadata about multiple blocks.
@@ -37,7 +37,7 @@ func (metaList *MetaList) Add(meta Meta) {
 // Encoding includes:
 /*
   ---------------------------------------------------------------------------------------------------------------
- | 4 bytes for the number of blocks | 4 bytes for block start offset | Encoded starting key | Encoded ending key |
+ | 4 bytes for the number of blocks | 4 bytes for block begin-offset | Encoded starting key | Encoded ending key |
   ---------------------------------------------------------------------------------------------------------------
                                     <-------------------------------------for each block------------------------>
 */
@@ -58,7 +58,7 @@ func (metaList *MetaList) Encode() []byte {
 				blockMeta.EndingKey.EncodedSizeInBytes(),
 		)
 
-		binary.LittleEndian.PutUint32(buffer[:], blockMeta.BlockStartingOffset)
+		binary.LittleEndian.PutUint32(buffer[:], blockMeta.BlockBeginOffset)
 
 		binary.LittleEndian.PutUint16(buffer[Uint32Size:], uint16(blockMeta.StartingKey.EncodedSizeInBytes()))
 		copy(buffer[Uint32Size+ReservedKeySize:], blockMeta.StartingKey.EncodedBytes())
@@ -144,9 +144,9 @@ func DecodeToBlockMetaList(buffer []byte, enableCompression bool) (*MetaList, er
 		endingKey := decodedBuffer[endKeyBegin : endKeyBegin+int(endingKeySize)]
 
 		blockList = append(blockList, Meta{
-			BlockStartingOffset: offset,
-			StartingKey:         kv.DecodeKeyFrom(startingKey),
-			EndingKey:           kv.DecodeKeyFrom(endingKey),
+			BlockBeginOffset: offset,
+			StartingKey:      kv.DecodeKeyFrom(startingKey),
+			EndingKey:        kv.DecodeKeyFrom(endingKey),
 		})
 		index := endKeyBegin + int(endingKeySize)
 		decodedBuffer = decodedBuffer[index:]
