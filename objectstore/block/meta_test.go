@@ -191,9 +191,9 @@ func TestBlockMetaListGetBlockContainingTheKey1(t *testing.T) {
 	blockMetaList.Add(Meta{BlockStartingOffset: 0, StartingKey: kv.NewStringKey("accurate")})
 	blockMetaList.Add(Meta{BlockStartingOffset: 20, StartingKey: kv.NewStringKey("bolt")})
 
-	meta, index := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("bolt"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("bolt"))
 	assert.Equal(t, "bolt", meta.StartingKey.RawString())
-	assert.Equal(t, 1, index)
+	assert.Equal(t, 1, blockIndex)
 }
 
 func TestBlockMetaListGetBlockContainingTheKey2(t *testing.T) {
@@ -203,9 +203,9 @@ func TestBlockMetaListGetBlockContainingTheKey2(t *testing.T) {
 	blockMetaList.Add(Meta{BlockStartingOffset: 40, StartingKey: kv.NewStringKey("db")})
 	blockMetaList.Add(Meta{BlockStartingOffset: 60, StartingKey: kv.NewStringKey("exact")})
 
-	meta, index := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("accurate"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("accurate"))
 	assert.Equal(t, "accurate", meta.StartingKey.RawString())
-	assert.Equal(t, 0, index)
+	assert.Equal(t, 0, blockIndex)
 }
 
 func TestBlockMetaListGetBlockContainingTheKey3(t *testing.T) {
@@ -215,9 +215,9 @@ func TestBlockMetaListGetBlockContainingTheKey3(t *testing.T) {
 	blockMetaList.Add(Meta{BlockStartingOffset: 40, StartingKey: kv.NewStringKey("db")})
 	blockMetaList.Add(Meta{BlockStartingOffset: 60, StartingKey: kv.NewStringKey("exact")})
 
-	meta, index := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("exact"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("exact"))
 	assert.Equal(t, "exact", meta.StartingKey.RawString())
-	assert.Equal(t, 3, index)
+	assert.Equal(t, 3, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey1(t *testing.T) {
@@ -227,9 +227,9 @@ func TestBlockMetaListGetBlockWhichMayContainTheGivenKey1(t *testing.T) {
 	blockMetaList.Add(Meta{BlockStartingOffset: 40, StartingKey: kv.NewStringKey("db")})
 	blockMetaList.Add(Meta{BlockStartingOffset: 60, StartingKey: kv.NewStringKey("exact")})
 
-	meta, index := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("consensus"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("consensus"))
 	assert.Equal(t, "bolt", meta.StartingKey.RawString())
-	assert.Equal(t, 1, index)
+	assert.Equal(t, 1, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey2(t *testing.T) {
@@ -238,19 +238,19 @@ func TestBlockMetaListGetBlockWhichMayContainTheGivenKey2(t *testing.T) {
 	blockMetaList.Add(Meta{BlockStartingOffset: 20, StartingKey: kv.NewStringKey("distributed")})
 	blockMetaList.Add(Meta{BlockStartingOffset: 40, StartingKey: kv.NewStringKey("etcd")})
 
-	meta, index := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("contribute"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("contribute"))
 	assert.Equal(t, "consensus", meta.StartingKey.RawString())
-	assert.Equal(t, 0, index)
+	assert.Equal(t, 0, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey3(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
 	blockMetaList.Add(Meta{BlockStartingOffset: 0, StartingKey: kv.NewStringKey("consensus"), EndingKey: kv.NewStringKey("demo")})
 
-	meta, index := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("contribute"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("contribute"))
 	assert.Equal(t, "consensus", meta.StartingKey.RawString())
 	assert.Equal(t, "demo", meta.EndingKey.RawString())
-	assert.Equal(t, 0, index)
+	assert.Equal(t, 0, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey4(t *testing.T) {
@@ -262,9 +262,9 @@ func TestBlockMetaListGetBlockWhichMayContainTheGivenKey4(t *testing.T) {
 	blockMetaList.Add(Meta{BlockStartingOffset: 80, StartingKey: kv.NewStringKey("foundation")})
 	blockMetaList.Add(Meta{BlockStartingOffset: 100, StartingKey: kv.NewStringKey("gossip")})
 
-	meta, index := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("group"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("group"))
 	assert.Equal(t, "gossip", meta.StartingKey.RawString())
-	assert.Equal(t, 5, index)
+	assert.Equal(t, 5, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey5(t *testing.T) {
@@ -276,9 +276,9 @@ func TestBlockMetaListGetBlockWhichMayContainTheGivenKey5(t *testing.T) {
 	blockMetaList.Add(Meta{BlockStartingOffset: 80, StartingKey: kv.NewStringKey("foundation")})
 	blockMetaList.Add(Meta{BlockStartingOffset: 100, StartingKey: kv.NewStringKey("gossip")})
 
-	meta, index := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("yugabyte"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("yugabyte"))
 	assert.Equal(t, "gossip", meta.StartingKey.RawString())
-	assert.Equal(t, 5, index)
+	assert.Equal(t, 5, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey6(t *testing.T) {
@@ -290,9 +290,9 @@ func TestBlockMetaListGetBlockWhichMayContainTheGivenKey6(t *testing.T) {
 	blockMetaList.Add(Meta{BlockStartingOffset: 80, StartingKey: kv.NewStringKey("foundation")})
 	blockMetaList.Add(Meta{BlockStartingOffset: 100, StartingKey: kv.NewStringKey("gossip")})
 
-	meta, index := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("fixed"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("fixed"))
 	assert.Equal(t, "exact", meta.StartingKey.RawString())
-	assert.Equal(t, 3, index)
+	assert.Equal(t, 3, blockIndex)
 }
 
 //TODO: tests for may contain ..

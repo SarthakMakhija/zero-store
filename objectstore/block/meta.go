@@ -92,7 +92,7 @@ func (metaList *MetaList) Length() int {
 	return len(metaList.list)
 }
 
-// MaybeBlockMetaContaining returns the block meta that may contain the given key.
+// MaybeBlockMetaContaining returns the block meta and the block index (block index starts from zero) that may contain the given key.
 // It compares the key with the StartingKey of the block meta.
 // It returns the instance of Meta where the given key is greater than or equal to the starting key.
 func (metaList *MetaList) MaybeBlockMetaContaining(key kv.Key) (Meta, int) {
