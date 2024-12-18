@@ -1,6 +1,7 @@
 package block
 
 import (
+	"fmt"
 	"github.com/SarthakMakhija/zero-store/kv"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -75,4 +76,25 @@ func TestEncodeAndDecodeBlockWithTwoKeyValues(t *testing.T) {
 
 	_ = iterator.Next()
 	assert.False(t, iterator.IsValid())
+}
+
+func TestEncodeAndDecodeBlockWithFewKeyValues(t *testing.T) {
+	blockBuilder := NewBlockBuilder(1024)
+	numberOfKeyValues := 9
+
+	for count := 1; count <= numberOfKeyValues; count++ {
+		key := kv.NewStringKey(fmt.Sprintf("consensus%d", count))
+		assert.True(t, blockBuilder.Add(key, kv.NewStringValue(fmt.Sprintf("raft%d", count))))
+	}
+
+	block := blockBuilder.Build()
+	buffer := block.Encode()
+
+	decodedBlock := DecodeToBlock(buffer)
+	for count := 1; count <= numberOfKeyValues; count++ {
+		iterator := decodedBlock.SeekToKey(kv.NewStringKey(fmt.Sprintf("consensus%d", count)))
+		assert.True(t, iterator.IsValid())
+		assert.Equal(t, fmt.Sprintf("raft%d", count), iterator.Value().String())
+		iterator.Close()
+	}
 }

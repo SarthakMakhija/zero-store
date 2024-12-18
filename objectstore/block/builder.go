@@ -27,6 +27,7 @@ type Builder struct {
 	keyValueBeginOffsets []uint16
 	blockSize            uint
 	data                 []byte
+	index                int
 }
 
 // NewBlockBuilderWithDefaultBlockSize creates a new instance of block builder with blocksize as DefaultBlockSize.
@@ -38,7 +39,8 @@ func NewBlockBuilderWithDefaultBlockSize() *Builder {
 func NewBlockBuilder(blockSize uint) *Builder {
 	return &Builder{
 		blockSize: blockSize,
-		data:      make([]byte, 0, blockSize),
+		data:      make([]byte, blockSize),
+		index:     0,
 	}
 }
 
@@ -53,7 +55,7 @@ func (builder *Builder) Add(key kv.Key, value kv.Value) bool {
 		return false
 	}
 
-	builder.keyValueBeginOffsets = append(builder.keyValueBeginOffsets, uint16(len(builder.data)))
+	builder.keyValueBeginOffsets = append(builder.keyValueBeginOffsets, uint16(builder.index))
 	keyValueBuffer := make([]byte, ReservedKeySize+ReservedValueSize+key.EncodedSizeInBytes()+value.SizeInBytes())
 
 	binary.LittleEndian.PutUint16(keyValueBuffer[:], uint16(key.EncodedSizeInBytes()))
@@ -62,7 +64,10 @@ func (builder *Builder) Add(key kv.Key, value kv.Value) bool {
 	binary.LittleEndian.PutUint32(keyValueBuffer[ReservedKeySize+key.EncodedSizeInBytes():], value.SizeAsUint32())
 	copy(keyValueBuffer[ReservedKeySize+key.EncodedSizeInBytes()+ReservedValueSize:], value.EncodedBytes())
 
-	builder.data = append(builder.data, keyValueBuffer...)
+	n := copy(builder.data[builder.index:], keyValueBuffer)
+	builder.index += n
+
+	//builder.data = append(builder.data, keyValueBuffer...)
 	return true
 }
 
@@ -76,13 +81,14 @@ func (builder *Builder) Build() Block {
 	if builder.isEmpty() {
 		panic("cannot build an empty Block")
 	}
-	return newBlock(builder.data, builder.keyValueBeginOffsets)
+	return newBlock(builder.data, builder.index, builder.keyValueBeginOffsets)
 }
 
 // size returns the size of the builder.
 // The size includes: the size of encoded key/values (builder.data) + size of N keyValueBeginOffsets.
 func (builder *Builder) size() int {
-	return len(builder.data) +
+	return len(builder.data[:builder.index]) +
 		len(builder.keyValueBeginOffsets)*Uint16Size +
-		Uint16Size //block uses last 2 bytes for the number of begin offsets
+		Uint16Size + //block uses last 2 bytes for the number of begin offsets
+		Uint16Size //block uses 2 bytes before the last 2 bytes for the number of start offset of begin offsets
 }
