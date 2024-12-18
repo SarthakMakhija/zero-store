@@ -3,7 +3,6 @@ package segment
 import (
 	"github.com/SarthakMakhija/zero-store/kv"
 	"github.com/SarthakMakhija/zero-store/objectstore"
-	block2 "github.com/SarthakMakhija/zero-store/objectstore/block"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -21,16 +20,16 @@ func TestBuildASortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.
 		_ = os.Remove(pathSuffix(segmentId))
 	}()
 
-	segmentBuilder := NewSortedSegmentBuilder(store, block2.DefaultBlockSize, false)
+	segmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
 	segmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 
 	segment, err := segmentBuilder.Build(segmentId, store)
 	assert.NoError(t, err)
 
-	block, err := segment.readBlock(0)
+	readBlock, err := segment.readBlock(0)
 	assert.NoError(t, err)
 
-	blockIterator := block.SeekToFirst()
+	blockIterator := readBlock.SeekToFirst()
 	defer blockIterator.Close()
 
 	assert.True(t, blockIterator.IsValid())
@@ -53,7 +52,7 @@ func TestBuildASortedSegmentWithASingleBlockContainingMultipleKeyValues(t *testi
 		_ = os.Remove(pathSuffix(segmentId))
 	}()
 
-	segmentBuilder := NewSortedSegmentBuilder(store, block2.DefaultBlockSize, false)
+	segmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
 	segmentBuilder.Add(kv.NewStringKey("badgerDB"), kv.NewStringValue("LSM"))
 	segmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	segmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("etcd"))
@@ -61,10 +60,10 @@ func TestBuildASortedSegmentWithASingleBlockContainingMultipleKeyValues(t *testi
 	segment, err := segmentBuilder.Build(segmentId, store)
 	assert.NoError(t, err)
 
-	block, err := segment.readBlock(0)
+	readBlock, err := segment.readBlock(0)
 	assert.NoError(t, err)
 
-	blockIterator := block.SeekToFirst()
+	blockIterator := readBlock.SeekToFirst()
 	defer blockIterator.Close()
 
 	assert.True(t, blockIterator.IsValid())
@@ -105,10 +104,10 @@ func TestBuildASortedSegmentWithTwoBlocks(t *testing.T) {
 	assert.Nil(t, err)
 
 	assertBlockWithASingleKeyValue := func(blockIndex int, value kv.Value) {
-		block, err := segment.readBlock(blockIndex)
+		readBlock, err := segment.readBlock(blockIndex)
 		assert.Nil(t, err)
 
-		blockIterator := block.SeekToFirst()
+		blockIterator := readBlock.SeekToFirst()
 		defer blockIterator.Close()
 
 		assert.True(t, blockIterator.IsValid())
