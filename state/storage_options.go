@@ -3,23 +3,26 @@ package state
 import "github.com/SarthakMakhija/zero-store/objectstore"
 
 type StorageOptions struct {
-	sortedSegmentSizeInBytes int64
-	maximumInactiveSegments  uint
-	storeType                objectstore.StoreType
-	rootDirectory            string
+	sortedSegmentSizeInBytes      int64
+	maximumInactiveSegments       uint
+	storeType                     objectstore.StoreType
+	rootDirectory                 string
+	sortedSegmentBlockCompression bool
 }
 
 type StorageOptionsBuilder struct {
-	sortedSegmentSizeInBytes int64
-	maximumInactiveSegments  uint
-	storeType                objectstore.StoreType
-	rootDirectory            string
+	sortedSegmentSizeInBytes      int64
+	maximumInactiveSegments       uint
+	storeType                     objectstore.StoreType
+	rootDirectory                 string
+	sortedSegmentBlockCompression bool
 }
 
 func NewStorageOptionsBuilder() *StorageOptionsBuilder {
 	return &StorageOptionsBuilder{
-		sortedSegmentSizeInBytes: 1 << 20,
-		maximumInactiveSegments:  8,
+		sortedSegmentSizeInBytes:      1 << 20,
+		maximumInactiveSegments:       8,
+		sortedSegmentBlockCompression: false,
 	}
 }
 
@@ -43,6 +46,11 @@ func (builder *StorageOptionsBuilder) WithFileSystemStoreType(rootDirectory stri
 	return builder
 }
 
+func (builder *StorageOptionsBuilder) EnableSortedSegmentBlockCompression() *StorageOptionsBuilder {
+	builder.sortedSegmentBlockCompression = true
+	return builder
+}
+
 func (builder *StorageOptionsBuilder) Build() StorageOptions {
 	if !builder.storeType.IsValid() {
 		panic("invalid store type")
@@ -51,9 +59,10 @@ func (builder *StorageOptionsBuilder) Build() StorageOptions {
 		panic("root directory must be specified")
 	}
 	return StorageOptions{
-		sortedSegmentSizeInBytes: builder.sortedSegmentSizeInBytes,
-		maximumInactiveSegments:  builder.maximumInactiveSegments,
-		storeType:                builder.storeType,
-		rootDirectory:            builder.rootDirectory,
+		sortedSegmentSizeInBytes:      builder.sortedSegmentSizeInBytes,
+		maximumInactiveSegments:       builder.maximumInactiveSegments,
+		storeType:                     builder.storeType,
+		rootDirectory:                 builder.rootDirectory,
+		sortedSegmentBlockCompression: builder.sortedSegmentBlockCompression,
 	}
 }

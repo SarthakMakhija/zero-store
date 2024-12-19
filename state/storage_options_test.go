@@ -37,3 +37,13 @@ func TestStorageOptionsWithStoreTypeAndRootDirectory(t *testing.T) {
 	storageOptions := NewStorageOptionsBuilder().WithSortedSegmentSizeInBytes(2 << 10).WithFileSystemStoreType(".").Build()
 	assert.Equal(t, ".", storageOptions.rootDirectory)
 }
+
+func TestStorageOptionsWithSortedSegmentBlockCompressionEnabled(t *testing.T) {
+	storageOptions := NewStorageOptionsBuilder().WithSortedSegmentSizeInBytes(2 << 10).WithFileSystemStoreType(".").EnableSortedSegmentBlockCompression().Build()
+	assert.True(t, storageOptions.sortedSegmentBlockCompression)
+}
+
+func TestStorageOptionsWithSortedSegmentBlockCompressionNotEnabled(t *testing.T) {
+	storageOptions := NewStorageOptionsBuilder().WithSortedSegmentSizeInBytes(2 << 10).WithFileSystemStoreType(".").Build()
+	assert.False(t, storageOptions.sortedSegmentBlockCompression)
+}
