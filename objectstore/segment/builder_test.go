@@ -10,7 +10,7 @@ import (
 
 func TestBuildASortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.T) {
 	storeDefinition, err := objectstore.NewFileSystemStoreDefinition(".")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	store := objectstore.NewStore(".", storeDefinition)
 	segmentId := uint64(1)
@@ -42,7 +42,7 @@ func TestBuildASortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.
 
 func TestBuildASortedSegmentWithASingleBlockContainingMultipleKeyValues(t *testing.T) {
 	storeDefinition, err := objectstore.NewFileSystemStoreDefinition(".")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	store := objectstore.NewStore(".", storeDefinition)
 	segmentId := uint64(1)
@@ -87,7 +87,7 @@ func TestBuildASortedSegmentWithASingleBlockContainingMultipleKeyValues(t *testi
 
 func TestBuildASortedSegmentWithTwoBlocks(t *testing.T) {
 	storeDefinition, err := objectstore.NewFileSystemStoreDefinition(".")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	store := objectstore.NewStore(".", storeDefinition)
 	segmentId := uint64(1)
@@ -101,11 +101,11 @@ func TestBuildASortedSegmentWithTwoBlocks(t *testing.T) {
 	segmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
 	segment, err := segmentBuilder.Build(1, store)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assertBlockWithASingleKeyValue := func(blockIndex int, value kv.Value) {
 		readBlock, err := segment.readBlock(blockIndex)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 
 		blockIterator := readBlock.SeekToFirst()
 		defer blockIterator.Close()

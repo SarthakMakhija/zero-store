@@ -45,10 +45,10 @@ func TestEncodeAndDecodeBloomFilter(t *testing.T) {
 	builder.Add(kv.NewStringKey("zero disk"))
 
 	buffer, err := builder.Build().Encode()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	filter, err := DecodeToBloomFilter(buffer)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.True(t, filter.MayContain(kv.NewStringKey("consensus")))
 	assert.True(t, filter.MayContain(kv.NewStringKey("storage")))

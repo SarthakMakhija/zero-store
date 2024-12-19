@@ -10,7 +10,7 @@ import (
 func TestSetTheObjectToStore(t *testing.T) {
 	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
@@ -18,13 +18,13 @@ func TestSetTheObjectToStore(t *testing.T) {
 		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(pathSuffix, []byte("raft is a consensus protocol")))
+	assert.NoError(t, store.Set(pathSuffix, []byte("raft is a consensus protocol")))
 }
 
 func TestSetAndGetTheObject(t *testing.T) {
 	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
@@ -32,10 +32,10 @@ func TestSetAndGetTheObject(t *testing.T) {
 		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(pathSuffix, []byte("paxos is also a consensus protocol")))
+	assert.NoError(t, store.Set(pathSuffix, []byte("paxos is also a consensus protocol")))
 
 	buffer, err := store.Get(pathSuffix)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.Equal(t, "paxos is also a consensus protocol", string(buffer))
 }
@@ -43,7 +43,7 @@ func TestSetAndGetTheObject(t *testing.T) {
 func TestAttemptToStoreAnObjectAtAnExistingPath(t *testing.T) {
 	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
@@ -51,7 +51,7 @@ func TestAttemptToStoreAnObjectAtAnExistingPath(t *testing.T) {
 		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(pathSuffix, []byte("raft is a consensus protocol")))
+	assert.NoError(t, store.Set(pathSuffix, []byte("raft is a consensus protocol")))
 
 	err = store.Set(pathSuffix, []byte("raft is a consensus protocol"))
 	assert.True(t, errors.Is(err, errObjectExists))
@@ -60,7 +60,7 @@ func TestAttemptToStoreAnObjectAtAnExistingPath(t *testing.T) {
 func TestGetRangeOfAnObjectFromFirstOffset(t *testing.T) {
 	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
@@ -68,10 +68,10 @@ func TestGetRangeOfAnObjectFromFirstOffset(t *testing.T) {
 		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(pathSuffix, []byte("VSR is a consensus protocol")))
+	assert.NoError(t, store.Set(pathSuffix, []byte("VSR is a consensus protocol")))
 
 	buffer, err := store.GetRange(pathSuffix, 0, 3)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.Equal(t, "VSR", string(buffer))
 }
@@ -79,7 +79,7 @@ func TestGetRangeOfAnObjectFromFirstOffset(t *testing.T) {
 func TestGetRangeOfAnObjectFromSomeWhereInMiddle(t *testing.T) {
 	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
@@ -87,10 +87,10 @@ func TestGetRangeOfAnObjectFromSomeWhereInMiddle(t *testing.T) {
 		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(pathSuffix, []byte("VSR is a protocol")))
+	assert.NoError(t, store.Set(pathSuffix, []byte("VSR is a protocol")))
 
 	buffer, err := store.GetRange(pathSuffix, 9, 5)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.Equal(t, "proto", string(buffer))
 }
@@ -98,7 +98,7 @@ func TestGetRangeOfAnObjectFromSomeWhereInMiddle(t *testing.T) {
 func TestGetSizeOfObject(t *testing.T) {
 	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	store := NewStore(".", storeDefinition)
 	defer func() {
@@ -106,9 +106,10 @@ func TestGetSizeOfObject(t *testing.T) {
 		_ = os.Remove(pathSuffix)
 	}()
 
-	assert.Nil(t, store.Set(pathSuffix, []byte("paxos is also a consensus protocol")))
+	assert.NoError(t, store.Set(pathSuffix, []byte("paxos is also a consensus protocol")))
+
 	size, err := store.SizeInBytes(pathSuffix)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.Equal(t, int64(34), size)
 }
