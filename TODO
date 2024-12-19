@@ -13,10 +13,10 @@
 10. Compaction
 11. Segment Cleaner (remove segments if their reference count is zero)
 12. Set should allow clients to wait till the entire in-memory segment becomes durable
-13. Persistent segment
-14. Mutex in StorageState
-15. Validate key and value size; look at the size in block/block builder
+13. Mutex in StorageState
+14. Validate key and value size; look at the size in block/block builder
     (also add other validations in client facing APIs)
-16. Documentation
-17. Metrics
-18. Documentation
+15. Documentation
+16. Metrics
+17. Flush an immutable in-memory segment to object store
+18. Persistent segment : done
