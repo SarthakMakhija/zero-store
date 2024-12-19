@@ -23,6 +23,53 @@ type SortedSegment struct {
 	store                objectstore.Store
 }
 
+// SeekToFirst seeks to the first key in the SortedSegment.
+// First key is a part of the first block, so the block at index 0 is read and a block.Iterator
+// is created over the read block.
+// It is used in compact.Compaction.
+func (segment *SortedSegment) SeekToFirst() (*Iterator, error) {
+	readBlock, err := segment.readBlock(0)
+	if err != nil {
+		return nil, err
+	}
+	return &Iterator{
+		sortedSegment: segment,
+		blockIndex:    0,
+		blockIterator: readBlock.SeekToFirst(),
+	}, nil
+}
+
+// SeekToKey seeks to the block that contains a key greater than or equal to the given key.
+// It involves the following:
+// 1) Identify the block.Meta that may contain the key.
+// 2) Read the block identified by blockIndex.
+// 3) Seek to the key within the read block (seeks to the offset where the key >= the given key)
+// 4) Handle the case where block.Iterator may become invalid.
+func (segment *SortedSegment) SeekToKey(key kv.Key) (*Iterator, error) {
+	_, blockIndex := segment.blockMetaList.MaybeBlockMetaContaining(key)
+	readBlock, err := segment.readBlock(blockIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	blockIterator := readBlock.SeekToKey(key)
+	if !blockIterator.IsValid() {
+		blockIndex += 1
+		if blockIndex < segment.noOfBlocks() {
+			readBlock, err := segment.readBlock(blockIndex)
+			if err != nil {
+				return nil, err
+			}
+			blockIterator = readBlock.SeekToKey(key)
+		}
+	}
+	return &Iterator{
+		sortedSegment: segment,
+		blockIndex:    blockIndex,
+		blockIterator: blockIterator,
+	}, nil
+}
+
 // MayContain uses bloom filter to determine if the given key maybe present in the SortedSegment.
 // Returns true if the key MAYBE present, false otherwise.
 func (segment *SortedSegment) MayContain(key kv.Key) bool {
@@ -32,6 +79,11 @@ func (segment *SortedSegment) MayContain(key kv.Key) bool {
 // Id returns the id of SortedSegment.
 func (segment *SortedSegment) Id() uint64 {
 	return segment.id
+}
+
+// noOfBlocks returns the number of blocks in SortedSegment.
+func (segment *SortedSegment) noOfBlocks() int {
+	return segment.blockMetaList.Length()
 }
 
 // readBlock reads the block at the given blockIndex.
