@@ -23,6 +23,78 @@ type SortedSegment struct {
 	store                objectstore.Store
 }
 
+// Load loads the entire SortedSegment from the given rootPath.
+// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
+func Load(id uint64, blockSize uint, enableCompression bool, store objectstore.Store) (*SortedSegment, error) {
+	// loadFooterBlock loads the footer block from the actual object-store.
+	// The last block of the SortedSegment contains offsets.
+	// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
+	// Please take a look at block.FooterBlock to understand its encoding.
+	loadFooterBlock := func(id uint64, store objectstore.Store, blockSize uint) (*block.FooterBlock, error) {
+		segmentSize, err := store.SizeInBytes(pathSuffix(id))
+		if err != nil {
+			return nil, err
+		}
+		footerBlockBeginOffset := segmentSize - int64(blockSize)
+		footerBlockBytes, err := store.GetRange(pathSuffix(id), footerBlockBeginOffset, int64(blockSize))
+		if err != nil {
+			return nil, err
+		}
+		return block.DecodeToFooterBlock(footerBlockBytes, blockSize), nil
+	}
+
+	// loadBlockMetaList loads the block meta list from the actual object-store.
+	// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
+	loadBlockMetaList := func(id uint64, footerBlock *block.FooterBlock, enableCompression bool, store objectstore.Store) (*block.MetaList, error) {
+		blockMetaBeginOffset, _ := footerBlock.GetOffsetAsInt64At(0)
+		blockMetaEndOffset, _ := footerBlock.GetOffsetAsInt64At(1)
+		blockMetaBytes, err := store.GetRange(pathSuffix(id), blockMetaBeginOffset, blockMetaEndOffset-blockMetaBeginOffset+1)
+		if err != nil {
+			return nil, err
+		}
+		return block.DecodeToBlockMetaList(blockMetaBytes, enableCompression)
+	}
+
+	// loadBloomFilter loads the bloom filter from the actual object-store.
+	// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
+	loadBloomFilter := func(id uint64, footerBlock *block.FooterBlock, store objectstore.Store) (*filter.BloomFilter, error) {
+		bloomFilterBeginOffset, _ := footerBlock.GetOffsetAsInt64At(2)
+		bloomFilterEndOffset, _ := footerBlock.GetOffsetAsInt64At(3)
+		bloomFilterBytes, err := store.GetRange(pathSuffix(id), bloomFilterBeginOffset, bloomFilterEndOffset-bloomFilterBeginOffset+1)
+		if err != nil {
+			return nil, err
+		}
+		return filter.DecodeToBloomFilter(bloomFilterBytes)
+	}
+
+	footerBlock, err := loadFooterBlock(id, store, blockSize)
+	if err != nil {
+		return nil, err
+	}
+	blockMetaList, err := loadBlockMetaList(id, footerBlock, enableCompression, store)
+	if err != nil {
+		return nil, err
+	}
+	bloomFilter, err := loadBloomFilter(id, footerBlock, store)
+	if err != nil {
+		return nil, err
+	}
+
+	startingKey, _ := blockMetaList.StartingKeyOfFirstBlock()
+	endingKey, _ := blockMetaList.EndingKeyOfLastBlock()
+	blockMetaBeginOffset, _ := footerBlock.GetOffsetAt(0)
+	return &SortedSegment{
+		id:                   id,
+		blockMetaList:        blockMetaList,
+		bloomFilter:          bloomFilter,
+		blockSize:            blockSize,
+		blockMetaBeginOffset: blockMetaBeginOffset,
+		startingKey:          startingKey,
+		endingKey:            endingKey,
+		store:                store,
+	}, nil
+}
+
 // SeekToFirst seeks to the first key in the SortedSegment.
 // First key is a part of the first block, so the block at index 0 is read and a block.Iterator
 // is created over the read block.
