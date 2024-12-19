@@ -11,7 +11,7 @@ func TestStorageStateWithASingleSet(t *testing.T) {
 	batch := kv.NewBatch()
 	_ = batch.Put([]byte("consensus"), []byte("raft"))
 
-	storageState := NewStorageState(NewStorageOptionsBuilder().Build())
+	storageState := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
 	storageState.Set(batch)
 
 	defer func() {
@@ -26,7 +26,7 @@ func TestStorageStateWithASingleSet(t *testing.T) {
 func TestStorageStateWithANonExistingKey(t *testing.T) {
 	batch := kv.NewBatch()
 
-	storageState := NewStorageState(NewStorageOptionsBuilder().Build())
+	storageState := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
 	storageState.Set(batch)
 
 	defer func() {
@@ -43,7 +43,7 @@ func TestStorageStateWithASetAndDelete(t *testing.T) {
 	_ = batch.Put([]byte("consensus"), []byte("raft"))
 	batch.Delete([]byte("consensus"))
 
-	storageState := NewStorageState(NewStorageOptionsBuilder().Build())
+	storageState := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
 	storageState.Set(batch)
 
 	defer func() {
@@ -61,7 +61,7 @@ func TestStorageStateWithAFewKeyValuePairsInBatch(t *testing.T) {
 	_ = batch.Put([]byte("storage"), []byte("zero disk"))
 	batch.Delete([]byte("consensus"))
 
-	storageState := NewStorageState(NewStorageOptionsBuilder().Build())
+	storageState := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
 	storageState.Set(batch)
 
 	defer func() {
@@ -78,7 +78,7 @@ func TestStorageStateWithAFewKeyValuePairsInBatch(t *testing.T) {
 }
 
 func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment(t *testing.T) {
-	storageState := NewStorageState(NewStorageOptionsBuilder().WithSortedSegmentSizeInBytes(170).Build())
+	storageState := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").WithSortedSegmentSizeInBytes(170).Build())
 
 	defer func() {
 		storageState.Close()
@@ -106,7 +106,7 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment(t *testing
 
 func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment2(t *testing.T) {
 	storageState := NewStorageState(
-		NewStorageOptionsBuilder().
+		NewStorageOptionsBuilder().WithFileSystemStoreType(".").
 			WithSortedSegmentSizeInBytes(170).
 			WithMaximumInactiveSegments(2).
 			Build(),

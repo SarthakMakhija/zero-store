@@ -5,6 +5,21 @@ import (
 	"github.com/thanos-io/objstore/providers/filesystem"
 )
 
+type StoreType int
+
+const (
+	FileSystemStore StoreType = 1
+)
+
+func (storeType StoreType) IsValid() bool {
+	switch storeType {
+	case FileSystemStore:
+		return true
+	default:
+		return false
+	}
+}
+
 type StoreDefinition interface {
 	objstore.Bucket
 }

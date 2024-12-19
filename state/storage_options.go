@@ -1,13 +1,19 @@
 package state
 
+import "github.com/SarthakMakhija/zero-store/objectstore"
+
 type StorageOptions struct {
 	sortedSegmentSizeInBytes int64
 	maximumInactiveSegments  uint
+	storeType                objectstore.StoreType
+	rootDirectory            string
 }
 
 type StorageOptionsBuilder struct {
 	sortedSegmentSizeInBytes int64
 	maximumInactiveSegments  uint
+	storeType                objectstore.StoreType
+	rootDirectory            string
 }
 
 func NewStorageOptionsBuilder() *StorageOptionsBuilder {
@@ -31,9 +37,23 @@ func (builder *StorageOptionsBuilder) WithMaximumInactiveSegments(inactiveSegmen
 	return builder
 }
 
+func (builder *StorageOptionsBuilder) WithFileSystemStoreType(rootDirectory string) *StorageOptionsBuilder {
+	builder.storeType = objectstore.FileSystemStore
+	builder.rootDirectory = rootDirectory
+	return builder
+}
+
 func (builder *StorageOptionsBuilder) Build() StorageOptions {
+	if !builder.storeType.IsValid() {
+		panic("invalid store type")
+	}
+	if len(builder.rootDirectory) == 0 {
+		panic("root directory must be specified")
+	}
 	return StorageOptions{
 		sortedSegmentSizeInBytes: builder.sortedSegmentSizeInBytes,
 		maximumInactiveSegments:  builder.maximumInactiveSegments,
+		storeType:                builder.storeType,
+		rootDirectory:            builder.rootDirectory,
 	}
 }

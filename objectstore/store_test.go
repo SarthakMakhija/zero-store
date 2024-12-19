@@ -7,6 +7,16 @@ import (
 	"testing"
 )
 
+func TestValidStoreType(t *testing.T) {
+	var storeType StoreType = 1
+	assert.True(t, storeType.IsValid())
+}
+
+func TestInValidStoreType(t *testing.T) {
+	var storeType StoreType = 0
+	assert.False(t, storeType.IsValid())
+}
+
 func TestSetTheObjectToStore(t *testing.T) {
 	pathSuffix := t.Name()
 	storeDefinition, err := NewFileSystemStoreDefinition(".")
