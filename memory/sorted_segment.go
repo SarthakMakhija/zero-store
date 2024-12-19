@@ -13,17 +13,17 @@ import (
 // It is important to have a lock-free implementation,
 // otherwise scan operation will take lock(s) (/read-locks) which will start interfering with write operations.
 type SortedSegment struct {
-	id          uint64
-	sizeInBytes int64
-	entries     *external.SkipList
+	id                 uint64
+	allowedSizeInBytes int64
+	entries            *external.SkipList
 }
 
 // NewSortedSegment creates a new instance of SortedSegment
-func NewSortedSegment(id uint64, sizeInBytes int64) *SortedSegment {
+func NewSortedSegment(id uint64, allowedSizeInBytes int64) *SortedSegment {
 	return &SortedSegment{
-		id:          id,
-		sizeInBytes: sizeInBytes,
-		entries:     external.NewSkipList(sizeInBytes),
+		id:                 id,
+		allowedSizeInBytes: allowedSizeInBytes,
+		entries:            external.NewSkipList(allowedSizeInBytes),
 	}
 }
 
@@ -64,15 +64,15 @@ func (segment *SortedSegment) IsEmpty() bool {
 
 // CanFit returns true if the SortedSegment has the size enough for the requiredSizeInBytes.
 func (segment *SortedSegment) CanFit(requiredSizeInBytes int64) bool {
-	return segment.SizeInBytes()+requiredSizeInBytes+int64(external.MaxNodeSize) < segment.sizeInBytes
-}
-
-// SizeInBytes returns the size of the SortedSegment.
-func (segment *SortedSegment) SizeInBytes() int64 {
-	return segment.entries.MemSize()
+	return segment.sizeInBytes()+requiredSizeInBytes+int64(external.MaxNodeSize) < segment.allowedSizeInBytes
 }
 
 // Id returns the id of SortedSegment.
 func (segment *SortedSegment) Id() uint64 {
 	return segment.id
+}
+
+// sizeInBytes returns the size of the SortedSegment.
+func (segment *SortedSegment) sizeInBytes() int64 {
+	return segment.entries.MemSize()
 }
