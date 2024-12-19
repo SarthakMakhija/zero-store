@@ -26,7 +26,7 @@ func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForExistenceUsingBloom(t *t
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	_, err = sortedSegmentBuilder.Build(segmentId, store)
+	_, err = sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	segment, err := Load(1, block.DefaultBlockSize, false, store)
@@ -54,7 +54,7 @@ func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForNonExistenceUsingBloom(t
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	_, err = sortedSegmentBuilder.Build(segmentId, store)
+	_, err = sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	segment, err := Load(1, block.DefaultBlockSize, false, store)
@@ -80,7 +80,7 @@ func TestLoadASortedSegmentWithTwoBlocksAndCheckKeysForExistenceUsingBloom(t *te
 	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	_, err = sortedSegmentBuilder.Build(segmentId, store)
+	_, err = sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	segment, err := Load(1, 30, false, store)

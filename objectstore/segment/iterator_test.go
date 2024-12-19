@@ -23,7 +23,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingSingleKeyValue(t *te
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
 	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 
-	segment, err := sortedSegmentBuilder.Build(segmentId, store)
+	segment, err := sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToFirst()
@@ -55,7 +55,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingMultipleKeyValues(t 
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	segment, err := sortedSegmentBuilder.Build(segmentId, store)
+	segment, err := sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToFirst()
@@ -96,7 +96,7 @@ func TestIterateOverASortedSegmentWithTwoBlocks(t *testing.T) {
 	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	segment, err := sortedSegmentBuilder.Build(segmentId, store)
+	segment, err := sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToFirst()
@@ -131,7 +131,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingSingleKeyValueUsingS
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
 	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 
-	segment, err := sortedSegmentBuilder.Build(segmentId, store)
+	segment, err := sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToKey(kv.NewStringKey("consensus"))
@@ -163,7 +163,7 @@ func TestIterateOverAnSortedSegmentWithASingleBlockContainingMultipleKeyValuesUs
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	segment, err := sortedSegmentBuilder.Build(segmentId, store)
+	segment, err := sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToKey(kv.NewStringKey("contribute"))
@@ -200,7 +200,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingMultipleKeyValuesUsi
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	segment, err := sortedSegmentBuilder.Build(segmentId, store)
+	segment, err := sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToKey(kv.NewStringKey("consensus"))
@@ -241,7 +241,7 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKey(t *testing.T) {
 	sortedSegmentBuilder.Add(kv.NewStringKey("cart"), kv.NewStringValue("draft"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	segment, err := sortedSegmentBuilder.Build(segmentId, store)
+	segment, err := sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToKey(kv.NewStringKey("consensus"))
@@ -272,7 +272,7 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKeyWithTheKeyLessThanT
 	sortedSegmentBuilder.Add(kv.NewStringKey("cart"), kv.NewStringValue("draft"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	segment, err := sortedSegmentBuilder.Build(segmentId, store)
+	segment, err := sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToKey(kv.NewStringKey("bolt"))

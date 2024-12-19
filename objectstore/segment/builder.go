@@ -74,7 +74,7 @@ func (builder *SortedSegmentBuilder) Add(key kv.Key, value kv.Value) {
 // The size of the data blocks is fixed, defaults to block.DefaultBlockSize.
 // Metadata and bloom filter are variable length byte sections.
 // Footer block is a fixed size block, defaults to block.DefaultBlockSize.
-func (builder *SortedSegmentBuilder) Build(id uint64, store objectstore.Store) (*SortedSegment, error) {
+func (builder *SortedSegmentBuilder) Build(id uint64) (*SortedSegment, error) {
 	blockMetaBeginOffset := func() uint32 {
 		return uint32(len(builder.allBlocksData))
 	}
@@ -122,7 +122,7 @@ func (builder *SortedSegmentBuilder) Build(id uint64, store objectstore.Store) (
 		blockSize:            builder.blockSize,
 		startingKey:          startingKey,
 		endingKey:            endingKey,
-		store:                store,
+		store:                builder.store,
 	}, nil
 }
 

@@ -23,7 +23,7 @@ func TestBuildASortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.
 	segmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
 	segmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 
-	segment, err := segmentBuilder.Build(segmentId, store)
+	segment, err := segmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	readBlock, err := segment.readBlock(0)
@@ -57,7 +57,7 @@ func TestBuildASortedSegmentWithASingleBlockContainingMultipleKeyValues(t *testi
 	segmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	segmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("etcd"))
 
-	segment, err := segmentBuilder.Build(segmentId, store)
+	segment, err := segmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	readBlock, err := segment.readBlock(0)
@@ -100,7 +100,7 @@ func TestBuildASortedSegmentWithTwoBlocks(t *testing.T) {
 	segmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	segmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	segment, err := segmentBuilder.Build(1, store)
+	segment, err := segmentBuilder.Build(1)
 	assert.NoError(t, err)
 
 	assertBlockWithASingleKeyValue := func(blockIndex int, value kv.Value) {
