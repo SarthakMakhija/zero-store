@@ -3,14 +3,20 @@ package future
 type StatusType int
 
 const (
-	Ok    StatusType = 1
-	Error StatusType = 2
+	Pending StatusType = iota
+	Ok      StatusType = 1
+	Error   StatusType = 2
 )
 
 // Status represents the status of an async operation that returns a Future.
 type Status struct {
 	statusType StatusType
 	err        error
+}
+
+// PendingStatus creates a new Status with StatusType as Pending.
+func PendingStatus() Status {
+	return Status{statusType: Pending, err: nil}
 }
 
 // OkStatus creates a new Status with StatusType as Ok.

@@ -8,38 +8,38 @@ import (
 )
 
 func TestFutureWithOkStatus(t *testing.T) {
-	future := NewFuture()
+	asyncAwait := NewAsyncAwait()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
-		future.Wait()
+		asyncAwait.Future().Wait()
 
-		assert.True(t, future.isDone)
-		assert.True(t, future.Status().IsOk())
+		assert.True(t, asyncAwait.Future().isDone)
+		assert.True(t, asyncAwait.Future().Status().IsOk())
 	}()
 
-	future.MarkDoneAsOk()
+	asyncAwait.MarkDoneAsOk()
 	wg.Wait()
 }
 
 func TestFutureWithErrorStatus(t *testing.T) {
-	future := NewFuture()
+	asyncAwait := NewAsyncAwait()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
-		future.Wait()
+		asyncAwait.Future().Wait()
 
-		assert.True(t, future.isDone)
-		assert.True(t, future.Status().IsError())
-		assert.Equal(t, "test error", future.status.Error().Error())
+		assert.True(t, asyncAwait.Future().isDone)
+		assert.True(t, asyncAwait.Future().Status().IsError())
+		assert.Equal(t, "test error", asyncAwait.Future().status.Error().Error())
 	}()
 
-	future.MarkDoneAsError(errors.New("test error"))
+	asyncAwait.MarkDoneAsError(errors.New("test error"))
 	wg.Wait()
 }
