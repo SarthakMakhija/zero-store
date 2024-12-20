@@ -11,13 +11,14 @@ func TestStorageStateWithASingleSet(t *testing.T) {
 	batch := kv.NewBatch()
 	_ = batch.Put([]byte("consensus"), []byte("raft"))
 
-	storageState := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
-	storageState.Set(batch)
+	storageState, err := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
+	assert.NoError(t, err)
 
 	defer func() {
 		storageState.Close()
 	}()
 
+	storageState.Set(batch)
 	value, ok := storageState.Get(kv.NewStringKey("consensus"))
 	assert.True(t, ok)
 	assert.Equal(t, "raft", value.String())
@@ -26,13 +27,14 @@ func TestStorageStateWithASingleSet(t *testing.T) {
 func TestStorageStateWithANonExistingKey(t *testing.T) {
 	batch := kv.NewBatch()
 
-	storageState := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
-	storageState.Set(batch)
+	storageState, err := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
+	assert.NoError(t, err)
 
 	defer func() {
 		storageState.Close()
 	}()
 
+	storageState.Set(batch)
 	value, ok := storageState.Get(kv.NewStringKey("non-existing"))
 	assert.False(t, ok)
 	assert.Equal(t, "", value.String())
@@ -43,13 +45,14 @@ func TestStorageStateWithASetAndDelete(t *testing.T) {
 	_ = batch.Put([]byte("consensus"), []byte("raft"))
 	batch.Delete([]byte("consensus"))
 
-	storageState := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
-	storageState.Set(batch)
+	storageState, err := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
+	assert.NoError(t, err)
 
 	defer func() {
 		storageState.Close()
 	}()
 
+	storageState.Set(batch)
 	value, ok := storageState.Get(kv.NewStringKey("consensus"))
 	assert.False(t, ok)
 	assert.Equal(t, "", value.String())
@@ -61,13 +64,14 @@ func TestStorageStateWithAFewKeyValuePairsInBatch(t *testing.T) {
 	_ = batch.Put([]byte("storage"), []byte("zero disk"))
 	batch.Delete([]byte("consensus"))
 
-	storageState := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
-	storageState.Set(batch)
+	storageState, err := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
+	assert.NoError(t, err)
 
 	defer func() {
 		storageState.Close()
 	}()
 
+	storageState.Set(batch)
 	value, ok := storageState.Get(kv.NewStringKey("consensus"))
 	assert.False(t, ok)
 	assert.Equal(t, "", value.String())
@@ -78,7 +82,8 @@ func TestStorageStateWithAFewKeyValuePairsInBatch(t *testing.T) {
 }
 
 func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment(t *testing.T) {
-	storageState := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").WithSortedSegmentSizeInBytes(170).Build())
+	storageState, err := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").WithSortedSegmentSizeInBytes(170).Build())
+	assert.NoError(t, err)
 
 	defer func() {
 		storageState.Close()
@@ -105,12 +110,13 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment(t *testing
 }
 
 func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment2(t *testing.T) {
-	storageState := NewStorageState(
+	storageState, err := NewStorageState(
 		NewStorageOptionsBuilder().WithFileSystemStoreType(".").
 			WithSortedSegmentSizeInBytes(170).
 			WithMaximumInactiveSegments(2).
 			Build(),
 	)
+	assert.NoError(t, err)
 
 	defer func() {
 		storageState.Close()

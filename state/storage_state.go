@@ -3,6 +3,7 @@ package state
 import (
 	"github.com/SarthakMakhija/zero-store/kv"
 	"github.com/SarthakMakhija/zero-store/memory"
+	"github.com/SarthakMakhija/zero-store/objectstore"
 )
 
 type StorageState struct {
@@ -12,20 +13,26 @@ type StorageState struct {
 	segmentsReadyToMoveToObjectStore chan *memory.SortedSegment
 	closeChannel                     chan struct{}
 	options                          StorageOptions
+	store                            objectstore.Store
 }
 
-func NewStorageState(options StorageOptions) *StorageState {
+func NewStorageState(options StorageOptions) (*StorageState, error) {
 	segmentIdGenerator := NewSegmentIdGenerator()
+	store, err := options.storeType.GetStore(options.rootDirectory)
+	if err != nil {
+		return nil, err
+	}
 	storageState := &StorageState{
 		activeSegment:                    memory.NewSortedSegment(segmentIdGenerator.NextId(), options.sortedSegmentSizeInBytes),
 		segmentIdGenerator:               segmentIdGenerator,
 		segmentsReadyToMoveToObjectStore: make(chan *memory.SortedSegment, 64),
 		closeChannel:                     make(chan struct{}),
 		options:                          options,
+		store:                            store,
 	}
 
 	storageState.spawnObjectStoreMovement()
-	return storageState
+	return storageState, nil
 }
 
 func (state *StorageState) Get(key kv.Key) (kv.Value, bool) {
@@ -59,6 +66,7 @@ func (state *StorageState) mayBeFreezeActiveSegment(sizeInBytes int) {
 // Close closes the StorageState.
 func (state *StorageState) Close() {
 	close(state.closeChannel)
+	state.store.Close()
 }
 
 // spawnObjectStoreMovement starts a goroutine that moves the segments ready to move to object store.
