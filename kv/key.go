@@ -59,6 +59,11 @@ func CompareKeys(userKey, systemKey Key) int {
 	return bytes.Compare(userKey.key, systemKey.key)
 }
 
+// IsEqualTo returns true if the Key is equal to the other Key.
+func (key Key) IsEqualTo(other Key) bool {
+	return bytes.Compare(key.key, other.key) == 0 // TODO: compare timestamp
+}
+
 // IsRawKeyEqualTo returns true if the raw key two keys is the same.
 func (key Key) IsRawKeyEqualTo(other Key) bool {
 	return bytes.Compare(key.key, other.key) == 0

@@ -51,3 +51,13 @@ func TestEncodedSizeInBytesForAnEmptyKey(t *testing.T) {
 	key := NewKey(nil)
 	assert.Equal(t, 0, key.EncodedSizeInBytes())
 }
+
+func TestKeyIsEqualToOther(t *testing.T) {
+	key := NewKey([]byte("store-type"))
+	assert.True(t, key.IsEqualTo(NewStringKey("store-type")))
+}
+
+func TestKeyIsNotEqualToOther(t *testing.T) {
+	key := NewKey([]byte("store-type"))
+	assert.False(t, key.IsEqualTo(NewStringKey("zero-store")))
+}
