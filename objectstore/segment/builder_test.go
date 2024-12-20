@@ -17,7 +17,7 @@ func TestBuildASortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	segmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -49,7 +49,7 @@ func TestBuildASortedSegmentWithASingleBlockContainingMultipleKeyValues(t *testi
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	segmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -94,7 +94,7 @@ func TestBuildASortedSegmentWithTwoBlocks(t *testing.T) {
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 	segmentBuilder := NewSortedSegmentBuilder(store, 30, false)
 	segmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))

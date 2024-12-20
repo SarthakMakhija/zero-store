@@ -17,7 +17,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingSingleKeyValue(t *te
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -47,7 +47,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingMultipleKeyValues(t 
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -89,7 +89,7 @@ func TestIterateOverASortedSegmentWithTwoBlocks(t *testing.T) {
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilder(store, 30, false)
@@ -125,7 +125,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingSingleKeyValueUsingS
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -155,7 +155,7 @@ func TestIterateOverAnSortedSegmentWithASingleBlockContainingMultipleKeyValuesUs
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -192,7 +192,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingMultipleKeyValuesUsi
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -234,7 +234,7 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKey(t *testing.T) {
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -265,7 +265,7 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKeyWithTheKeyLessThanT
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilder(store, 30, false)

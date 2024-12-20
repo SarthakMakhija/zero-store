@@ -12,20 +12,15 @@ func TestStorageOptionsWithSortedSegmentSize(t *testing.T) {
 	assert.Equal(t, int64(2<<10), storageOptions.sortedSegmentSizeInBytes)
 }
 
-func TestStorageOptionsWithMaximumInactiveSegments(t *testing.T) {
-	storageOptions := NewStorageOptionsBuilder().WithMaximumInactiveSegments(4).WithFileSystemStoreType(".").Build()
-	assert.Equal(t, uint(4), storageOptions.maximumInactiveSegments)
-}
-
 func TestStorageOptionsWithoutStoreType(t *testing.T) {
 	assert.Panics(t, func() {
-		NewStorageOptionsBuilder().WithMaximumInactiveSegments(4).Build()
+		NewStorageOptionsBuilder().WithSortedSegmentSizeInBytes(2 << 10).Build()
 	})
 }
 
 func TestStorageOptionsWithStoreTypeButWithEmptyRootDirectory(t *testing.T) {
 	assert.Panics(t, func() {
-		NewStorageOptionsBuilder().WithMaximumInactiveSegments(4).WithFileSystemStoreType("").Build()
+		NewStorageOptionsBuilder().WithSortedSegmentSizeInBytes(2 << 10).WithFileSystemStoreType("").Build()
 	})
 }
 

@@ -7,7 +7,6 @@ import (
 
 type StorageOptions struct {
 	sortedSegmentSizeInBytes      int64
-	maximumInactiveSegments       uint
 	storeType                     objectstore.StoreType
 	rootDirectory                 string
 	sortedSegmentBlockCompression bool
@@ -16,7 +15,6 @@ type StorageOptions struct {
 
 type StorageOptionsBuilder struct {
 	sortedSegmentSizeInBytes      int64
-	maximumInactiveSegments       uint
 	storeType                     objectstore.StoreType
 	rootDirectory                 string
 	sortedSegmentBlockCompression bool
@@ -26,7 +24,6 @@ type StorageOptionsBuilder struct {
 func NewStorageOptionsBuilder() *StorageOptionsBuilder {
 	return &StorageOptionsBuilder{
 		sortedSegmentSizeInBytes:      1 << 20,
-		maximumInactiveSegments:       8,
 		sortedSegmentBlockCompression: false,
 		flushInactiveSegmentDuration:  60 * time.Second,
 	}
@@ -38,11 +35,6 @@ func (builder *StorageOptionsBuilder) WithSortedSegmentSizeInBytes(size int64) *
 	}
 	//TODO: what if size is too less like 10 bytes?
 	builder.sortedSegmentSizeInBytes = size
-	return builder
-}
-
-func (builder *StorageOptionsBuilder) WithMaximumInactiveSegments(inactiveSegments uint) *StorageOptionsBuilder {
-	builder.maximumInactiveSegments = inactiveSegments
 	return builder
 }
 
@@ -71,7 +63,6 @@ func (builder *StorageOptionsBuilder) Build() StorageOptions {
 	}
 	return StorageOptions{
 		sortedSegmentSizeInBytes:      builder.sortedSegmentSizeInBytes,
-		maximumInactiveSegments:       builder.maximumInactiveSegments,
 		storeType:                     builder.storeType,
 		rootDirectory:                 builder.rootDirectory,
 		sortedSegmentBlockCompression: builder.sortedSegmentBlockCompression,

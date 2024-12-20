@@ -18,7 +18,7 @@ func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForExistenceUsingBloom(t *t
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -46,7 +46,7 @@ func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForNonExistenceUsingBloom(t
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -73,7 +73,7 @@ func TestLoadASortedSegmentWithTwoBlocksAndCheckKeysForExistenceUsingBloom(t *te
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilder(store, 30, false)

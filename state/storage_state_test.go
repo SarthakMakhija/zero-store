@@ -82,44 +82,17 @@ func TestStorageStateWithAFewKeyValuePairsInBatch(t *testing.T) {
 }
 
 func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment(t *testing.T) {
-	storageState, err := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").WithSortedSegmentSizeInBytes(170).Build())
-	assert.NoError(t, err)
-
-	defer func() {
-		storageState.Close()
-	}()
-
-	batch := kv.NewBatch()
-	_ = batch.Put([]byte("consensus"), []byte("raft"))
-	storageState.Set(batch)
-
-	batch = kv.NewBatch()
-	_ = batch.Put([]byte("storage"), []byte("NVMe"))
-	storageState.Set(batch)
-
-	batch = kv.NewBatch()
-	_ = batch.Put([]byte("data-structure"), []byte("LSM"))
-	storageState.Set(batch)
-
-	time.Sleep(100 * time.Millisecond)
-
-	assert.True(t, storageState.HasInactiveSegments())
-	assert.Equal(t, 3, len(storageState.inactiveSegments))
-	assert.Equal(t, []uint64{1, 2, 3}, storageState.sortedInactiveSegmentIds())
-	assert.Equal(t, uint64(4), storageState.activeSegment.Id())
-}
-
-func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment2(t *testing.T) {
-	storageState, err := NewStorageState(
-		NewStorageOptionsBuilder().WithFileSystemStoreType(".").
-			WithSortedSegmentSizeInBytes(170).
-			WithMaximumInactiveSegments(2).
-			Build(),
+	storageState, err := NewStorageState(NewStorageOptionsBuilder().
+		WithFileSystemStoreType(".").
+		WithSortedSegmentSizeInBytes(220).
+		WithFlushInactiveSegmentDuration(5 * time.Minute).
+		Build(),
 	)
 	assert.NoError(t, err)
 
 	defer func() {
 		storageState.Close()
+		storageState.removeAllPersistentSortedSegmentsIn(".")
 	}()
 
 	batch := kv.NewBatch()
@@ -134,10 +107,19 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment2(t *testin
 	_ = batch.Put([]byte("data-structure"), []byte("LSM"))
 	storageState.Set(batch)
 
-	time.Sleep(100 * time.Millisecond)
+	keepFlushingInactiveSegmentsUntilNoMoreInactiveSegmentToFlush(t, storageState)
 
-	assert.True(t, storageState.HasInactiveSegments())
-	assert.Equal(t, 2, len(storageState.inactiveSegments))
-	assert.Equal(t, []uint64{2, 3}, storageState.sortedInactiveSegmentIds())
-	assert.Equal(t, uint64(4), storageState.activeSegment.Id())
+	assert.Equal(t, uint64(3), storageState.activeSegment.Id())
+	assert.True(t, storageState.hasPersistentSortedSegmentFor(1))
+	assert.True(t, storageState.hasPersistentSortedSegmentFor(2))
+}
+
+func keepFlushingInactiveSegmentsUntilNoMoreInactiveSegmentToFlush(t *testing.T, storageState *StorageState) {
+	for {
+		flushed, err := storageState.mayBeFlushOldestInactiveSegment()
+		assert.NoError(t, err)
+		if !flushed {
+			break
+		}
+	}
 }

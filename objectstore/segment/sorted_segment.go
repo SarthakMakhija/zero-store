@@ -31,12 +31,12 @@ func Load(id uint64, blockSize uint, enableCompression bool, store objectstore.S
 	// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
 	// Please take a look at block.FooterBlock to understand its encoding.
 	loadFooterBlock := func(id uint64, store objectstore.Store, blockSize uint) (*block.FooterBlock, error) {
-		segmentSize, err := store.SizeInBytes(pathSuffix(id))
+		segmentSize, err := store.SizeInBytes(PathSuffixForSegment(id))
 		if err != nil {
 			return nil, err
 		}
 		footerBlockBeginOffset := segmentSize - int64(blockSize)
-		footerBlockBytes, err := store.GetRange(pathSuffix(id), footerBlockBeginOffset, int64(blockSize))
+		footerBlockBytes, err := store.GetRange(PathSuffixForSegment(id), footerBlockBeginOffset, int64(blockSize))
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func Load(id uint64, blockSize uint, enableCompression bool, store objectstore.S
 	loadBlockMetaList := func(id uint64, footerBlock *block.FooterBlock, enableCompression bool, store objectstore.Store) (*block.MetaList, error) {
 		blockMetaBeginOffset, _ := footerBlock.GetOffsetAsInt64At(0)
 		blockMetaEndOffset, _ := footerBlock.GetOffsetAsInt64At(1)
-		blockMetaBytes, err := store.GetRange(pathSuffix(id), blockMetaBeginOffset, blockMetaEndOffset-blockMetaBeginOffset+1)
+		blockMetaBytes, err := store.GetRange(PathSuffixForSegment(id), blockMetaBeginOffset, blockMetaEndOffset-blockMetaBeginOffset+1)
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +60,7 @@ func Load(id uint64, blockSize uint, enableCompression bool, store objectstore.S
 	loadBloomFilter := func(id uint64, footerBlock *block.FooterBlock, store objectstore.Store) (*filter.BloomFilter, error) {
 		bloomFilterBeginOffset, _ := footerBlock.GetOffsetAsInt64At(2)
 		bloomFilterEndOffset, _ := footerBlock.GetOffsetAsInt64At(3)
-		bloomFilterBytes, err := store.GetRange(pathSuffix(id), bloomFilterBeginOffset, bloomFilterEndOffset-bloomFilterBeginOffset+1)
+		bloomFilterBytes, err := store.GetRange(PathSuffixForSegment(id), bloomFilterBeginOffset, bloomFilterEndOffset-bloomFilterBeginOffset+1)
 		if err != nil {
 			return nil, err
 		}
@@ -161,7 +161,7 @@ func (segment *SortedSegment) noOfBlocks() int {
 // readBlock reads the block at the given blockIndex.
 func (segment *SortedSegment) readBlock(blockIndex int) (block.Block, error) {
 	startingOffset, endOffset := segment.offsetRangeOfBlockAt(blockIndex)
-	buffer, err := segment.store.GetRange(pathSuffix(segment.id), int64(startingOffset), int64(endOffset-startingOffset))
+	buffer, err := segment.store.GetRange(PathSuffixForSegment(segment.id), int64(startingOffset), int64(endOffset-startingOffset))
 	if err != nil {
 		return block.Block{}, err
 	}

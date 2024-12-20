@@ -18,7 +18,7 @@ func TestSortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.T) {
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -48,7 +48,7 @@ func TestSortedSegmentWithATwoBlocks(t *testing.T) {
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilder(store, 30, false)
@@ -70,7 +70,7 @@ func TestLoadSortedSegmentWithSingleBlockContainingMultipleKeyValuePairs(t *test
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	segmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -113,7 +113,7 @@ func TestLoadSortedSegmentWithSingleBlockContainingMultipleKeyValuePairsWithVali
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	segmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
@@ -139,7 +139,7 @@ func TestLoadASortedSegmentWithTwoBlocks(t *testing.T) {
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilder(store, 30, false)
@@ -176,7 +176,7 @@ func TestLoadASortedSegmentWithTwoBlocksWithValidationOfStartingAndEndingKey(t *
 
 	defer func() {
 		store.Close()
-		_ = os.Remove(pathSuffix(segmentId))
+		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
 	sortedSegmentBuilder := NewSortedSegmentBuilder(store, 30, false)

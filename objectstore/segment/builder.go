@@ -109,7 +109,8 @@ func (builder *SortedSegmentBuilder) Build(id uint64) (*SortedSegment, error) {
 	footerBlock.AddOffset(bloomFilterEndOffset(buffer))
 	buffer.Write(footerBlock.Encode())
 
-	if err := builder.store.Set(pathSuffix(id), buffer.Bytes()); err != nil {
+	// write the result to the object store.
+	if err := builder.store.Set(PathSuffixForSegment(id), buffer.Bytes()); err != nil {
 		return nil, err
 	}
 	startingKey, _ := builder.blockMetaList.StartingKeyOfFirstBlock()
@@ -124,6 +125,11 @@ func (builder *SortedSegmentBuilder) Build(id uint64) (*SortedSegment, error) {
 		endingKey:            endingKey,
 		store:                builder.store,
 	}, nil
+}
+
+// PathSuffixForSegment returns the segment object path suffix which is of the form: <id>.segment.
+func PathSuffixForSegment(id uint64) string {
+	return fmt.Sprintf("%v.segment", id)
 }
 
 // finishBlock finishes the current block. It involves:
@@ -145,9 +151,4 @@ func (builder *SortedSegmentBuilder) startNewBlockBuilder(key kv.Key) {
 	builder.blockBuilder = block.NewBlockBuilder(builder.blockSize)
 	builder.startingKey = key
 	builder.endingKey = key
-}
-
-// pathSuffix returns the segment object path suffix which is of the form: <id>.segment.
-func pathSuffix(id uint64) string {
-	return fmt.Sprintf("%v.segment", id)
 }
