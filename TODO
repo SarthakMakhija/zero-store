@@ -18,5 +18,7 @@
     (also add other validations in client facing APIs)
 15. Documentation
 16. Metrics
-17. Flush an immutable in-memory segment to object store
+17. Flush an immutable in-memory segment to object store : done
 18. Persistent segment : done
+19. MergeIterator
+20. Separate directory for segments and manifest
