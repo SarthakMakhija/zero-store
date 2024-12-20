@@ -1,6 +1,9 @@
 package state
 
-import "github.com/SarthakMakhija/zero-store/objectstore"
+import (
+	"github.com/SarthakMakhija/zero-store/objectstore"
+	"time"
+)
 
 type StorageOptions struct {
 	sortedSegmentSizeInBytes      int64
@@ -8,6 +11,7 @@ type StorageOptions struct {
 	storeType                     objectstore.StoreType
 	rootDirectory                 string
 	sortedSegmentBlockCompression bool
+	flushInactiveSegmentDuration  time.Duration
 }
 
 type StorageOptionsBuilder struct {
@@ -16,6 +20,7 @@ type StorageOptionsBuilder struct {
 	storeType                     objectstore.StoreType
 	rootDirectory                 string
 	sortedSegmentBlockCompression bool
+	flushInactiveSegmentDuration  time.Duration
 }
 
 func NewStorageOptionsBuilder() *StorageOptionsBuilder {
@@ -23,6 +28,7 @@ func NewStorageOptionsBuilder() *StorageOptionsBuilder {
 		sortedSegmentSizeInBytes:      1 << 20,
 		maximumInactiveSegments:       8,
 		sortedSegmentBlockCompression: false,
+		flushInactiveSegmentDuration:  60 * time.Second,
 	}
 }
 
@@ -51,6 +57,11 @@ func (builder *StorageOptionsBuilder) EnableSortedSegmentBlockCompression() *Sto
 	return builder
 }
 
+func (builder *StorageOptionsBuilder) WithFlushInactiveSegmentDuration(duration time.Duration) *StorageOptionsBuilder {
+	builder.flushInactiveSegmentDuration = duration
+	return builder
+}
+
 func (builder *StorageOptionsBuilder) Build() StorageOptions {
 	if !builder.storeType.IsValid() {
 		panic("invalid store type")
@@ -64,5 +75,6 @@ func (builder *StorageOptionsBuilder) Build() StorageOptions {
 		storeType:                     builder.storeType,
 		rootDirectory:                 builder.rootDirectory,
 		sortedSegmentBlockCompression: builder.sortedSegmentBlockCompression,
+		flushInactiveSegmentDuration:  builder.flushInactiveSegmentDuration,
 	}
 }

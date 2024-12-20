@@ -4,6 +4,7 @@ import (
 	"github.com/SarthakMakhija/zero-store/objectstore"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestStorageOptionsWithSortedSegmentSize(t *testing.T) {
@@ -46,4 +47,13 @@ func TestStorageOptionsWithSortedSegmentBlockCompressionEnabled(t *testing.T) {
 func TestStorageOptionsWithSortedSegmentBlockCompressionNotEnabled(t *testing.T) {
 	storageOptions := NewStorageOptionsBuilder().WithSortedSegmentSizeInBytes(2 << 10).WithFileSystemStoreType(".").Build()
 	assert.False(t, storageOptions.sortedSegmentBlockCompression)
+}
+
+func TestStorageOptionsFlushInactiveSegmentDuration(t *testing.T) {
+	storageOptions := NewStorageOptionsBuilder().
+		WithSortedSegmentSizeInBytes(2 << 10).
+		WithFileSystemStoreType(".").
+		WithFlushInactiveSegmentDuration(4 * time.Second).
+		Build()
+	assert.Equal(t, 4*time.Second, storageOptions.flushInactiveSegmentDuration)
 }
