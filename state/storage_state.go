@@ -1,6 +1,8 @@
 package state
 
 import (
+	"errors"
+	"github.com/SarthakMakhija/zero-store/future"
 	"github.com/SarthakMakhija/zero-store/kv"
 	"github.com/SarthakMakhija/zero-store/memory"
 	"github.com/SarthakMakhija/zero-store/objectstore"
@@ -9,6 +11,8 @@ import (
 	"sync"
 	"time"
 )
+
+var DbStopped = errors.New("db is stopped, can not perform the operation")
 
 type StorageState struct {
 	activeSegment      *memory.SortedSegment
@@ -48,7 +52,7 @@ func (state *StorageState) Get(key kv.Key) (kv.Value, bool) {
 	return state.activeSegment.Get(key)
 }
 
-func (state *StorageState) Set(batch *kv.Batch) {
+func (state *StorageState) Set(batch *kv.Batch) *future.Future {
 	state.mayBeFreezeActiveSegment(batch.SizeInBytes())
 	for _, pair := range batch.Pairs() {
 		switch {
@@ -60,6 +64,7 @@ func (state *StorageState) Set(batch *kv.Batch) {
 			panic("unknown key/value pair kind")
 		}
 	}
+	return state.activeSegment.FlushToObjectStoreFuture()
 }
 
 // mayBeFreezeActiveSegment may freeze the active memory.SortedSegment if it does not have required size.
@@ -77,6 +82,9 @@ func (state *StorageState) mayBeFreezeActiveSegment(sizeInBytes int) {
 func (state *StorageState) Close() {
 	close(state.closeChannel)
 	state.store.Close()
+	for _, segment := range state.inactiveSegments {
+		segment.FlushToObjectStoreAsyncAwait().MarkDoneAsError(DbStopped)
+	}
 }
 
 // spawnObjectStoreMovement starts a goroutine that moves the segments ready to move to object store.
@@ -137,8 +145,11 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 	if oldestInMemorySegmentToFlush := oldestInactiveSegmentIfAvailable(); oldestInMemorySegmentToFlush != nil {
 		persistentSortedSegment, err := buildAndWritePersistentSortedSegment(oldestInMemorySegmentToFlush)
 		if err != nil {
+			//TODO: what if flush succeeds later on, how will AsyncAwait handle it?
+			oldestInMemorySegmentToFlush.FlushToObjectStoreAsyncAwait().MarkDoneAsError(err)
 			return false, err
 		}
+		oldestInMemorySegmentToFlush.FlushToObjectStoreAsyncAwait().MarkDoneAsOk()
 		updateState(oldestInMemorySegmentToFlush.Id(), persistentSortedSegment)
 		return true, nil
 	}

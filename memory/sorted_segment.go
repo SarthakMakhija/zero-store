@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"github.com/SarthakMakhija/zero-store/future"
 	"github.com/SarthakMakhija/zero-store/kv"
 	"github.com/SarthakMakhija/zero-store/memory/external"
 )
@@ -13,17 +14,19 @@ import (
 // It is important to have a lock-free implementation,
 // otherwise scan operation will take lock(s) (/read-locks) which will start interfering with write operations.
 type SortedSegment struct {
-	id                 uint64
-	allowedSizeInBytes int64
-	entries            *external.SkipList
+	id                           uint64
+	allowedSizeInBytes           int64
+	entries                      *external.SkipList
+	flushToObjectStoreAsyncAwait *future.AsyncAwait
 }
 
 // NewSortedSegment creates a new instance of SortedSegment
 func NewSortedSegment(id uint64, allowedSizeInBytes int64) *SortedSegment {
 	return &SortedSegment{
-		id:                 id,
-		allowedSizeInBytes: allowedSizeInBytes,
-		entries:            external.NewSkipList(allowedSizeInBytes),
+		id:                           id,
+		allowedSizeInBytes:           allowedSizeInBytes,
+		entries:                      external.NewSkipList(allowedSizeInBytes),
+		flushToObjectStoreAsyncAwait: future.NewAsyncAwait(),
 	}
 }
 
@@ -70,6 +73,18 @@ func (segment *SortedSegment) CanFit(requiredSizeInBytes int64) bool {
 // Id returns the id of SortedSegment.
 func (segment *SortedSegment) Id() uint64 {
 	return segment.id
+}
+
+// FlushToObjectStoreFuture returns the future.Future object which signifies the flush to object store.
+// future.Future allows the clients to wait for the flush operation to complete.
+func (segment *SortedSegment) FlushToObjectStoreFuture() *future.Future {
+	return segment.flushToObjectStoreAsyncAwait.Future()
+}
+
+// FlushToObjectStoreAsyncAwait returns the future.AsyncAwait object which signifies the flush to object store.
+// future.AsyncAwait allows mutation on the future.Future object like marking it complete.
+func (segment *SortedSegment) FlushToObjectStoreAsyncAwait() *future.AsyncAwait {
+	return segment.flushToObjectStoreAsyncAwait
 }
 
 // sizeInBytes returns the size of the SortedSegment.
