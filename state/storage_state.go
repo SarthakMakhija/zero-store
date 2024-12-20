@@ -6,6 +6,7 @@ import (
 	"github.com/SarthakMakhija/zero-store/objectstore"
 	objectStore "github.com/SarthakMakhija/zero-store/objectstore/segment"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -17,6 +18,7 @@ type StorageState struct {
 	closeChannel       chan struct{}
 	options            StorageOptions
 	store              objectstore.Store
+	stateLock          sync.RWMutex
 }
 
 func NewStorageState(options StorageOptions) (*StorageState, error) {
@@ -39,6 +41,9 @@ func NewStorageState(options StorageOptions) (*StorageState, error) {
 }
 
 func (state *StorageState) Get(key kv.Key) (kv.Value, bool) {
+	state.stateLock.RLock()
+	defer state.stateLock.RUnlock()
+
 	//TODO: May change as transactions come in .. will not read from the segment unless it is made durable.
 	return state.activeSegment.Get(key)
 }
@@ -61,8 +66,10 @@ func (state *StorageState) Set(batch *kv.Batch) {
 // It creates a new memory.SortedSegment, and sends the previously active memory.SortedSegment to be moved to object store.
 func (state *StorageState) mayBeFreezeActiveSegment(sizeInBytes int) {
 	if !state.activeSegment.CanFit(int64(sizeInBytes)) {
+		state.stateLock.Lock()
 		state.inactiveSegments = append(state.inactiveSegments, state.activeSegment)
 		state.activeSegment = memory.NewSortedSegment(state.segmentIdGenerator.NextId(), state.options.sortedSegmentSizeInBytes)
+		state.stateLock.Unlock()
 	}
 }
 
@@ -99,6 +106,13 @@ func (state *StorageState) spawnObjectStoreMovement() {
 // It returns (true, nil), if an inactive segment was flushed without any error.
 // It returns (false, nil), if there was no inactive segment to be flushed.
 func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
+	updateState := func(segmentId uint64, persistentSortedSegment *objectStore.SortedSegment) {
+		state.stateLock.Lock()
+		defer state.stateLock.Unlock()
+
+		state.inactiveSegments = state.inactiveSegments[1:]
+		state.persistentSegments[segmentId] = persistentSortedSegment
+	}
 	buildAndWritePersistentSortedSegment := func(inMemorySegmentToFlush *memory.SortedSegment) (*objectStore.SortedSegment, error) {
 		sortedSegmentBuilder := objectStore.NewSortedSegmentBuilderWithDefaultBlockSize(state.store, state.options.sortedSegmentBlockCompression)
 		inMemorySegmentToFlush.AllEntries(func(key kv.Key, value kv.Value) {
@@ -110,14 +124,22 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 		}
 		return persistentSortedSegment, nil
 	}
-	if len(state.inactiveSegments) > 0 {
-		oldestInMemorySegmentToFlush := state.inactiveSegments[0]
+	oldestInactiveSegmentIfAvailable := func() *memory.SortedSegment {
+		state.stateLock.RLock()
+		defer state.stateLock.RUnlock()
+
+		if len(state.inactiveSegments) > 0 {
+			return state.inactiveSegments[0]
+		}
+		return nil
+	}
+
+	if oldestInMemorySegmentToFlush := oldestInactiveSegmentIfAvailable(); oldestInMemorySegmentToFlush != nil {
 		persistentSortedSegment, err := buildAndWritePersistentSortedSegment(oldestInMemorySegmentToFlush)
 		if err != nil {
 			return false, err
 		}
-		state.inactiveSegments = state.inactiveSegments[1:]
-		state.persistentSegments[oldestInMemorySegmentToFlush.Id()] = persistentSortedSegment
+		updateState(oldestInMemorySegmentToFlush.Id(), persistentSortedSegment)
 		return true, nil
 	}
 	return false, nil
