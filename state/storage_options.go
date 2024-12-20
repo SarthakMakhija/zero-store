@@ -10,6 +10,7 @@ type StorageOptions struct {
 	storeType                     objectstore.StoreType
 	rootDirectory                 string
 	sortedSegmentBlockCompression bool
+	inMemoryMode                  bool
 	flushInactiveSegmentDuration  time.Duration
 }
 
@@ -18,6 +19,7 @@ type StorageOptionsBuilder struct {
 	storeType                     objectstore.StoreType
 	rootDirectory                 string
 	sortedSegmentBlockCompression bool
+	inMemoryMode                  bool
 	flushInactiveSegmentDuration  time.Duration
 }
 
@@ -25,6 +27,7 @@ func NewStorageOptionsBuilder() *StorageOptionsBuilder {
 	return &StorageOptionsBuilder{
 		sortedSegmentSizeInBytes:      1 << 20,
 		sortedSegmentBlockCompression: false,
+		inMemoryMode:                  false,
 		flushInactiveSegmentDuration:  60 * time.Second,
 	}
 }
@@ -49,6 +52,11 @@ func (builder *StorageOptionsBuilder) EnableSortedSegmentBlockCompression() *Sto
 	return builder
 }
 
+func (builder *StorageOptionsBuilder) EnableInMemoryMode() *StorageOptionsBuilder {
+	builder.inMemoryMode = true
+	return builder
+}
+
 func (builder *StorageOptionsBuilder) WithFlushInactiveSegmentDuration(duration time.Duration) *StorageOptionsBuilder {
 	builder.flushInactiveSegmentDuration = duration
 	return builder
@@ -66,6 +74,7 @@ func (builder *StorageOptionsBuilder) Build() StorageOptions {
 		storeType:                     builder.storeType,
 		rootDirectory:                 builder.rootDirectory,
 		sortedSegmentBlockCompression: builder.sortedSegmentBlockCompression,
+		inMemoryMode:                  builder.inMemoryMode,
 		flushInactiveSegmentDuration:  builder.flushInactiveSegmentDuration,
 	}
 }

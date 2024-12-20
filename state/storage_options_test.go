@@ -44,6 +44,16 @@ func TestStorageOptionsWithSortedSegmentBlockCompressionNotEnabled(t *testing.T)
 	assert.False(t, storageOptions.sortedSegmentBlockCompression)
 }
 
+func TestStorageOptionsWithInMemoryModeEnabled(t *testing.T) {
+	storageOptions := NewStorageOptionsBuilder().WithSortedSegmentSizeInBytes(2 << 10).WithFileSystemStoreType(".").EnableInMemoryMode().Build()
+	assert.True(t, storageOptions.inMemoryMode)
+}
+
+func TestStorageOptionsWithInMemoryModeNotEnabled(t *testing.T) {
+	storageOptions := NewStorageOptionsBuilder().WithSortedSegmentSizeInBytes(2 << 10).WithFileSystemStoreType(".").Build()
+	assert.False(t, storageOptions.inMemoryMode)
+}
+
 func TestStorageOptionsFlushInactiveSegmentDuration(t *testing.T) {
 	storageOptions := NewStorageOptionsBuilder().
 		WithSortedSegmentSizeInBytes(2 << 10).
