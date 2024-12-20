@@ -40,7 +40,9 @@ func NewStorageState(options StorageOptions) (*StorageState, error) {
 		store:              store,
 	}
 
-	storageState.spawnObjectStoreMovement()
+	if !options.inMemoryMode {
+		storageState.spawnObjectStoreMovement()
+	}
 	return storageState, nil
 }
 
@@ -49,21 +51,14 @@ func (state *StorageState) Get(key kv.Key) (kv.Value, bool) {
 	defer state.stateLock.RUnlock()
 
 	//TODO: May change as transactions come in .. will not read from the segment unless it is made durable.
+	//TODO: Handle in-memory mode.
 	return state.activeSegment.Get(key)
 }
 
 func (state *StorageState) Set(batch *kv.Batch) *future.Future {
 	state.mayBeFreezeActiveSegment(batch.SizeInBytes())
-	for _, pair := range batch.Pairs() {
-		switch {
-		case pair.Kind() == kv.KeyValuePairKindPut:
-			state.activeSegment.Set(kv.NewKey(pair.Key()), pair.Value())
-		case pair.Kind() == kv.KeyValuePairKindDelete:
-			state.activeSegment.Delete(kv.NewKey(pair.Key()))
-		default:
-			panic("unknown key/value pair kind")
-		}
-	}
+	state.writeToActiveSegment(batch)
+	state.mayBeMarkFlushToObjectStoreFutureDone()
 	return state.activeSegment.FlushToObjectStoreFuture()
 }
 
@@ -75,6 +70,27 @@ func (state *StorageState) mayBeFreezeActiveSegment(sizeInBytes int) {
 		state.inactiveSegments = append(state.inactiveSegments, state.activeSegment)
 		state.activeSegment = memory.NewSortedSegment(state.segmentIdGenerator.NextId(), state.options.sortedSegmentSizeInBytes)
 		state.stateLock.Unlock()
+	}
+}
+
+// writeToActiveSegment writes the batch to the active segment.
+func (state *StorageState) writeToActiveSegment(batch *kv.Batch) {
+	for _, pair := range batch.Pairs() {
+		switch {
+		case pair.Kind() == kv.KeyValuePairKindPut:
+			state.activeSegment.Set(kv.NewKey(pair.Key()), pair.Value())
+		case pair.Kind() == kv.KeyValuePairKindDelete:
+			state.activeSegment.Delete(kv.NewKey(pair.Key()))
+		default:
+			panic("unknown key/value pair kind")
+		}
+	}
+}
+
+// mayBeMarkFlushToObjectStoreFutureDone marks the future representing the flush to object store as done, if the mode is in-memory.
+func (state *StorageState) mayBeMarkFlushToObjectStoreFutureDone() {
+	if state.options.inMemoryMode {
+		state.activeSegment.FlushToObjectStoreAsyncAwait().MarkDoneAsOk()
 	}
 }
 

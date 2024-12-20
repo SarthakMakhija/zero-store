@@ -9,8 +9,8 @@ import (
 	"slices"
 )
 
-// HasInactiveSegments returns true if there are inactive segments, it is only for testing.
-func (state *StorageState) HasInactiveSegments() bool {
+// hasInactiveSegments returns true if there are inactive segments, it is only for testing.
+func (state *StorageState) hasInactiveSegments() bool {
 	return len(state.inactiveSegments) > 0
 }
 

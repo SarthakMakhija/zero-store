@@ -143,6 +143,45 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegmentWhileWaitin
 	assert.True(t, storageState.hasPersistentSortedSegmentFor(1))
 }
 
+func TestStorageStateWithMultiplePutsWhileRunningInMemoryMode(t *testing.T) {
+	storageState, err := NewStorageState(NewStorageOptionsBuilder().
+		WithFileSystemStoreType(".").
+		WithSortedSegmentSizeInBytes(220).
+		EnableInMemoryMode().
+		Build(),
+	)
+	assert.NoError(t, err)
+
+	defer func() {
+		storageState.Close()
+	}()
+
+	batch := kv.NewBatch()
+	_ = batch.Put([]byte("consensus"), []byte("raft"))
+
+	future := storageState.Set(batch)
+	future.Wait()
+	assert.True(t, future.Status().IsOk())
+
+	batch = kv.NewBatch()
+	_ = batch.Put([]byte("storage"), []byte("NVMe"))
+
+	future = storageState.Set(batch)
+	future.Wait()
+	assert.True(t, future.Status().IsOk())
+
+	batch = kv.NewBatch()
+	_ = batch.Put([]byte("data-structure"), []byte("LSM"))
+
+	future = storageState.Set(batch)
+	future.Wait()
+	assert.True(t, future.Status().IsOk())
+	
+	assert.Equal(t, uint64(3), storageState.activeSegment.Id())
+	assert.True(t, storageState.hasInactiveSegments())
+	assert.Equal(t, []uint64{1, 2}, storageState.sortedInactiveSegmentIds())
+}
+
 func keepFlushingInactiveSegmentsUntilNoMoreInactiveSegmentToFlush(t *testing.T, storageState *StorageState) {
 	for {
 		flushed, err := storageState.mayBeFlushOldestInactiveSegment()
