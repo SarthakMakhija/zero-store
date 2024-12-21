@@ -6,13 +6,21 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+	"unsafe"
 )
 
 func TestBloomFilterCacheSetAndGetASingleKeyAndBloomFilter(t *testing.T) {
 	builder := filter.NewBloomFilterBuilder()
 	builder.Add(kv.NewStringKey("consensus"))
 
-	cache, err := NewBloomFilterCache(NewBloomFilterCacheOptions(200, 5*time.Minute))
+	cacheOptions := NewComparableKeyCacheOptions[uint64, filter.BloomFilter](
+		200,
+		5*time.Minute,
+		func(key uint64, value filter.BloomFilter) uint32 {
+			return uint32(unsafe.Sizeof(key) + unsafe.Sizeof(value))
+		},
+	)
+	cache, err := NewComparableKeyCache[uint64, filter.BloomFilter](cacheOptions)
 	assert.NoError(t, err)
 
 	assert.True(t, cache.Set(10, builder.Build()))
@@ -26,7 +34,14 @@ func TestBloomFilterCacheSetAndGetACoupleOfKeyAndBloomFilters(t *testing.T) {
 	builder := filter.NewBloomFilterBuilder()
 	builder.Add(kv.NewStringKey("consensus"))
 
-	cache, err := NewBloomFilterCache(NewBloomFilterCacheOptions(200, 5*time.Minute))
+	cacheOptions := NewComparableKeyCacheOptions[uint64, filter.BloomFilter](
+		200,
+		5*time.Minute,
+		func(key uint64, value filter.BloomFilter) uint32 {
+			return uint32(unsafe.Sizeof(key) + unsafe.Sizeof(value))
+		},
+	)
+	cache, err := NewComparableKeyCache[uint64, filter.BloomFilter](cacheOptions)
 	assert.NoError(t, err)
 	assert.True(t, cache.Set(10, builder.Build()))
 
@@ -47,7 +62,14 @@ func TestBloomFilterCacheWithFewElementsUpToTheSize(t *testing.T) {
 	builder := filter.NewBloomFilterBuilder()
 	builder.Add(kv.NewStringKey("consensus"))
 
-	cache, err := NewBloomFilterCache(NewBloomFilterCacheOptions(200, 5*time.Minute))
+	cacheOptions := NewComparableKeyCacheOptions[uint64, filter.BloomFilter](
+		200,
+		5*time.Minute,
+		func(key uint64, value filter.BloomFilter) uint32 {
+			return uint32(unsafe.Sizeof(key) + unsafe.Sizeof(value))
+		},
+	)
+	cache, err := NewComparableKeyCache[uint64, filter.BloomFilter](cacheOptions)
 	assert.NoError(t, err)
 	assert.True(t, cache.Set(10, builder.Build()))
 
