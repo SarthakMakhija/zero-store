@@ -15,7 +15,7 @@ import (
 type SortedSegment struct {
 	id                   uint64
 	blockMetaList        *block.MetaList
-	bloomFilter          *filter.BloomFilter
+	bloomFilter          filter.BloomFilter
 	blockMetaBeginOffset uint32
 	blockSize            uint
 	startingKey          kv.Key
@@ -57,12 +57,12 @@ func Load(id uint64, blockSize uint, enableCompression bool, store objectstore.S
 
 	// loadBloomFilter loads the bloom filter from the actual object-store.
 	// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
-	loadBloomFilter := func(id uint64, footerBlock *block.FooterBlock, store objectstore.Store) (*filter.BloomFilter, error) {
+	loadBloomFilter := func(id uint64, footerBlock *block.FooterBlock, store objectstore.Store) (filter.BloomFilter, error) {
 		bloomFilterBeginOffset, _ := footerBlock.GetOffsetAsInt64At(2)
 		bloomFilterEndOffset, _ := footerBlock.GetOffsetAsInt64At(3)
 		bloomFilterBytes, err := store.GetRange(PathSuffixForSegment(id), bloomFilterBeginOffset, bloomFilterEndOffset-bloomFilterBeginOffset+1)
 		if err != nil {
-			return nil, err
+			return filter.BloomFilter{}, err
 		}
 		return filter.DecodeToBloomFilter(bloomFilterBytes)
 	}

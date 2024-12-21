@@ -21,7 +21,7 @@ func (builder *BloomFilterBuilder) Add(key kv.Key) {
 }
 
 // Build creates a new instance of BloomFilter.
-func (builder *BloomFilterBuilder) Build() *BloomFilter {
+func (builder *BloomFilterBuilder) Build() BloomFilter {
 	filter := newBloomFilter(bloom.NewWithEstimates(uint(len(builder.keys)), 0.01))
 	for _, key := range builder.keys {
 		filter.add(key)
