@@ -27,9 +27,9 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingSingleKeyValue(t *te
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToFirst()
-	defer iterator.Close()
-
 	assert.NoError(t, err)
+
+	defer iterator.Close()
 
 	assert.True(t, iterator.IsValid())
 	assert.Equal(t, kv.NewStringValue("raft"), iterator.Value())
@@ -59,9 +59,9 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingMultipleKeyValues(t 
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToFirst()
-	defer iterator.Close()
-
 	assert.NoError(t, err)
+
+	defer iterator.Close()
 
 	assert.True(t, iterator.IsValid())
 	assert.Equal(t, kv.NewStringValue("raft"), iterator.Value())
@@ -100,9 +100,9 @@ func TestIterateOverASortedSegmentWithTwoBlocks(t *testing.T) {
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToFirst()
-	defer iterator.Close()
-
 	assert.NoError(t, err)
+
+	defer iterator.Close()
 
 	assert.True(t, iterator.IsValid())
 	assert.Equal(t, kv.NewStringValue("raft"), iterator.Value())
@@ -135,9 +135,9 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingSingleKeyValueUsingS
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToKey(kv.NewStringKey("consensus"))
-	defer iterator.Close()
-
 	assert.NoError(t, err)
+
+	defer iterator.Close()
 
 	assert.True(t, iterator.IsValid())
 	assert.Equal(t, kv.NewStringValue("raft"), iterator.Value())
@@ -167,9 +167,9 @@ func TestIterateOverAnSortedSegmentWithASingleBlockContainingMultipleKeyValuesUs
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToKey(kv.NewStringKey("contribute"))
-	defer iterator.Close()
-
 	assert.NoError(t, err)
+
+	defer iterator.Close()
 
 	assert.True(t, iterator.IsValid())
 	assert.Equal(t, kv.NewStringValue("TiKV"), iterator.Value())
@@ -204,9 +204,9 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingMultipleKeyValuesUsi
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToKey(kv.NewStringKey("consensus"))
-	defer iterator.Close()
-
 	assert.NoError(t, err)
+
+	defer iterator.Close()
 
 	assert.True(t, iterator.IsValid())
 	assert.Equal(t, kv.NewStringValue("raft"), iterator.Value())
@@ -245,9 +245,9 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKey(t *testing.T) {
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToKey(kv.NewStringKey("consensus"))
-	defer iterator.Close()
-
 	assert.NoError(t, err)
+
+	defer iterator.Close()
 
 	assert.True(t, iterator.IsValid())
 	assert.Equal(t, kv.NewStringValue("TiKV"), iterator.Value())
@@ -276,9 +276,9 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKeyWithTheKeyLessThanT
 	assert.NoError(t, err)
 
 	iterator, err := segment.SeekToKey(kv.NewStringKey("bolt"))
-	defer iterator.Close()
-
 	assert.NoError(t, err)
+
+	defer iterator.Close()
 
 	assert.True(t, iterator.IsValid())
 	assert.Equal(t, kv.NewStringValue("draft"), iterator.Value())

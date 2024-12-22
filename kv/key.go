@@ -66,7 +66,7 @@ func (key Key) IsEqualTo(other Key) bool {
 
 // IsRawKeyEqualTo returns true if the raw key two keys is the same.
 func (key Key) IsRawKeyEqualTo(other Key) bool {
-	return bytes.Compare(key.key, other.key) == 0
+	return bytes.Equal(key.key, other.key)
 }
 
 // RawString returns the string representation of raw key.

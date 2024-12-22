@@ -72,7 +72,7 @@ func (batch *Batch) Delete(key []byte) {
 // Get returns the Value for the given key if found.
 func (batch *Batch) Get(key []byte) (Value, bool) {
 	for _, pair := range batch.pairs {
-		if bytes.Compare(pair.key, key) == 0 {
+		if bytes.Equal(pair.key, key) {
 			return pair.value, true
 		}
 	}
