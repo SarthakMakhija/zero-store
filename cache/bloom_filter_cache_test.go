@@ -20,7 +20,7 @@ func TestBloomFilterCacheSetAndGetASingleKeyAndBloomFilter(t *testing.T) {
 			return uint32(unsafe.Sizeof(key) + unsafe.Sizeof(value))
 		},
 	)
-	cache, err := NewComparableKeyCache[uint64, filter.BloomFilter](cacheOptions)
+	cache, err := NewBloomFilterCache(cacheOptions)
 	assert.NoError(t, err)
 
 	assert.True(t, cache.Set(10, builder.Build()))
@@ -41,7 +41,7 @@ func TestBloomFilterCacheSetAndGetACoupleOfKeyAndBloomFilters(t *testing.T) {
 			return uint32(unsafe.Sizeof(key) + unsafe.Sizeof(value))
 		},
 	)
-	cache, err := NewComparableKeyCache[uint64, filter.BloomFilter](cacheOptions)
+	cache, err := NewBloomFilterCache(cacheOptions)
 	assert.NoError(t, err)
 	assert.True(t, cache.Set(10, builder.Build()))
 
@@ -69,7 +69,7 @@ func TestBloomFilterCacheWithFewElementsUpToTheSize(t *testing.T) {
 			return uint32(unsafe.Sizeof(key) + unsafe.Sizeof(value))
 		},
 	)
-	cache, err := NewComparableKeyCache[uint64, filter.BloomFilter](cacheOptions)
+	cache, err := NewBloomFilterCache(cacheOptions)
 	assert.NoError(t, err)
 	assert.True(t, cache.Set(10, builder.Build()))
 

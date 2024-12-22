@@ -24,7 +24,7 @@ func TestBlockMetaListCacheSetAndGetASingleKeyAndMetaList(t *testing.T) {
 			return uint32(unsafe.Sizeof(key) + unsafe.Sizeof(value))
 		},
 	)
-	cache, err := NewComparableKeyCache[uint64, *block.MetaList](cacheOptions)
+	cache, err := NewBlockMetaListCache(cacheOptions)
 	assert.NoError(t, err)
 
 	assert.True(t, cache.Set(10, blockMetaList))
@@ -50,7 +50,7 @@ func TestBlockMetaListCacheSetAndGetACoupleOfKeyAndMetaList(t *testing.T) {
 			return uint32(unsafe.Sizeof(key) + unsafe.Sizeof(value))
 		},
 	)
-	cache, err := NewComparableKeyCache[uint64, *block.MetaList](cacheOptions)
+	cache, err := NewBlockMetaListCache(cacheOptions)
 	assert.NoError(t, err)
 	assert.True(t, cache.Set(10, blockMetaList))
 
