@@ -10,16 +10,21 @@ import (
 )
 
 type KeyCache struct {
-	rawKeyCache *rawKeyCache
-	keyIdCache  *keyIdCache
-	lock        sync.RWMutex
+	rawKeyCache     *rawKeyCache
+	keyIdCache      *keyIdCache
+	lock            sync.RWMutex
+	evictionChannel chan keyId
+	stopChannel     chan struct{}
 }
 
 func NewKeyCache(options KeyCacheOptions) *KeyCache {
 	cache := &KeyCache{
-		rawKeyCache: newRawKeyCache(options),
-		keyIdCache:  newKeyIdCache(),
+		rawKeyCache:     newRawKeyCache(options),
+		keyIdCache:      newKeyIdCache(),
+		evictionChannel: make(chan keyId, 1024),
+		stopChannel:     make(chan struct{}),
 	}
+	go cache.spawnKeyEvictionHandler()
 	return cache
 }
 
@@ -27,9 +32,9 @@ func (cache *KeyCache) Set(key kv.Key, timestamp uint64, value kv.Value) {
 	cache.lock.Lock()
 	defer cache.lock.Unlock()
 
-	id, err := cache.rawKeyCache.set(key)
+	id, err := cache.rawKeyCache.add(key)
 	if err != nil {
-		slog.Warn("failed to set key in cache", "err", err)
+		slog.Warn("failed to add key in cache", "err", err)
 		return
 	}
 	cache.keyIdCache.set(newTimestampedKeyId(id, timestamp), value)
@@ -50,6 +55,24 @@ func (cache *KeyCache) Get(key kv.Key, timestamp uint64) (kv.Value, bool) {
 	return value, true
 }
 
+func (cache *KeyCache) Stop() {
+	close(cache.stopChannel)
+}
+
+func (cache *KeyCache) spawnKeyEvictionHandler() {
+	for {
+		select {
+		case id := <-cache.evictionChannel:
+			println("received ", id, " on eviction channel")
+			cache.lock.Lock()
+			cache.keyIdCache.removeAllOccurrencesOf(id)
+			cache.lock.Unlock()
+		case <-cache.stopChannel:
+			return
+		}
+	}
+}
+
 ///////////////////////rawKeyCache///////////////////////
 
 type rawKeyCache struct {
@@ -66,12 +89,12 @@ func newRawKeyCache(options KeyCacheOptions) *rawKeyCache {
 	}
 }
 
-func (cache *rawKeyCache) set(key kv.Key) (keyId, error) {
+func (cache *rawKeyCache) add(key kv.Key) (keyId, error) {
 	cachedKeyId, ok := cache.getKeyId(key)
 	if !ok {
 		err := cache.cache.Set(key.RawBytes(), cache.idGenerator.nextIdAsBytes(), int(cache.options.entryTTL.Seconds()))
 		if err != nil {
-			slog.Warn("failed to set key in rawKeyCache", "err", err)
+			slog.Warn("failed to add key in rawKeyCache", "err", err)
 			return 0, err
 		}
 		return cache.idGenerator.id, nil
@@ -111,7 +134,7 @@ func (cache *keyIdCache) set(key timestampedKeyId, value kv.Value) {
 
 func (cache *keyIdCache) get(key timestampedKeyId) (kv.Value, bool) {
 	element := cache.cache.Find(key)
-	if element == nil {
+	if element == nil || element.Key().(timestampedKeyId).keyId != key.keyId {
 		return kv.EmptyValue, false
 	}
 	return element.Value.(kv.Value), true
