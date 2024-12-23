@@ -104,10 +104,10 @@ func newKeyIdCache() *keyIdCache {
 }
 
 func (cache *keyIdCache) set(key timestampedKeyId, value kv.Value) {
-	cache.cache.Set(key, value.EncodedBytes())
+	cache.cache.Set(key, value)
 }
 
 func (cache *keyIdCache) get(key timestampedKeyId) (kv.Value, bool) {
 	element := cache.cache.Find(key)
-	return kv.DecodeValueFrom(element.Value.([]byte)), true
+	return element.Value.(kv.Value), true
 }
