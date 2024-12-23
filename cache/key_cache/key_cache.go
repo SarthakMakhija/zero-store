@@ -5,6 +5,7 @@ import (
 	"github.com/coocood/freecache"
 	"github.com/huandu/skiplist"
 	"log/slog"
+	"sync"
 )
 
 type KeyCache struct {
@@ -12,6 +13,7 @@ type KeyCache struct {
 	keyIdCache  *skiplist.SkipList
 	idGenerator *keyIdGenerator
 	options     KeyCacheOptions
+	lock        sync.RWMutex
 }
 
 func NewKeyCache(options KeyCacheOptions) *KeyCache {
@@ -24,6 +26,9 @@ func NewKeyCache(options KeyCacheOptions) *KeyCache {
 }
 
 func (cache *KeyCache) Set(key kv.Key, value kv.Value) {
+	cache.lock.Lock()
+	defer cache.lock.Unlock()
+
 	cachedKeyId, ok := cache.getKeyId(key)
 	if !ok {
 		err := cache.rawKeyCache.Set(key.RawBytes(), cache.idGenerator.nextIdAsBytes(), int(cache.options.entryTTL.Seconds()))
@@ -38,12 +43,15 @@ func (cache *KeyCache) Set(key kv.Key, value kv.Value) {
 }
 
 func (cache *KeyCache) Get(key kv.Key) (kv.Value, bool) {
+	cache.lock.RLock()
+	defer cache.lock.RUnlock()
+
 	cachedKeyId, ok := cache.getKeyId(key)
 	if !ok {
 		return kv.EmptyValue, false
 	}
-	elem := cache.keyIdCache.Get(cachedKeyId)
-	return kv.DecodeValueFrom(elem.Value.([]byte)), true
+	element := cache.keyIdCache.Get(cachedKeyId)
+	return kv.DecodeValueFrom(element.Value.([]byte)), true
 }
 
 func (cache *KeyCache) getKeyId(key kv.Key) (keyId, bool) {
