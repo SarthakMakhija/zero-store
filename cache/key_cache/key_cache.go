@@ -5,20 +5,25 @@ import (
 	"github.com/coocood/freecache"
 	"github.com/huandu/skiplist"
 	"log/slog"
+	"math"
 	"sync"
 )
 
 type KeyCache struct {
-	rawKeyCache *rawKeyCache
-	keyIdCache  *keyIdCache
-	lock        sync.RWMutex
+	rawKeyCache     *rawKeyCache
+	keyIdCache      *keyIdCache
+	lock            sync.RWMutex
+	evictionChannel chan keyId
+	stopChannel     chan struct{}
 }
 
 func NewKeyCache(options KeyCacheOptions) *KeyCache {
-	return &KeyCache{
-		rawKeyCache: newRawKeyCache(options),
-		keyIdCache:  newKeyIdCache(),
+	cache := &KeyCache{
+		rawKeyCache:     newRawKeyCache(options),
+		keyIdCache:      newKeyIdCache(),
+		evictionChannel: make(chan keyId, 1024),
 	}
+	return cache
 }
 
 func (cache *KeyCache) Set(key kv.Key, timestamp uint64, value kv.Value) {
@@ -109,5 +114,18 @@ func (cache *keyIdCache) set(key timestampedKeyId, value kv.Value) {
 
 func (cache *keyIdCache) get(key timestampedKeyId) (kv.Value, bool) {
 	element := cache.cache.Find(key)
+	if element == nil {
+		return kv.EmptyValue, false
+	}
 	return element.Value.(kv.Value), true
+}
+
+func (cache *keyIdCache) removeAllOccurrencesOf(id keyId) {
+	element := cache.cache.Find(newTimestampedKeyId(id, math.MaxUint64))
+	for element != nil && element.Key().(timestampedKeyId).keyId == id {
+		next := element.Next()
+		cache.cache.RemoveElement(element)
+
+		element = next
+	}
 }

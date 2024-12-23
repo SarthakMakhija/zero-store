@@ -70,6 +70,48 @@ func TestKeyIdCacheWithAMultipleTimestampsOfAKeyIdAndGetValueByKeyIdSuchThatTime
 	assert.Equal(t, kv.NewStringValue("VSR"), value)
 }
 
+func TestKeyIdCacheRemoveAllOccurrencesOfAKeyId(t *testing.T) {
+	cache := newKeyIdCache()
+	cache.set(newTimestampedKeyId(keyId(10), 20), kv.NewStringValue("raft"))
+	cache.set(newTimestampedKeyId(keyId(10), 30), kv.NewStringValue("paxos"))
+	cache.set(newTimestampedKeyId(keyId(10), 40), kv.NewStringValue("VSR"))
+
+	cache.removeAllOccurrencesOf(keyId(10))
+
+	value, ok := cache.get(newTimestampedKeyId(keyId(10), 50))
+	assert.False(t, ok)
+	assert.Equal(t, kv.EmptyValue, value)
+}
+
+func TestKeyIdCacheRemoveAllOccurrencesOfTheOnlySpecifiedKeyId1(t *testing.T) {
+	cache := newKeyIdCache()
+	cache.set(newTimestampedKeyId(keyId(10), 20), kv.NewStringValue("raft"))
+	cache.set(newTimestampedKeyId(keyId(10), 30), kv.NewStringValue("paxos"))
+	cache.set(newTimestampedKeyId(keyId(10), 40), kv.NewStringValue("VSR"))
+	cache.set(newTimestampedKeyId(keyId(100), 15), kv.NewStringValue("etcd"))
+
+	cache.removeAllOccurrencesOf(keyId(10))
+
+	value, ok := cache.get(newTimestampedKeyId(keyId(100), 18))
+	assert.True(t, ok)
+	assert.Equal(t, kv.NewStringValue("etcd"), value)
+}
+
+func TestKeyIdCacheRemoveAllOccurrencesOfTheOnlySpecifiedKeyId2(t *testing.T) {
+	cache := newKeyIdCache()
+	cache.set(newTimestampedKeyId(keyId(10), 20), kv.NewStringValue("raft"))
+	cache.set(newTimestampedKeyId(keyId(10), 30), kv.NewStringValue("paxos"))
+	cache.set(newTimestampedKeyId(keyId(10), 40), kv.NewStringValue("VSR"))
+	cache.set(newTimestampedKeyId(keyId(100), 15), kv.NewStringValue("etcd"))
+	cache.set(newTimestampedKeyId(keyId(100), 18), kv.NewStringValue("foundationDb"))
+
+	cache.removeAllOccurrencesOf(keyId(10))
+
+	value, ok := cache.get(newTimestampedKeyId(keyId(100), 20))
+	assert.True(t, ok)
+	assert.Equal(t, kv.NewStringValue("foundationDb"), value)
+}
+
 func TestKeyCacheSetKeyAndGetValueByKey(t *testing.T) {
 	timestamp := uint64(1)
 	keyCache := NewKeyCache(NewKeyCacheOptions(512*1024, time.Second*10))
