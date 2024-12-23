@@ -10,18 +10,15 @@ import (
 )
 
 type KeyCache struct {
-	rawKeyCache     *rawKeyCache
-	keyIdCache      *keyIdCache
-	lock            sync.RWMutex
-	evictionChannel chan keyId
-	stopChannel     chan struct{}
+	rawKeyCache *rawKeyCache
+	keyIdCache  *keyIdCache
+	lock        sync.RWMutex
 }
 
 func NewKeyCache(options KeyCacheOptions) *KeyCache {
 	cache := &KeyCache{
-		rawKeyCache:     newRawKeyCache(options),
-		keyIdCache:      newKeyIdCache(),
-		evictionChannel: make(chan keyId, 1024),
+		rawKeyCache: newRawKeyCache(options),
+		keyIdCache:  newKeyIdCache(),
 	}
 	return cache
 }
