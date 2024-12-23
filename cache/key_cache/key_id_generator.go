@@ -7,8 +7,6 @@ import (
 
 const keyIdSize = unsafe.Sizeof(uint64(0))
 
-type keyId uint64
-
 type keyIdGenerator struct {
 	id keyId
 }

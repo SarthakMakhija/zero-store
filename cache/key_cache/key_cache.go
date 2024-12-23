@@ -19,13 +19,15 @@ type KeyCache struct {
 func NewKeyCache(options KeyCacheOptions) *KeyCache {
 	return &KeyCache{
 		rawKeyCache: freecache.NewCache(int(options.sizeInBytes)),
-		keyIdCache:  skiplist.New(skiplist.Uint64),
+		keyIdCache: skiplist.New(skiplist.GreaterThanFunc(func(key, other interface{}) int {
+			return compareKeysWithDescendingTimestamp(key, other)
+		})),
 		idGenerator: newKeyIdGenerator(),
 		options:     options,
 	}
 }
 
-func (cache *KeyCache) Set(key kv.Key, value kv.Value) {
+func (cache *KeyCache) Set(key kv.Key, timestamp uint64, value kv.Value) {
 	cache.lock.Lock()
 	defer cache.lock.Unlock()
 
@@ -36,13 +38,13 @@ func (cache *KeyCache) Set(key kv.Key, value kv.Value) {
 			slog.Warn("failed to set key in cache", "err", err)
 			return
 		}
-		cache.keyIdCache.Set(cache.idGenerator.id, value.EncodedBytes())
+		cache.keyIdCache.Set(newTimestampedKeyId(cache.idGenerator.id, timestamp), value.EncodedBytes())
 		return
 	}
-	cache.keyIdCache.Set(cachedKeyId, value.EncodedBytes())
+	cache.keyIdCache.Set(newTimestampedKeyId(cachedKeyId, timestamp), value.EncodedBytes())
 }
 
-func (cache *KeyCache) Get(key kv.Key) (kv.Value, bool) {
+func (cache *KeyCache) Get(key kv.Key, timestamp uint64) (kv.Value, bool) {
 	cache.lock.RLock()
 	defer cache.lock.RUnlock()
 
@@ -50,7 +52,7 @@ func (cache *KeyCache) Get(key kv.Key) (kv.Value, bool) {
 	if !ok {
 		return kv.EmptyValue, false
 	}
-	element := cache.keyIdCache.Get(cachedKeyId)
+	element := cache.keyIdCache.Find(newTimestampedKeyId(cachedKeyId, timestamp))
 	return kv.DecodeValueFrom(element.Value.([]byte)), true
 }
 
