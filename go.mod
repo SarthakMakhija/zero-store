@@ -11,6 +11,7 @@ require (
 	github.com/coocood/freecache v1.2.4 // indirect
 	github.com/dolthub/maphash v0.1.0 // indirect
 	github.com/gammazero/deque v1.0.0 // indirect
+	github.com/huandu/skiplist v1.2.1 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/maypok86/otter v1.2.4 // indirect
 )
