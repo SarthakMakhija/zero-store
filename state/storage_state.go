@@ -130,6 +130,13 @@ func (state *StorageState) spawnObjectStoreMovement() {
 // It returns (true, nil), if an inactive segment was flushed without any error.
 // It returns (false, nil), if there was no inactive segment to be flushed.
 func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
+	//TODO: what if an inactive segment is being flushed (in buildAndWritePersistentSortedSegment),
+	//other goroutine comes and starts reading from the same inactive segment in StorageState,
+	//and finally that inactive segment gets dropped in updateState (and GCed).
+	//Solutions:
+	//Maybe, acquire exclusive lock in mayBeFlushOldestInactiveSegment()
+	//Or, in updateState, drop the segment from inactiveSegments but move it to another collection "dropped segments"
+	//and when reference count of inactive segment reaches zero, move it out.
 	updateState := func(segmentId uint64, persistentSortedSegment *objectStore.SortedSegment) {
 		state.stateLock.Lock()
 		defer state.stateLock.Unlock()
