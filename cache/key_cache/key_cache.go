@@ -65,9 +65,9 @@ func (cache *KeyCache) Stop() {
 func (cache *KeyCache) spawnKeyEvictionHandler() {
 	for {
 		select {
-		case id := <-cache.evictionChannel:
+		case evictedKeyId := <-cache.evictionChannel:
 			cache.lock.Lock()
-			cache.keyIdCache.removeAllOccurrencesOf(id)
+			cache.keyIdCache.removeAllOccurrencesOf(evictedKeyId)
 			cache.lock.Unlock()
 		case <-cache.stopChannel:
 			return
@@ -77,6 +77,8 @@ func (cache *KeyCache) spawnKeyEvictionHandler() {
 
 ///////////////////////rawKeyCache///////////////////////
 
+// TODO: remove locks from freecache or revisit locking strategy in keycache.
+// TODO: This will also depend on the fact that zero-store might store a bunch of keys in the rawKeyCache in one go.
 type rawKeyCache struct {
 	cache       *freecache.Cache
 	idGenerator *keyIdGenerator
