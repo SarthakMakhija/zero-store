@@ -99,7 +99,8 @@ func (builder *SortedSegmentBuilder) Build(id uint64) (*SortedSegment, error) {
 	footerBlock.AddOffset(blockMetaBeginOffset())
 	footerBlock.AddOffset(blockMetaEndOffset(buffer))
 
-	encodedFilter, err := builder.bloomFilterBuilder.Build().Encode()
+	bloomFilter := builder.bloomFilterBuilder.Build()
+	encodedFilter, err := bloomFilter.Encode()
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +119,7 @@ func (builder *SortedSegmentBuilder) Build(id uint64) (*SortedSegment, error) {
 	return &SortedSegment{
 		id:                   id,
 		blockMetaList:        builder.blockMetaList,
-		bloomFilter:          builder.bloomFilterBuilder.Build(),
+		bloomFilter:          bloomFilter,
 		blockMetaBeginOffset: uint32(len(builder.allBlocksData)),
 		blockSize:            builder.blockSize,
 		startingKey:          startingKey,
