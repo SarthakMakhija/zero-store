@@ -91,3 +91,44 @@ func (segment *SortedSegment) FlushToObjectStoreAsyncAwait() *future.AsyncAwait 
 func (segment *SortedSegment) sizeInBytes() int64 {
 	return segment.entries.MemSize()
 }
+
+// AllEntriesSortedSegmentIterator represents an iterator which scan over all the entries of SortedSegment.
+type AllEntriesSortedSegmentIterator struct {
+	internalIterator *external.Iterator
+}
+
+// NewAllEntriesSortedSegmentIterator creates a new instance of AllEntriesSortedSegmentIterator.
+func NewAllEntriesSortedSegmentIterator(segment *SortedSegment) AllEntriesSortedSegmentIterator {
+	iterator := segment.entries.NewIterator()
+	iterator.SeekToFirst()
+
+	return AllEntriesSortedSegmentIterator{
+		internalIterator: iterator,
+	}
+}
+
+// Key returns the kv.Key.
+func (iterator *AllEntriesSortedSegmentIterator) Key() kv.Key {
+	return iterator.internalIterator.Key()
+}
+
+// Value returns the kv.Value.
+func (iterator *AllEntriesSortedSegmentIterator) Value() kv.Value {
+	return iterator.internalIterator.Value()
+}
+
+// Next moves the iterator ahead.
+func (iterator *AllEntriesSortedSegmentIterator) Next() error {
+	iterator.internalIterator.Next()
+	return nil
+}
+
+// IsValid returns true if the external.Iterator is valid.
+func (iterator *AllEntriesSortedSegmentIterator) IsValid() bool {
+	return iterator.internalIterator.Valid()
+}
+
+// Close closes the AllEntriesSortedSegmentIterator.
+func (iterator *AllEntriesSortedSegmentIterator) Close() {
+	_ = iterator.internalIterator.Close()
+}

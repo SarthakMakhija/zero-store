@@ -94,4 +94,28 @@ func TestSortedSegmentDoesNotHaveEnoughSpaceToFitTheRequiredSize(t *testing.T) {
 	assert.False(t, sortedSegment.CanFit(20))
 }
 
+func TestSortedSegmentAllEntriesSortedSegmentIterator(t *testing.T) {
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
+	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegment.Set(kv.NewStringKey("bolt"), kv.NewStringValue("kv"))
+	sortedSegment.Set(kv.NewStringKey("etcd"), kv.NewStringValue("distributed"))
+
+	iterator := NewAllEntriesSortedSegmentIterator(sortedSegment)
+	assert.Equal(t, "bolt", iterator.Key().RawString())
+	assert.Equal(t, "kv", iterator.Value().String())
+
+	assert.NoError(t, iterator.Next())
+
+	assert.Equal(t, "consensus", iterator.Key().RawString())
+	assert.Equal(t, "raft", iterator.Value().String())
+
+	assert.NoError(t, iterator.Next())
+
+	assert.Equal(t, "etcd", iterator.Key().RawString())
+	assert.Equal(t, "distributed", iterator.Value().String())
+
+	assert.NoError(t, iterator.Next())
+	assert.False(t, iterator.IsValid())
+}
+
 //TODO: add tests for keys with timestamps
