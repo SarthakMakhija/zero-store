@@ -8,7 +8,7 @@ import (
 )
 
 func TestRawKeyCacheSetKey(t *testing.T) {
-	rawKeyCache := newRawKeyCache(NewKeyCacheOptions(512*1024, time.Second*10))
+	rawKeyCache := newRawKeyCache(NewKeyCacheOptions(512*1024, time.Second*10), nil)
 	id, err := rawKeyCache.add(kv.NewStringKey("consensus"))
 
 	assert.NoError(t, err)
@@ -16,7 +16,7 @@ func TestRawKeyCacheSetKey(t *testing.T) {
 }
 
 func TestRawKeyCacheSetKeyAndGetByKey(t *testing.T) {
-	rawKeyCache := newRawKeyCache(NewKeyCacheOptions(512*1024, time.Second*10))
+	rawKeyCache := newRawKeyCache(NewKeyCacheOptions(512*1024, time.Second*10), nil)
 	id, err := rawKeyCache.add(kv.NewStringKey("consensus"))
 
 	assert.NoError(t, err)
@@ -28,7 +28,7 @@ func TestRawKeyCacheSetKeyAndGetByKey(t *testing.T) {
 }
 
 func TestRawKeyCacheSetKeyAndAttemptToGetKeyIdForANonExistingKey(t *testing.T) {
-	rawKeyCache := newRawKeyCache(NewKeyCacheOptions(512*1024, time.Second*10))
+	rawKeyCache := newRawKeyCache(NewKeyCacheOptions(512*1024, time.Second*10), nil)
 	id, err := rawKeyCache.add(kv.NewStringKey("consensus"))
 
 	assert.NoError(t, err)
@@ -217,7 +217,7 @@ func TestKeyCacheSimulateEviction(t *testing.T) {
 func TestKeyCacheSimulateEvictionOfAKeyWithMultipleTimestamps(t *testing.T) {
 	keyCache := NewKeyCache(NewKeyCacheOptions(512*1024, time.Second*10))
 	defer keyCache.Stop()
-	
+
 	keyCache.Set(kv.NewStringKey("consensus"), 2, kv.NewStringValue("raft"))
 	keyCache.Set(kv.NewStringKey("consensus"), 4, kv.NewStringValue("paxos"))
 	keyCache.Set(kv.NewStringKey("distributed"), 5, kv.NewStringValue("etcd"))
@@ -233,6 +233,61 @@ func TestKeyCacheSimulateEvictionOfAKeyWithMultipleTimestamps(t *testing.T) {
 	time.Sleep(time.Millisecond * 4)
 
 	value, ok = keyCache.Get(kv.NewStringKey("consensus"), 4)
+	assert.False(t, ok)
+	assert.Equal(t, kv.EmptyValue, value)
+}
+
+func TestKeyCacheWithEvictionOfAKey(t *testing.T) {
+	keyCache := NewKeyCache(NewKeyCacheOptions(512*1024, time.Second*1))
+	defer keyCache.Stop()
+
+	keyCache.Set(kv.NewStringKey("consensus"), 2, kv.NewStringValue("raft"))
+
+	id, ok := keyCache.rawKeyCache.getKeyId(kv.NewStringKey("consensus"))
+	assert.True(t, ok)
+
+	time.Sleep(time.Second)
+
+	value, ok := keyCache.Get(kv.NewStringKey("consensus"), 4)
+	assert.False(t, ok)
+	assert.Equal(t, kv.EmptyValue, value)
+
+	time.Sleep(20 * time.Millisecond)
+
+	value, ok = keyCache.keyIdCache.get(newTimestampedKeyId(id, 2))
+	assert.False(t, ok)
+	assert.Equal(t, kv.EmptyValue, value)
+}
+
+func TestKeyCacheWithEvictionOfACoupleOfKeys(t *testing.T) {
+	keyCache := NewKeyCache(NewKeyCacheOptions(512*1024, time.Second*1))
+	defer keyCache.Stop()
+
+	keyCache.Set(kv.NewStringKey("consensus"), 2, kv.NewStringValue("raft"))
+	keyCache.Set(kv.NewStringKey("distributed"), 3, kv.NewStringValue("etcd"))
+
+	idConsensus, ok := keyCache.rawKeyCache.getKeyId(kv.NewStringKey("consensus"))
+	assert.True(t, ok)
+	idDistributed, ok := keyCache.rawKeyCache.getKeyId(kv.NewStringKey("distributed"))
+	assert.True(t, ok)
+
+	time.Sleep(time.Second)
+
+	value, ok := keyCache.Get(kv.NewStringKey("consensus"), 4)
+	assert.False(t, ok)
+	assert.Equal(t, kv.EmptyValue, value)
+
+	value, ok = keyCache.Get(kv.NewStringKey("distributed"), 4)
+	assert.False(t, ok)
+	assert.Equal(t, kv.EmptyValue, value)
+
+	time.Sleep(20 * time.Millisecond)
+
+	value, ok = keyCache.keyIdCache.get(newTimestampedKeyId(idConsensus, 4))
+	assert.False(t, ok)
+	assert.Equal(t, kv.EmptyValue, value)
+
+	value, ok = keyCache.keyIdCache.get(newTimestampedKeyId(idDistributed, 4))
 	assert.False(t, ok)
 	assert.Equal(t, kv.EmptyValue, value)
 }

@@ -18,10 +18,13 @@ type KeyCache struct {
 }
 
 func NewKeyCache(options KeyCacheOptions) *KeyCache {
+	evictionChannel := make(chan keyId, 1024)
 	cache := &KeyCache{
-		rawKeyCache:     newRawKeyCache(options),
+		rawKeyCache: newRawKeyCache(options, func(keyIdAsBytes []byte) {
+			evictionChannel <- decodeKeyIdFrom(keyIdAsBytes)
+		}),
 		keyIdCache:      newKeyIdCache(),
-		evictionChannel: make(chan keyId, 1024),
+		evictionChannel: evictionChannel,
 		stopChannel:     make(chan struct{}),
 	}
 	go cache.spawnKeyEvictionHandler()
@@ -63,7 +66,6 @@ func (cache *KeyCache) spawnKeyEvictionHandler() {
 	for {
 		select {
 		case id := <-cache.evictionChannel:
-			println("received ", id, " on eviction channel")
 			cache.lock.Lock()
 			cache.keyIdCache.removeAllOccurrencesOf(id)
 			cache.lock.Unlock()
@@ -81,9 +83,9 @@ type rawKeyCache struct {
 	options     KeyCacheOptions
 }
 
-func newRawKeyCache(options KeyCacheOptions) *rawKeyCache {
+func newRawKeyCache(options KeyCacheOptions, evictionCallback func(keyIdAsBytes []byte)) *rawKeyCache {
 	return &rawKeyCache{
-		cache:       freecache.NewCache(int(options.sizeInBytes)),
+		cache:       freecache.NewCacheEvictionCallback(int(options.sizeInBytes), evictionCallback),
 		idGenerator: newKeyIdGenerator(),
 		options:     options,
 	}

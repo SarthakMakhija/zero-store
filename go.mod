@@ -4,16 +4,16 @@ go 1.23.3
 
 require (
 	github.com/bits-and-blooms/bloom/v3 v3.7.0
+	github.com/coocood/freecache v0.0.0-00010101000000-000000000000
+	github.com/huandu/skiplist v1.2.1
+	github.com/klauspost/compress v1.17.11
+	github.com/maypok86/otter v1.2.4
 	github.com/thanos-io/objstore v0.0.0-20241128114755-8d266b990716
 )
 
 require (
-	github.com/coocood/freecache v1.2.4 // indirect
 	github.com/dolthub/maphash v0.1.0 // indirect
 	github.com/gammazero/deque v1.0.0 // indirect
-	github.com/huandu/skiplist v1.2.1 // indirect
-	github.com/klauspost/compress v1.17.11 // indirect
-	github.com/maypok86/otter v1.2.4 // indirect
 )
 
 require (
@@ -39,3 +39,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/coocood/freecache => github.com/SarthakMakhija/freecache v0.0.0
