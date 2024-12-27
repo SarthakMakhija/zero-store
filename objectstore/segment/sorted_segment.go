@@ -43,30 +43,6 @@ func Load(id uint64, blockSize uint, enableCompression bool, store objectstore.S
 		return block.DecodeToFooterBlock(footerBlockBytes, blockSize), nil
 	}
 
-	// loadBlockMetaList loads the block meta list from the actual object-store.
-	// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
-	loadBlockMetaList := func(id uint64, footerBlock *block.FooterBlock, enableCompression bool, store objectstore.Store) (*block.MetaList, error) {
-		blockMetaBeginOffset, _ := footerBlock.GetOffsetAsInt64At(0)
-		blockMetaEndOffset, _ := footerBlock.GetOffsetAsInt64At(1)
-		blockMetaBytes, err := store.GetRange(PathSuffixForSegment(id), blockMetaBeginOffset, blockMetaEndOffset-blockMetaBeginOffset+1)
-		if err != nil {
-			return nil, err
-		}
-		return block.DecodeToBlockMetaList(blockMetaBytes, enableCompression)
-	}
-
-	// loadBloomFilter loads the bloom filter from the actual object-store.
-	// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
-	loadBloomFilter := func(id uint64, footerBlock *block.FooterBlock, store objectstore.Store) (filter.BloomFilter, error) {
-		bloomFilterBeginOffset, _ := footerBlock.GetOffsetAsInt64At(2)
-		bloomFilterEndOffset, _ := footerBlock.GetOffsetAsInt64At(3)
-		bloomFilterBytes, err := store.GetRange(PathSuffixForSegment(id), bloomFilterBeginOffset, bloomFilterEndOffset-bloomFilterBeginOffset+1)
-		if err != nil {
-			return filter.BloomFilter{}, err
-		}
-		return filter.DecodeToBloomFilter(bloomFilterBytes)
-	}
-
 	footerBlock, err := loadFooterBlock(id, store, blockSize)
 	if err != nil {
 		return nil, nil, filter.BloomFilter{}, err
@@ -191,4 +167,28 @@ func (segment *SortedSegment) offsetRangeOfBlockAt(blockIndex int, blockMetaList
 		endOffset = segment.blockMetaBeginOffset
 	}
 	return blockMeta.BlockBeginOffset, endOffset
+}
+
+// loadBlockMetaList loads the block meta list from the actual object-store.
+// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
+func loadBlockMetaList(id uint64, footerBlock *block.FooterBlock, enableCompression bool, store objectstore.Store) (*block.MetaList, error) {
+	blockMetaBeginOffset, _ := footerBlock.GetOffsetAsInt64At(0)
+	blockMetaEndOffset, _ := footerBlock.GetOffsetAsInt64At(1)
+	blockMetaBytes, err := store.GetRange(PathSuffixForSegment(id), blockMetaBeginOffset, blockMetaEndOffset-blockMetaBeginOffset+1)
+	if err != nil {
+		return nil, err
+	}
+	return block.DecodeToBlockMetaList(blockMetaBytes, enableCompression)
+}
+
+// loadBloomFilter loads the bloom filter from the actual object-store.
+// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
+func loadBloomFilter(id uint64, footerBlock *block.FooterBlock, store objectstore.Store) (filter.BloomFilter, error) {
+	bloomFilterBeginOffset, _ := footerBlock.GetOffsetAsInt64At(2)
+	bloomFilterEndOffset, _ := footerBlock.GetOffsetAsInt64At(3)
+	bloomFilterBytes, err := store.GetRange(PathSuffixForSegment(id), bloomFilterBeginOffset, bloomFilterEndOffset-bloomFilterBeginOffset+1)
+	if err != nil {
+		return filter.BloomFilter{}, err
+	}
+	return filter.DecodeToBloomFilter(bloomFilterBytes)
 }
