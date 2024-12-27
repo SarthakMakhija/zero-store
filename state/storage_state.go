@@ -31,9 +31,17 @@ func NewStorageState(options StorageOptions) (*StorageState, error) {
 	if err != nil {
 		return nil, err
 	}
+	persistentSortedSegments, err := objectStore.NewSortedSegments(
+		store,
+		objectStore.NewSortedSegmentCacheOptions(options.bloomFilterCacheOptions, options.blockMetaListCacheOptions),
+		options.sortedSegmentBlockCompression,
+	)
+	if err != nil {
+		return nil, err
+	}
 	storageState := &StorageState{
 		activeSegment:            memory.NewSortedSegment(segmentIdGenerator.NextId(), options.sortedSegmentSizeInBytes),
-		persistentSortedSegments: objectStore.NewSortedSegments(store),
+		persistentSortedSegments: persistentSortedSegments,
 		segmentIdGenerator:       segmentIdGenerator,
 		closeChannel:             make(chan struct{}),
 		options:                  options,
@@ -147,7 +155,6 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 		return state.persistentSortedSegments.BuildAndWritePersistentSortedSegment(
 			memory.NewAllEntriesSortedSegmentIterator(inMemorySegmentToFlush),
 			inMemorySegmentToFlush.Id(),
-			state.options.sortedSegmentBlockCompression,
 		)
 	}
 	oldestInactiveSegmentIfAvailable := func() *memory.SortedSegment {

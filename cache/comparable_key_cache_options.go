@@ -15,3 +15,11 @@ func NewComparableKeyCacheOptions[K comparable, V any](sizeInBytes uint, entryTT
 		costFn:      costFn,
 	}
 }
+
+func (options ComparableKeyCacheOptions[K, V]) SizeInBytes() uint {
+	return options.sizeInBytes
+}
+
+func (options ComparableKeyCacheOptions[K, V]) EntryTTL() time.Duration {
+	return options.entryTTL
+}

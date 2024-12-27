@@ -1,8 +1,20 @@
 package state
 
 import (
+	"github.com/SarthakMakhija/zero-store/cache"
 	"github.com/SarthakMakhija/zero-store/objectstore"
+	"github.com/SarthakMakhija/zero-store/objectstore/block"
+	"github.com/SarthakMakhija/zero-store/objectstore/filter"
 	"time"
+	"unsafe"
+)
+
+const (
+	bloomFilterCacheSizeInBytes = 8 * 1024 * 1024
+	bloomFilterCacheEntryTTL    = 5 * time.Minute
+
+	blockMetaListCacheSizeInBytes = 16 * 1024 * 1024
+	blockMetaListCacheEntryTTL    = 5 * time.Minute
 )
 
 type StorageOptions struct {
@@ -12,6 +24,8 @@ type StorageOptions struct {
 	sortedSegmentBlockCompression bool
 	inMemoryMode                  bool
 	flushInactiveSegmentDuration  time.Duration
+	bloomFilterCacheOptions       cache.ComparableKeyCacheOptions[uint64, filter.BloomFilter]
+	blockMetaListCacheOptions     cache.ComparableKeyCacheOptions[uint64, *block.MetaList]
 }
 
 type StorageOptionsBuilder struct {
@@ -21,6 +35,8 @@ type StorageOptionsBuilder struct {
 	sortedSegmentBlockCompression bool
 	inMemoryMode                  bool
 	flushInactiveSegmentDuration  time.Duration
+	bloomFilterCacheOptions       cache.ComparableKeyCacheOptions[uint64, filter.BloomFilter]
+	blockMetaListCacheOptions     cache.ComparableKeyCacheOptions[uint64, *block.MetaList]
 }
 
 func NewStorageOptionsBuilder() *StorageOptionsBuilder {
@@ -29,6 +45,20 @@ func NewStorageOptionsBuilder() *StorageOptionsBuilder {
 		sortedSegmentBlockCompression: false,
 		inMemoryMode:                  false,
 		flushInactiveSegmentDuration:  60 * time.Second,
+		bloomFilterCacheOptions: cache.NewComparableKeyCacheOptions[uint64, filter.BloomFilter](
+			bloomFilterCacheSizeInBytes,
+			bloomFilterCacheEntryTTL,
+			func(id uint64, value filter.BloomFilter) uint32 {
+				return uint32(unsafe.Sizeof(id) + unsafe.Sizeof(value))
+			},
+		),
+		blockMetaListCacheOptions: cache.NewComparableKeyCacheOptions[uint64, *block.MetaList](
+			blockMetaListCacheSizeInBytes,
+			blockMetaListCacheEntryTTL,
+			func(id uint64, value *block.MetaList) uint32 {
+				return uint32(unsafe.Sizeof(id) + unsafe.Sizeof(value))
+			},
+		),
 	}
 }
 
@@ -62,6 +92,16 @@ func (builder *StorageOptionsBuilder) WithFlushInactiveSegmentDuration(duration 
 	return builder
 }
 
+func (builder *StorageOptionsBuilder) WithBloomFilterCacheOptions(options cache.ComparableKeyCacheOptions[uint64, filter.BloomFilter]) *StorageOptionsBuilder {
+	builder.bloomFilterCacheOptions = options
+	return builder
+}
+
+func (builder *StorageOptionsBuilder) WithBlockMetaListCacheOptions(options cache.ComparableKeyCacheOptions[uint64, *block.MetaList]) *StorageOptionsBuilder {
+	builder.blockMetaListCacheOptions = options
+	return builder
+}
+
 func (builder *StorageOptionsBuilder) Build() StorageOptions {
 	if !builder.storeType.IsValid() {
 		panic("invalid store type")
@@ -76,5 +116,7 @@ func (builder *StorageOptionsBuilder) Build() StorageOptions {
 		sortedSegmentBlockCompression: builder.sortedSegmentBlockCompression,
 		inMemoryMode:                  builder.inMemoryMode,
 		flushInactiveSegmentDuration:  builder.flushInactiveSegmentDuration,
+		bloomFilterCacheOptions:       builder.bloomFilterCacheOptions,
+		blockMetaListCacheOptions:     builder.blockMetaListCacheOptions,
 	}
 }
