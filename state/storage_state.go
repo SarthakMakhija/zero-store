@@ -145,7 +145,7 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 	//Maybe, acquire exclusive lock in mayBeFlushOldestInactiveSegment()
 	//Or, in updateState, drop the segment from inactiveSegments but move it to another collection "dropped segments"
 	//and when reference count of inactive segment reaches zero, move it out.
-	updateState := func(segmentId uint64, persistentSortedSegment *objectStore.SortedSegment) {
+	updateState := func(segmentId uint64) {
 		state.stateLock.Lock()
 		defer state.stateLock.Unlock()
 
@@ -168,14 +168,14 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 	}
 
 	if oldestInMemorySegmentToFlush := oldestInactiveSegmentIfAvailable(); oldestInMemorySegmentToFlush != nil {
-		persistentSortedSegment, err := buildAndWritePersistentSortedSegment(oldestInMemorySegmentToFlush)
+		_, err := buildAndWritePersistentSortedSegment(oldestInMemorySegmentToFlush)
 		if err != nil {
 			//TODO: what if flush succeeds later on, how will AsyncAwait handle it?
 			oldestInMemorySegmentToFlush.FlushToObjectStoreAsyncAwait().MarkDoneAsError(err)
 			return false, err
 		}
 		oldestInMemorySegmentToFlush.FlushToObjectStoreAsyncAwait().MarkDoneAsOk()
-		updateState(oldestInMemorySegmentToFlush.Id(), persistentSortedSegment)
+		updateState(oldestInMemorySegmentToFlush.Id())
 		return true, nil
 	}
 	return false, nil
