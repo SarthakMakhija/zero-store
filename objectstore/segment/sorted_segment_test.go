@@ -24,13 +24,13 @@ func TestSortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.T) {
 	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
 	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 
-	segment, err := sortedSegmentBuilder.Build(segmentId)
+	segment, blockMetaList, _, err := sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
-	block, err := segment.readBlock(0)
+	readBlock, err := segment.readBlock(0, blockMetaList)
 	assert.NoError(t, err)
 
-	blockIterator := block.SeekToFirst()
+	blockIterator := readBlock.SeekToFirst()
 
 	assert.True(t, blockIterator.IsValid())
 	assert.Equal(t, kv.NewStringValue("raft"), blockIterator.Value())
@@ -55,7 +55,7 @@ func TestSortedSegmentWithATwoBlocks(t *testing.T) {
 	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	segment, err := sortedSegmentBuilder.Build(segmentId)
+	segment, _, _, err := sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
 	assert.Equal(t, 2, segment.noOfBlocks())
@@ -78,13 +78,13 @@ func TestLoadSortedSegmentWithSingleBlockContainingMultipleKeyValuePairs(t *test
 	segmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 	segmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	_, err = segmentBuilder.Build(segmentId)
+	_, _, _, err = segmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
-	segment, err := Load(segmentId, block.DefaultBlockSize, false, store)
+	segment, blockMetaList, _, err := Load(segmentId, block.DefaultBlockSize, false, store)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToFirst()
+	iterator, err := segment.SeekToFirst(blockMetaList)
 	assert.NoError(t, err)
 
 	assert.True(t, iterator.IsValid())
@@ -121,10 +121,10 @@ func TestLoadSortedSegmentWithSingleBlockContainingMultipleKeyValuePairsWithVali
 	segmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 	segmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	_, err = segmentBuilder.Build(segmentId)
+	_, _, _, err = segmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
-	segment, err := Load(1, block.DefaultBlockSize, false, store)
+	segment, _, _, err := Load(1, block.DefaultBlockSize, false, store)
 	assert.NoError(t, err)
 	assert.Equal(t, "consensus", segment.startingKey.RawString())
 	assert.Equal(t, "etcd", segment.endingKey.RawString())
@@ -146,13 +146,13 @@ func TestLoadASortedSegmentWithTwoBlocks(t *testing.T) {
 	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	_, err = sortedSegmentBuilder.Build(segmentId)
+	_, _, _, err = sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
-	segment, err := Load(1, 30, false, store)
+	segment, blockMetaList, _, err := Load(1, 30, false, store)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToFirst()
+	iterator, err := segment.SeekToFirst(blockMetaList)
 	assert.NoError(t, err)
 
 	assert.True(t, iterator.IsValid())
@@ -183,10 +183,10 @@ func TestLoadASortedSegmentWithTwoBlocksWithValidationOfStartingAndEndingKey(t *
 	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	_, err = sortedSegmentBuilder.Build(segmentId)
+	_, _, _, err = sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
-	segment, err := Load(1, 30, false, store)
+	segment, _, _, err := Load(1, 30, false, store)
 	assert.NoError(t, err)
 	assert.Equal(t, "consensus", segment.startingKey.RawString())
 	assert.Equal(t, "distributed", segment.endingKey.RawString())

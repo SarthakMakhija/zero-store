@@ -26,15 +26,15 @@ func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForExistenceUsingBloom(t *t
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	_, err = sortedSegmentBuilder.Build(segmentId)
+	_, _, _, err = sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
-	segment, err := Load(1, block.DefaultBlockSize, false, store)
+	segment, _, bloomFilter, err := Load(1, block.DefaultBlockSize, false, store)
 
 	assert.NoError(t, err)
-	assert.True(t, segment.MayContain(kv.NewStringKey("consensus")))
-	assert.True(t, segment.MayContain(kv.NewStringKey("distributed")))
-	assert.True(t, segment.MayContain(kv.NewStringKey("etcd")))
+	assert.True(t, segment.MayContain(kv.NewStringKey("consensus"), bloomFilter))
+	assert.True(t, segment.MayContain(kv.NewStringKey("distributed"), bloomFilter))
+	assert.True(t, segment.MayContain(kv.NewStringKey("etcd"), bloomFilter))
 }
 
 func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForNonExistenceUsingBloom(t *testing.T) {
@@ -54,14 +54,14 @@ func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForNonExistenceUsingBloom(t
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	_, err = sortedSegmentBuilder.Build(segmentId)
+	_, _, _, err = sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
-	segment, err := Load(1, block.DefaultBlockSize, false, store)
+	segment, _, bloomFilter, err := Load(1, block.DefaultBlockSize, false, store)
 
 	assert.NoError(t, err)
-	assert.False(t, segment.MayContain(kv.NewStringKey("paxos")))
-	assert.False(t, segment.MayContain(kv.NewStringKey("bolt")))
+	assert.False(t, segment.MayContain(kv.NewStringKey("paxos"), bloomFilter))
+	assert.False(t, segment.MayContain(kv.NewStringKey("bolt"), bloomFilter))
 }
 
 func TestLoadASortedSegmentWithTwoBlocksAndCheckKeysForExistenceUsingBloom(t *testing.T) {
@@ -80,14 +80,14 @@ func TestLoadASortedSegmentWithTwoBlocksAndCheckKeysForExistenceUsingBloom(t *te
 	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	_, err = sortedSegmentBuilder.Build(segmentId)
+	_, _, _, err = sortedSegmentBuilder.Build(segmentId)
 	assert.NoError(t, err)
 
-	segment, err := Load(1, 30, false, store)
+	segment, _, bloomFilter, err := Load(1, 30, false, store)
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, segment.noOfBlocks())
-	assert.True(t, segment.MayContain(kv.NewStringKey("consensus")))
-	assert.True(t, segment.MayContain(kv.NewStringKey("distributed")))
-	assert.False(t, segment.MayContain(kv.NewStringKey("etcd")))
+	assert.True(t, segment.MayContain(kv.NewStringKey("consensus"), bloomFilter))
+	assert.True(t, segment.MayContain(kv.NewStringKey("distributed"), bloomFilter))
+	assert.False(t, segment.MayContain(kv.NewStringKey("etcd"), bloomFilter))
 }

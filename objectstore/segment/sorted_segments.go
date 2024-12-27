@@ -25,7 +25,7 @@ func (sortedSegments *SortedSegments) BuildAndWritePersistentSortedSegment(itera
 			return nil, err
 		}
 	}
-	persistentSortedSegment, err := sortedSegmentBuilder.Build(segmentId)
+	persistentSortedSegment, _, _, err := sortedSegmentBuilder.Build(segmentId)
 	if err != nil {
 		return nil, err
 	}

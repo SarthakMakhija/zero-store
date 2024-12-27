@@ -14,6 +14,7 @@ type Iterator struct {
 	sortedSegment *SortedSegment
 	blockIndex    int
 	blockIterator *block.Iterator
+	blockMetaList *block.MetaList
 }
 
 // Key returns the kv.Key from block.Iterator.
@@ -40,7 +41,7 @@ func (iterator *Iterator) Next() error {
 	if !iterator.blockIterator.IsValid() {
 		iterator.blockIndex += 1
 		if iterator.blockIndex < iterator.sortedSegment.noOfBlocks() {
-			readBlock, err := iterator.sortedSegment.readBlock(iterator.blockIndex)
+			readBlock, err := iterator.sortedSegment.readBlock(iterator.blockIndex, iterator.blockMetaList)
 			if err != nil {
 				return err
 			}
