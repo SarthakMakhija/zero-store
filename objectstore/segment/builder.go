@@ -125,6 +125,7 @@ func (builder *SortedSegmentBuilder) Build(id uint64) (*SortedSegment, error) {
 		startingKey:          startingKey,
 		endingKey:            endingKey,
 		store:                builder.store,
+		numberOfBlocks:       builder.blockMetaList.Length(),
 	}, nil
 }
 

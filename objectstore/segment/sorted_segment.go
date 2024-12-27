@@ -21,6 +21,7 @@ type SortedSegment struct {
 	startingKey          kv.Key
 	endingKey            kv.Key
 	store                objectstore.Store
+	numberOfBlocks       int
 }
 
 // Load loads the entire SortedSegment from the given rootPath.
@@ -92,6 +93,7 @@ func Load(id uint64, blockSize uint, enableCompression bool, store objectstore.S
 		startingKey:          startingKey,
 		endingKey:            endingKey,
 		store:                store,
+		numberOfBlocks:       blockMetaList.Length(),
 	}, nil
 }
 
@@ -155,7 +157,7 @@ func (segment *SortedSegment) Id() uint64 {
 
 // noOfBlocks returns the number of blocks in SortedSegment.
 func (segment *SortedSegment) noOfBlocks() int {
-	return segment.blockMetaList.Length()
+	return segment.numberOfBlocks
 }
 
 // readBlock reads the block at the given blockIndex.
