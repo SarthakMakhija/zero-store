@@ -98,11 +98,11 @@ type AllEntriesSortedSegmentIterator struct {
 }
 
 // NewAllEntriesSortedSegmentIterator creates a new instance of AllEntriesSortedSegmentIterator.
-func NewAllEntriesSortedSegmentIterator(segment *SortedSegment) AllEntriesSortedSegmentIterator {
+func NewAllEntriesSortedSegmentIterator(segment *SortedSegment) *AllEntriesSortedSegmentIterator {
 	iterator := segment.entries.NewIterator()
 	iterator.SeekToFirst()
 
-	return AllEntriesSortedSegmentIterator{
+	return &AllEntriesSortedSegmentIterator{
 		internalIterator: iterator,
 	}
 }

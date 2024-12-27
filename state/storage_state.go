@@ -15,14 +15,14 @@ import (
 var DbStopped = errors.New("db is stopped, can not perform the operation")
 
 type StorageState struct {
-	activeSegment      *memory.SortedSegment
-	inactiveSegments   []*memory.SortedSegment
-	persistentSegments map[uint64]*objectStore.SortedSegment
-	segmentIdGenerator *SegmentIdGenerator
-	closeChannel       chan struct{}
-	options            StorageOptions
-	store              objectstore.Store
-	stateLock          sync.RWMutex
+	activeSegment            *memory.SortedSegment
+	inactiveSegments         []*memory.SortedSegment
+	persistentSortedSegments *objectStore.SortedSegments
+	segmentIdGenerator       *SegmentIdGenerator
+	closeChannel             chan struct{}
+	options                  StorageOptions
+	store                    objectstore.Store
+	stateLock                sync.RWMutex
 }
 
 func NewStorageState(options StorageOptions) (*StorageState, error) {
@@ -32,12 +32,12 @@ func NewStorageState(options StorageOptions) (*StorageState, error) {
 		return nil, err
 	}
 	storageState := &StorageState{
-		activeSegment:      memory.NewSortedSegment(segmentIdGenerator.NextId(), options.sortedSegmentSizeInBytes),
-		persistentSegments: make(map[uint64]*objectStore.SortedSegment),
-		segmentIdGenerator: segmentIdGenerator,
-		closeChannel:       make(chan struct{}),
-		options:            options,
-		store:              store,
+		activeSegment:            memory.NewSortedSegment(segmentIdGenerator.NextId(), options.sortedSegmentSizeInBytes),
+		persistentSortedSegments: objectStore.NewSortedSegments(store),
+		segmentIdGenerator:       segmentIdGenerator,
+		closeChannel:             make(chan struct{}),
+		options:                  options,
+		store:                    store,
 	}
 
 	if !options.inMemoryMode {
@@ -142,18 +142,13 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 		defer state.stateLock.Unlock()
 
 		state.inactiveSegments = state.inactiveSegments[1:]
-		state.persistentSegments[segmentId] = persistentSortedSegment
 	}
 	buildAndWritePersistentSortedSegment := func(inMemorySegmentToFlush *memory.SortedSegment) (*objectStore.SortedSegment, error) {
-		sortedSegmentBuilder := objectStore.NewSortedSegmentBuilderWithDefaultBlockSize(state.store, state.options.sortedSegmentBlockCompression)
-		inMemorySegmentToFlush.AllEntries(func(key kv.Key, value kv.Value) {
-			sortedSegmentBuilder.Add(key, value)
-		})
-		persistentSortedSegment, err := sortedSegmentBuilder.Build(inMemorySegmentToFlush.Id())
-		if err != nil {
-			return nil, err
-		}
-		return persistentSortedSegment, nil
+		return state.persistentSortedSegments.BuildAndWritePersistentSortedSegment(
+			memory.NewAllEntriesSortedSegmentIterator(inMemorySegmentToFlush),
+			inMemorySegmentToFlush.Id(),
+			state.options.sortedSegmentBlockCompression,
+		)
 	}
 	oldestInactiveSegmentIfAvailable := func() *memory.SortedSegment {
 		state.stateLock.RLock()

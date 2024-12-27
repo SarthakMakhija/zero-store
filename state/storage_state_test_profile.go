@@ -3,9 +3,6 @@
 package state
 
 import (
-	objectStore "github.com/SarthakMakhija/zero-store/objectstore/segment"
-	"os"
-	"path/filepath"
 	"slices"
 )
 
@@ -26,14 +23,10 @@ func (state *StorageState) sortedInactiveSegmentIds() []uint64 {
 
 // hasPersistentSortedSegmentFor returns true if there is a persistent-sorted segment for the given segment id.
 func (state *StorageState) hasPersistentSortedSegmentFor(id uint64) bool {
-	_, ok := state.persistentSegments[id]
-	return ok
+	return state.persistentSortedSegments.HasPersistentSortedSegmentFor(id)
 }
 
 // removeAllPersistentSortedSegmentsIn removes the persistent sorted segment file.
 func (state *StorageState) removeAllPersistentSortedSegmentsIn(directory string) {
-	for segmentId, _ := range state.persistentSegments {
-		delete(state.persistentSegments, segmentId)
-		_ = os.Remove(filepath.Join(directory, objectStore.PathSuffixForSegment(segmentId)))
-	}
+	state.persistentSortedSegments.RemoveAllPersistentSortedSegmentsIn(directory)
 }
