@@ -124,6 +124,7 @@ func (builder *SortedSegmentBuilder) Build(id uint64) (*SortedSegment, *block.Me
 		endingKey:            endingKey,
 		store:                builder.store,
 		numberOfBlocks:       builder.blockMetaList.Length(),
+		footerBlock:          footerBlock,
 	}, builder.blockMetaList, bloomFilter, nil
 }
 

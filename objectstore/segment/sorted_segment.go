@@ -20,6 +20,7 @@ type SortedSegment struct {
 	endingKey            kv.Key
 	store                objectstore.Store
 	numberOfBlocks       int
+	footerBlock          *block.FooterBlock
 }
 
 // Load loads the entire SortedSegment from the given rootPath.
@@ -90,6 +91,7 @@ func Load(id uint64, blockSize uint, enableCompression bool, store objectstore.S
 		endingKey:            endingKey,
 		store:                store,
 		numberOfBlocks:       blockMetaList.Length(),
+		footerBlock:          footerBlock,
 	}, blockMetaList, bloomFilter, nil
 }
 
