@@ -120,12 +120,6 @@ func (segment *SortedSegment) seekToKey(key kv.Key, blockMetaList *block.MetaLis
 	}, nil
 }
 
-// mayContain uses bloom filter to determine if the given key maybe present in the SortedSegment.
-// Returns true if the key MAYBE present, false otherwise.
-func (segment *SortedSegment) mayContain(key kv.Key, bloomFilter filter.BloomFilter) bool {
-	return bloomFilter.MayContain(key)
-}
-
 // noOfBlocks returns the number of blocks in SortedSegment.
 func (segment *SortedSegment) noOfBlocks() int {
 	return segment.numberOfBlocks

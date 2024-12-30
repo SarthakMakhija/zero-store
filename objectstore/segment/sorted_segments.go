@@ -100,7 +100,7 @@ func (sortedSegments *SortedSegments) MayContain(key kv.Key, segmentId uint64) (
 	if err != nil {
 		return false, err
 	}
-	return sortedSegment.mayContain(key, bloomFilter), nil
+	return bloomFilter.MayContain(key), nil
 }
 
 func (sortedSegments *SortedSegments) getOrFetchBlockMetaList(sortedSegment *SortedSegment) (*block.MetaList, error) {
