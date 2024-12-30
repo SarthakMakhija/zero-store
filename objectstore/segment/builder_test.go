@@ -20,10 +20,10 @@ func TestBuildASortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
-	segmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	segmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	segmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
+	segmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 
-	segment, blockMetaList, _, err := segmentBuilder.Build(segmentId)
+	segment, blockMetaList, _, err := segmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
 	readBlock, err := segment.readBlock(0, blockMetaList)
@@ -52,12 +52,12 @@ func TestBuildASortedSegmentWithASingleBlockContainingMultipleKeyValues(t *testi
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
-	segmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	segmentBuilder.Add(kv.NewStringKey("badgerDB"), kv.NewStringValue("LSM"))
-	segmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	segmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("etcd"))
+	segmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
+	segmentBuilder.add(kv.NewStringKey("badgerDB"), kv.NewStringValue("LSM"))
+	segmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	segmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("etcd"))
 
-	segment, blockMetaList, _, err := segmentBuilder.Build(segmentId)
+	segment, blockMetaList, _, err := segmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
 	readBlock, err := segment.readBlock(0, blockMetaList)
@@ -96,11 +96,11 @@ func TestBuildASortedSegmentWithTwoBlocks(t *testing.T) {
 		store.Close()
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
-	segmentBuilder := NewSortedSegmentBuilder(store, 30, false)
-	segmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	segmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	segmentBuilder := newSortedSegmentBuilder(store, 30, false)
+	segmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	segmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	segment, blockMetaList, _, err := segmentBuilder.Build(segmentId)
+	segment, blockMetaList, _, err := segmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
 	assertBlockWithASingleKeyValue := func(blockIndex int, value kv.Value) {

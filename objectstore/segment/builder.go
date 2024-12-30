@@ -21,14 +21,14 @@ type SortedSegmentBuilder struct {
 	store              objectstore.Store
 }
 
-// NewSortedSegmentBuilderWithDefaultBlockSize creates a new instance of SortedSegmentBuilder with block.DefaultBlockSize.
-func NewSortedSegmentBuilderWithDefaultBlockSize(store objectstore.Store, enableCompression bool) *SortedSegmentBuilder {
-	return NewSortedSegmentBuilder(store, block.DefaultBlockSize, enableCompression)
+// newSortedSegmentBuilderWithDefaultBlockSize creates a new instance of SortedSegmentBuilder with block.DefaultBlockSize.
+func newSortedSegmentBuilderWithDefaultBlockSize(store objectstore.Store, enableCompression bool) *SortedSegmentBuilder {
+	return newSortedSegmentBuilder(store, block.DefaultBlockSize, enableCompression)
 }
 
-// NewSortedSegmentBuilder creates a new instance of SortedSegmentBuilder with the given block size.
+// newSortedSegmentBuilder creates a new instance of SortedSegmentBuilder with the given block size.
 // The specified block size will be used to limit the size of each block that will be a part of the final sorted segment.
-func NewSortedSegmentBuilder(store objectstore.Store, blockSize uint, enableCompression bool) *SortedSegmentBuilder {
+func newSortedSegmentBuilder(store objectstore.Store, blockSize uint, enableCompression bool) *SortedSegmentBuilder {
 	return &SortedSegmentBuilder{
 		blockBuilder:       block.NewBlockBuilder(blockSize),
 		blockMetaList:      block.NewBlockMetaList(enableCompression),
@@ -38,13 +38,13 @@ func NewSortedSegmentBuilder(store objectstore.Store, blockSize uint, enableComp
 	}
 }
 
-// Add adds the key/value pair in the current block builder.
-// Add involves:
+// add adds the key/value pair in the current block builder.
+// add involves:
 // 1) Keeping a track of the starting key and ending key of the current block.
 // 2) Adding the key to the filter.BloomFilter.
 // 3) Adding the key/value pair to the current block.Builder.
 // 4) Finishing the current block, if it is full and starting a new block (or block.Builder).
-func (builder *SortedSegmentBuilder) Add(key kv.Key, value kv.Value) {
+func (builder *SortedSegmentBuilder) add(key kv.Key, value kv.Value) {
 	if builder.startingKey.IsRawKeyEmpty() {
 		builder.startingKey = key
 	}
@@ -58,7 +58,7 @@ func (builder *SortedSegmentBuilder) Add(key kv.Key, value kv.Value) {
 	builder.blockBuilder.Add(key, value)
 }
 
-// Build builds the SortedSegment using the given segment id.
+// build builds the SortedSegment using the given segment id.
 // It involves the following:
 // 1) Encoding the blocks of SortedSegment.
 // 2) Writing the entire SortedSegment to object storage.
@@ -74,7 +74,7 @@ func (builder *SortedSegmentBuilder) Add(key kv.Key, value kv.Value) {
 // The size of the data blocks is fixed, defaults to block.DefaultBlockSize.
 // Metadata and bloom filter are variable length byte sections.
 // Footer block is a fixed size block, defaults to block.DefaultBlockSize.
-func (builder *SortedSegmentBuilder) Build(id uint64) (*SortedSegment, *block.MetaList, filter.BloomFilter, error) {
+func (builder *SortedSegmentBuilder) build(id uint64) (*SortedSegment, *block.MetaList, filter.BloomFilter, error) {
 	blockMetaBeginOffset := func() uint32 {
 		return uint32(len(builder.allBlocksData))
 	}

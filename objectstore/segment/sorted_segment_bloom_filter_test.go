@@ -21,12 +21,12 @@ func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForExistenceUsingBloom(t *t
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
-	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
-	sortedSegmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
+	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
+	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	_, _, _, err = sortedSegmentBuilder.Build(segmentId)
+	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
 	segment, _, bloomFilter, err := Load(1, block.DefaultBlockSize, false, store)
@@ -49,12 +49,12 @@ func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForNonExistenceUsingBloom(t
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
-	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
-	sortedSegmentBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
+	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
+	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
 
-	_, _, _, err = sortedSegmentBuilder.Build(segmentId)
+	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
 	segment, _, bloomFilter, err := Load(1, block.DefaultBlockSize, false, store)
@@ -76,11 +76,11 @@ func TestLoadASortedSegmentWithTwoBlocksAndCheckKeysForExistenceUsingBloom(t *te
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
-	sortedSegmentBuilder := NewSortedSegmentBuilder(store, 30, false)
-	sortedSegmentBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegmentBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder := newSortedSegmentBuilder(store, 30, false)
+	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
-	_, _, _, err = sortedSegmentBuilder.Build(segmentId)
+	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
 	segment, _, bloomFilter, err := Load(1, 30, false, store)

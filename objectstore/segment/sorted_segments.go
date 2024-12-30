@@ -39,14 +39,14 @@ func NewSortedSegments(store objectstore.Store, options SortedSegmentCacheOption
 }
 
 func (sortedSegments *SortedSegments) BuildAndWritePersistentSortedSegment(iterator iterator.Iterator, segmentId uint64) (*SortedSegment, error) {
-	sortedSegmentBuilder := NewSortedSegmentBuilderWithDefaultBlockSize(sortedSegments.store, sortedSegments.enableCompression)
+	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(sortedSegments.store, sortedSegments.enableCompression)
 	for iterator.IsValid() {
-		sortedSegmentBuilder.Add(iterator.Key(), iterator.Value())
+		sortedSegmentBuilder.add(iterator.Key(), iterator.Value())
 		if err := iterator.Next(); err != nil {
 			return nil, err
 		}
 	}
-	persistentSortedSegment, blockMetaList, bloomFilter, err := sortedSegmentBuilder.Build(segmentId)
+	persistentSortedSegment, blockMetaList, bloomFilter, err := sortedSegmentBuilder.build(segmentId)
 	if err != nil {
 		return nil, err
 	}

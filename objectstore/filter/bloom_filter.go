@@ -29,7 +29,7 @@ func DecodeToBloomFilter(data []byte) (BloomFilter, error) {
 	return newBloomFilter(filter), nil
 }
 
-// Add adds the given key in the bloom filter.
+// add adds the given key in the bloom filter.
 func (filter BloomFilter) add(key kv.Key) {
 	filter.filter.Add(key.RawBytes())
 }
