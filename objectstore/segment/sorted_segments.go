@@ -68,11 +68,7 @@ func (sortedSegments *SortedSegments) Load(segmentId uint64, blockSize uint, ena
 }
 
 func (sortedSegments *SortedSegments) SeekToFirst(segmentId uint64) (*Iterator, error) {
-	sortedSegment, ok := sortedSegments.persistentSegments[segmentId]
-	if !ok {
-		return nil, ErrNoSegmentForTheSegmentId
-	}
-	blockMetaList, err := sortedSegments.getOrFetchBlockMetaList(sortedSegment)
+	sortedSegment, blockMetaList, err := sortedSegments.getBlockMetaListFor(segmentId)
 	if err != nil {
 		return nil, err
 	}
@@ -80,11 +76,7 @@ func (sortedSegments *SortedSegments) SeekToFirst(segmentId uint64) (*Iterator, 
 }
 
 func (sortedSegments *SortedSegments) SeekToKey(key kv.Key, segmentId uint64) (*Iterator, error) {
-	sortedSegment, ok := sortedSegments.persistentSegments[segmentId]
-	if !ok {
-		return nil, ErrNoSegmentForTheSegmentId
-	}
-	blockMetaList, err := sortedSegments.getOrFetchBlockMetaList(sortedSegment)
+	sortedSegment, blockMetaList, err := sortedSegments.getBlockMetaListFor(segmentId)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +93,18 @@ func (sortedSegments *SortedSegments) MayContain(key kv.Key, segmentId uint64) (
 		return false, err
 	}
 	return bloomFilter.MayContain(key), nil
+}
+
+func (sortedSegments *SortedSegments) getBlockMetaListFor(segmentId uint64) (*SortedSegment, *block.MetaList, error) {
+	sortedSegment, ok := sortedSegments.persistentSegments[segmentId]
+	if !ok {
+		return nil, nil, ErrNoSegmentForTheSegmentId
+	}
+	blockMetaList, err := sortedSegments.getOrFetchBlockMetaList(sortedSegment)
+	if err != nil {
+		return nil, nil, err
+	}
+	return sortedSegment, blockMetaList, nil
 }
 
 func (sortedSegments *SortedSegments) getOrFetchBlockMetaList(sortedSegment *SortedSegment) (*block.MetaList, error) {
