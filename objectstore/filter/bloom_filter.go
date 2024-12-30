@@ -29,16 +29,6 @@ func DecodeToBloomFilter(data []byte) (BloomFilter, error) {
 	return newBloomFilter(filter), nil
 }
 
-// add adds the given key in the bloom filter.
-func (filter BloomFilter) add(key kv.Key) {
-	filter.filter.Add(key.RawBytes())
-}
-
-// MayContain returns true if the given key may be present in the bloom filter, false otherwise.
-func (filter BloomFilter) MayContain(key kv.Key) bool {
-	return filter.filter.Test(key.RawBytes())
-}
-
 // Encode returns the bloom filter bits as byte slice.
 func (filter BloomFilter) Encode() ([]byte, error) {
 	var buffer bytes.Buffer
@@ -52,4 +42,14 @@ func (filter BloomFilter) Encode() ([]byte, error) {
 		return nil, err
 	}
 	return buffer.Bytes(), nil
+}
+
+// MayContain returns true if the given key may be present in the bloom filter, false otherwise.
+func (filter BloomFilter) MayContain(key kv.Key) bool {
+	return filter.filter.Test(key.RawBytes())
+}
+
+// add adds the given key in the bloom filter.
+func (filter BloomFilter) add(key kv.Key) {
+	filter.filter.Add(key.RawBytes())
 }
