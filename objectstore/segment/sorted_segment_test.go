@@ -81,10 +81,10 @@ func TestLoadSortedSegmentWithSingleBlockContainingMultipleKeyValuePairs(t *test
 	_, _, _, err = segmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	segment, blockMetaList, _, err := Load(segmentId, block.DefaultBlockSize, false, store)
+	segment, blockMetaList, _, err := load(segmentId, block.DefaultBlockSize, false, store)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToFirst(blockMetaList)
+	iterator, err := segment.seekToFirst(blockMetaList)
 	assert.NoError(t, err)
 
 	assert.True(t, iterator.IsValid())
@@ -124,7 +124,7 @@ func TestLoadSortedSegmentWithSingleBlockContainingMultipleKeyValuePairsWithVali
 	_, _, _, err = segmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	segment, _, _, err := Load(1, block.DefaultBlockSize, false, store)
+	segment, _, _, err := load(1, block.DefaultBlockSize, false, store)
 	assert.NoError(t, err)
 	assert.Equal(t, "consensus", segment.startingKey.RawString())
 	assert.Equal(t, "etcd", segment.endingKey.RawString())
@@ -149,10 +149,10 @@ func TestLoadASortedSegmentWithTwoBlocks(t *testing.T) {
 	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	segment, blockMetaList, _, err := Load(1, 30, false, store)
+	segment, blockMetaList, _, err := load(1, 30, false, store)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToFirst(blockMetaList)
+	iterator, err := segment.seekToFirst(blockMetaList)
 	assert.NoError(t, err)
 
 	assert.True(t, iterator.IsValid())
@@ -186,7 +186,7 @@ func TestLoadASortedSegmentWithTwoBlocksWithValidationOfStartingAndEndingKey(t *
 	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	segment, _, _, err := Load(1, 30, false, store)
+	segment, _, _, err := load(1, 30, false, store)
 	assert.NoError(t, err)
 	assert.Equal(t, "consensus", segment.startingKey.RawString())
 	assert.Equal(t, "distributed", segment.endingKey.RawString())

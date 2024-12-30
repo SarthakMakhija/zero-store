@@ -23,9 +23,9 @@ type SortedSegment struct {
 	footerBlock          *block.FooterBlock
 }
 
-// Load loads the entire SortedSegment from the given rootPath.
+// load loads the entire SortedSegment from the given rootPath.
 // Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
-func Load(id uint64, blockSize uint, enableCompression bool, store objectstore.Store) (*SortedSegment, *block.MetaList, filter.BloomFilter, error) {
+func load(id uint64, blockSize uint, enableCompression bool, store objectstore.Store) (*SortedSegment, *block.MetaList, filter.BloomFilter, error) {
 	// loadFooterBlock loads the footer block from the actual object-store.
 	// The last block of the SortedSegment contains offsets.
 	// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
@@ -71,11 +71,11 @@ func Load(id uint64, blockSize uint, enableCompression bool, store objectstore.S
 	}, blockMetaList, bloomFilter, nil
 }
 
-// SeekToFirst seeks to the first key in the SortedSegment.
+// seekToFirst seeks to the first key in the SortedSegment.
 // First key is a part of the first block, so the block at index 0 is read and a block.Iterator
 // is created over the read block.
 // It is used in compact.Compaction.
-func (segment *SortedSegment) SeekToFirst(blockMetaList *block.MetaList) (*Iterator, error) {
+func (segment *SortedSegment) seekToFirst(blockMetaList *block.MetaList) (*Iterator, error) {
 	readBlock, err := segment.readBlock(0, blockMetaList)
 	if err != nil {
 		return nil, err
@@ -88,13 +88,13 @@ func (segment *SortedSegment) SeekToFirst(blockMetaList *block.MetaList) (*Itera
 	}, nil
 }
 
-// SeekToKey seeks to the block that contains a key greater than or equal to the given key.
+// seekToKey seeks to the block that contains a key greater than or equal to the given key.
 // It involves the following:
 // 1) Identify the block.Meta that may contain the key.
 // 2) Read the block identified by blockIndex.
 // 3) Seek to the key within the read block (seeks to the offset where the key >= the given key)
 // 4) Handle the case where block.Iterator may become invalid.
-func (segment *SortedSegment) SeekToKey(key kv.Key, blockMetaList *block.MetaList) (*Iterator, error) {
+func (segment *SortedSegment) seekToKey(key kv.Key, blockMetaList *block.MetaList) (*Iterator, error) {
 	_, blockIndex := blockMetaList.MaybeBlockMetaContaining(key)
 	readBlock, err := segment.readBlock(blockIndex, blockMetaList)
 	if err != nil {
@@ -120,14 +120,14 @@ func (segment *SortedSegment) SeekToKey(key kv.Key, blockMetaList *block.MetaLis
 	}, nil
 }
 
-// MayContain uses bloom filter to determine if the given key maybe present in the SortedSegment.
+// mayContain uses bloom filter to determine if the given key maybe present in the SortedSegment.
 // Returns true if the key MAYBE present, false otherwise.
-func (segment *SortedSegment) MayContain(key kv.Key, bloomFilter filter.BloomFilter) bool {
+func (segment *SortedSegment) mayContain(key kv.Key, bloomFilter filter.BloomFilter) bool {
 	return bloomFilter.MayContain(key)
 }
 
-// Id returns the id of SortedSegment.
-func (segment *SortedSegment) Id() uint64 {
+// segmentId returns the id of SortedSegment.
+func (segment *SortedSegment) segmentId() uint64 {
 	return segment.id
 }
 

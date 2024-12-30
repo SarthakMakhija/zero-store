@@ -29,12 +29,12 @@ func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForExistenceUsingBloom(t *t
 	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	segment, _, bloomFilter, err := Load(1, block.DefaultBlockSize, false, store)
+	segment, _, bloomFilter, err := load(1, block.DefaultBlockSize, false, store)
 
 	assert.NoError(t, err)
-	assert.True(t, segment.MayContain(kv.NewStringKey("consensus"), bloomFilter))
-	assert.True(t, segment.MayContain(kv.NewStringKey("distributed"), bloomFilter))
-	assert.True(t, segment.MayContain(kv.NewStringKey("etcd"), bloomFilter))
+	assert.True(t, segment.mayContain(kv.NewStringKey("consensus"), bloomFilter))
+	assert.True(t, segment.mayContain(kv.NewStringKey("distributed"), bloomFilter))
+	assert.True(t, segment.mayContain(kv.NewStringKey("etcd"), bloomFilter))
 }
 
 func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForNonExistenceUsingBloom(t *testing.T) {
@@ -57,11 +57,11 @@ func TestLoadSortedSegmentWithSingleBlockAndCheckKeysForNonExistenceUsingBloom(t
 	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	segment, _, bloomFilter, err := Load(1, block.DefaultBlockSize, false, store)
+	segment, _, bloomFilter, err := load(1, block.DefaultBlockSize, false, store)
 
 	assert.NoError(t, err)
-	assert.False(t, segment.MayContain(kv.NewStringKey("paxos"), bloomFilter))
-	assert.False(t, segment.MayContain(kv.NewStringKey("bolt"), bloomFilter))
+	assert.False(t, segment.mayContain(kv.NewStringKey("paxos"), bloomFilter))
+	assert.False(t, segment.mayContain(kv.NewStringKey("bolt"), bloomFilter))
 }
 
 func TestLoadASortedSegmentWithTwoBlocksAndCheckKeysForExistenceUsingBloom(t *testing.T) {
@@ -83,11 +83,11 @@ func TestLoadASortedSegmentWithTwoBlocksAndCheckKeysForExistenceUsingBloom(t *te
 	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	segment, _, bloomFilter, err := Load(1, 30, false, store)
+	segment, _, bloomFilter, err := load(1, 30, false, store)
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, segment.noOfBlocks())
-	assert.True(t, segment.MayContain(kv.NewStringKey("consensus"), bloomFilter))
-	assert.True(t, segment.MayContain(kv.NewStringKey("distributed"), bloomFilter))
-	assert.False(t, segment.MayContain(kv.NewStringKey("etcd"), bloomFilter))
+	assert.True(t, segment.mayContain(kv.NewStringKey("consensus"), bloomFilter))
+	assert.True(t, segment.mayContain(kv.NewStringKey("distributed"), bloomFilter))
+	assert.False(t, segment.mayContain(kv.NewStringKey("etcd"), bloomFilter))
 }

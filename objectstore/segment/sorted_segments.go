@@ -59,7 +59,7 @@ func (sortedSegments *SortedSegments) Load(segmentId uint64, blockSize uint, ena
 	if ok {
 		return sortedSegment, nil
 	}
-	sortedSegment, blockMetaList, bloomFilter, err := Load(segmentId, blockSize, enableCompression, sortedSegments.store)
+	sortedSegment, blockMetaList, bloomFilter, err := load(segmentId, blockSize, enableCompression, sortedSegments.store)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (sortedSegments *SortedSegments) SeekToFirst(segmentId uint64) (*Iterator, 
 	if err != nil {
 		return nil, err
 	}
-	return sortedSegment.SeekToFirst(blockMetaList)
+	return sortedSegment.seekToFirst(blockMetaList)
 }
 
 func (sortedSegments *SortedSegments) SeekToKey(key kv.Key, segmentId uint64) (*Iterator, error) {
@@ -88,7 +88,7 @@ func (sortedSegments *SortedSegments) SeekToKey(key kv.Key, segmentId uint64) (*
 	if err != nil {
 		return nil, err
 	}
-	return sortedSegment.SeekToKey(key, blockMetaList)
+	return sortedSegment.seekToKey(key, blockMetaList)
 }
 
 func (sortedSegments *SortedSegments) MayContain(key kv.Key, segmentId uint64) (bool, error) {
@@ -100,7 +100,7 @@ func (sortedSegments *SortedSegments) MayContain(key kv.Key, segmentId uint64) (
 	if err != nil {
 		return false, err
 	}
-	return sortedSegment.MayContain(key, bloomFilter), nil
+	return sortedSegment.mayContain(key, bloomFilter), nil
 }
 
 func (sortedSegments *SortedSegments) getOrFetchBlockMetaList(sortedSegment *SortedSegment) (*block.MetaList, error) {

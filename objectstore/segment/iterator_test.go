@@ -26,7 +26,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingSingleKeyValue(t *te
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToFirst(blockMetaList)
+	iterator, err := segment.seekToFirst(blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -58,7 +58,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingMultipleKeyValues(t 
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToFirst(blockMetaList)
+	iterator, err := segment.seekToFirst(blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -99,7 +99,7 @@ func TestIterateOverASortedSegmentWithTwoBlocks(t *testing.T) {
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToFirst(blockMetaList)
+	iterator, err := segment.seekToFirst(blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -134,7 +134,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingSingleKeyValueUsingS
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToKey(kv.NewStringKey("consensus"), blockMetaList)
+	iterator, err := segment.seekToKey(kv.NewStringKey("consensus"), blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -166,7 +166,7 @@ func TestIterateOverAnSortedSegmentWithASingleBlockContainingMultipleKeyValuesUs
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToKey(kv.NewStringKey("contribute"), blockMetaList)
+	iterator, err := segment.seekToKey(kv.NewStringKey("contribute"), blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -203,7 +203,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingMultipleKeyValuesUsi
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToKey(kv.NewStringKey("consensus"), blockMetaList)
+	iterator, err := segment.seekToKey(kv.NewStringKey("consensus"), blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -244,7 +244,7 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKey(t *testing.T) {
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToKey(kv.NewStringKey("consensus"), blockMetaList)
+	iterator, err := segment.seekToKey(kv.NewStringKey("consensus"), blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -275,7 +275,7 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKeyWithTheKeyLessThanT
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.SeekToKey(kv.NewStringKey("bolt"), blockMetaList)
+	iterator, err := segment.seekToKey(kv.NewStringKey("bolt"), blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
