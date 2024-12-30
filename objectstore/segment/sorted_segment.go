@@ -126,11 +126,6 @@ func (segment *SortedSegment) mayContain(key kv.Key, bloomFilter filter.BloomFil
 	return bloomFilter.MayContain(key)
 }
 
-// segmentId returns the id of SortedSegment.
-func (segment *SortedSegment) segmentId() uint64 {
-	return segment.id
-}
-
 // noOfBlocks returns the number of blocks in SortedSegment.
 func (segment *SortedSegment) noOfBlocks() int {
 	return segment.numberOfBlocks
