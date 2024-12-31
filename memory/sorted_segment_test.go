@@ -15,31 +15,48 @@ func TestEmptySortedSegment(t *testing.T) {
 
 func TestSortedSegmentWithASingleKey(t *testing.T) {
 	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
-	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("raft"))
 
-	value, ok := sortedSegment.Get(kv.NewStringKey("consensus"))
+	value, ok := sortedSegment.Get(kv.NewStringKeyWithTimestamp("consensus", 5))
 	assert.True(t, ok)
 	assert.Equal(t, kv.NewStringValue("raft"), value)
+}
+
+func TestSortedSegmentWithASingleKeyIncludingTimestampWhichReturnsTheValueOfTheKeyWithTimestampLessThanOrEqualToTheGiven(t *testing.T) {
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 4), kv.NewStringValue("raft"))
+
+	value, ok := sortedSegment.Get(kv.NewStringKeyWithTimestamp("consensus", 5))
+	assert.True(t, ok)
+	assert.Equal(t, kv.NewStringValue("raft"), value)
+}
+
+func TestSortedSegmentWithASingleKeyIncludingTimestampDoesNotReturnTheValueOfTheKeyWithTimestampLessThanOrEqualToTheGiven(t *testing.T) {
+	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 4), kv.NewStringValue("raft"))
+
+	_, ok := sortedSegment.Get(kv.NewStringKeyWithTimestamp("consensus", 2))
+	assert.False(t, ok)
 }
 
 func TestSortedSegmentWithANonExistentKey(t *testing.T) {
 	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
 
-	value, ok := sortedSegment.Get(kv.NewStringKey("consensus"))
+	value, ok := sortedSegment.Get(kv.NewStringKeyWithTimestamp("consensus", 6))
 	assert.False(t, ok)
 	assert.Equal(t, kv.EmptyValue, value)
 }
 
 func TestSortedSegmentWithMultipleKeys(t *testing.T) {
 	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
-	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegment.Set(kv.NewStringKey("storage"), kv.NewStringValue("NVMe"))
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("raft"))
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("storage", 5), kv.NewStringValue("NVMe"))
 
-	value, ok := sortedSegment.Get(kv.NewStringKey("consensus"))
+	value, ok := sortedSegment.Get(kv.NewStringKeyWithTimestamp("consensus", 5))
 	assert.True(t, ok)
 	assert.Equal(t, kv.NewStringValue("raft"), value)
 
-	value, ok = sortedSegment.Get(kv.NewStringKey("storage"))
+	value, ok = sortedSegment.Get(kv.NewStringKeyWithTimestamp("storage", 5))
 	assert.True(t, ok)
 	assert.Equal(t, kv.NewStringValue("NVMe"), value)
 }
@@ -47,38 +64,22 @@ func TestSortedSegmentWithMultipleKeys(t *testing.T) {
 func TestSortedSegmentWithADelete(t *testing.T) {
 	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
 
-	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegment.Delete(kv.NewStringKey("consensus"))
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("raft"))
+	sortedSegment.Delete(kv.NewStringKeyWithTimestamp("consensus", 6))
 
-	value, ok := sortedSegment.Get(kv.NewStringKey("consensus"))
+	value, ok := sortedSegment.Get(kv.NewStringKeyWithTimestamp("consensus", 6))
 	assert.False(t, ok)
 	assert.Equal(t, kv.EmptyValue, value)
 }
 
-func TestSortedSegmentAllEntries(t *testing.T) {
+func TestSortedSegmentWithADeleteAndAGetWithTimestampHigherThanThatOfTheKeyInMemtable(t *testing.T) {
 	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
-	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegment.Set(kv.NewStringKey("bolt"), kv.NewStringValue("kv"))
-	sortedSegment.Set(kv.NewStringKey("etcd"), kv.NewStringValue("distributed"))
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("raft"))
+	sortedSegment.Delete(kv.NewStringKeyWithTimestamp("consensus", 6))
 
-	var keys []kv.Key
-	var values []kv.Value
-	sortedSegment.AllEntries(func(key kv.Key, value kv.Value) {
-		keys = append(keys, key)
-		values = append(values, value)
-	})
-
-	assert.Equal(t, []kv.Key{
-		kv.NewStringKey("bolt"),
-		kv.NewStringKey("consensus"),
-		kv.NewStringKey("etcd"),
-	}, keys)
-
-	assert.Equal(t, []kv.Value{
-		kv.NewStringValue("kv"),
-		kv.NewStringValue("raft"),
-		kv.NewStringValue("distributed"),
-	}, values)
+	value, ok := sortedSegment.Get(kv.NewStringKeyWithTimestamp("consensus", 7))
+	assert.False(t, ok)
+	assert.Equal(t, kv.EmptyValue, value)
 }
 
 func TestSortedSegmentHasEnoughSpaceToFitTheRequiredSize(t *testing.T) {
@@ -90,19 +91,25 @@ func TestSortedSegmentDoesNotHaveEnoughSpaceToFitTheRequiredSize(t *testing.T) {
 	sortedSegmentSizeInBytes := int64(200)
 	sortedSegment := NewSortedSegment(1, sortedSegmentSizeInBytes)
 
-	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("raft"))
 	assert.False(t, sortedSegment.CanFit(20))
 }
 
-func TestSortedSegmentAllEntriesSortedSegmentIterator(t *testing.T) {
+func TestSortedSegmentAllEntriesIterator(t *testing.T) {
 	sortedSegment := NewSortedSegment(1, testSortedSegmentSizeInBytes)
-	sortedSegment.Set(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegment.Set(kv.NewStringKey("bolt"), kv.NewStringValue("kv"))
-	sortedSegment.Set(kv.NewStringKey("etcd"), kv.NewStringValue("distributed"))
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 1), kv.NewStringValue("raft"))
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 2), kv.NewStringValue("paxos"))
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("bolt", 3), kv.NewStringValue("kv"))
+	sortedSegment.Set(kv.NewStringKeyWithTimestamp("etcd", 4), kv.NewStringValue("distributed"))
 
 	iterator := NewAllEntriesSortedSegmentIterator(sortedSegment)
 	assert.Equal(t, "bolt", iterator.Key().RawString())
 	assert.Equal(t, "kv", iterator.Value().String())
+
+	assert.NoError(t, iterator.Next())
+
+	assert.Equal(t, "consensus", iterator.Key().RawString())
+	assert.Equal(t, "paxos", iterator.Value().String())
 
 	assert.NoError(t, iterator.Next())
 
@@ -117,5 +124,3 @@ func TestSortedSegmentAllEntriesSortedSegmentIterator(t *testing.T) {
 	assert.NoError(t, iterator.Next())
 	assert.False(t, iterator.IsValid())
 }
-
-//TODO: add tests for keys with timestamps
