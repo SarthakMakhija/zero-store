@@ -14,8 +14,8 @@ func TestCompressionRatio(t *testing.T) {
 	for blockCount := 0; blockCount < 100; blockCount++ {
 		blockMetaList.Add(Meta{
 			BlockBeginOffset: uint32(4196 * blockCount),
-			StartingKey:      kv.NewStringKey("zero disk architecture"),
-			EndingKey:        kv.NewStringKey("zero disk architecture is interesting"),
+			StartingKey:      kv.NewStringKeyWithTimestamp("zero disk architecture", 10),
+			EndingKey:        kv.NewStringKeyWithTimestamp("zero disk architecture is interesting", 10),
 		})
 	}
 	uncompressedBuffer := blockMetaList.Encode()
@@ -24,13 +24,13 @@ func TestCompressionRatio(t *testing.T) {
 	for blockCount := 0; blockCount < 100; blockCount++ {
 		blockMetaList.Add(Meta{
 			BlockBeginOffset: uint32(4196 * blockCount),
-			StartingKey:      kv.NewStringKey("zero disk architecture"),
-			EndingKey:        kv.NewStringKey("zero disk architecture is interesting"),
+			StartingKey:      kv.NewStringKeyWithTimestamp("zero disk architecture", 10),
+			EndingKey:        kv.NewStringKeyWithTimestamp("zero disk architecture is interesting", 10),
 		})
 	}
 	compressedBuffer := blockMetaList.Encode()
 
-	println("Length of uncompressed buffer:", len(uncompressedBuffer))
-	println("Length of compressed buffer:", len(compressedBuffer))
+	println("Length of uncompressed buffer (in bytes):", len(uncompressedBuffer))
+	println("Length of compressed buffer (in bytes):", len(compressedBuffer))
 	assert.True(t, len(compressedBuffer) < len(uncompressedBuffer))
 }
