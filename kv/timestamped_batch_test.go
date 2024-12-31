@@ -22,8 +22,9 @@ func TestIterateOverTimestampedBatchWithASingleKey(t *testing.T) {
 
 func TestIterateOverTimestampedBatchWithACoupleOfKeys(t *testing.T) {
 	batch := NewBatch()
+
 	assert.NoError(t, batch.Set([]byte("raft"), []byte("consensus")))
-	assert.NoError(t, batch.Set([]byte("etcd"), []byte("distributed")))
+	batch.Delete([]byte("foundationDb"))
 
 	timestampedBatch, err := NewTimestampedBatch(batch, 10)
 	assert.NoError(t, err)
@@ -31,12 +32,13 @@ func TestIterateOverTimestampedBatchWithACoupleOfKeys(t *testing.T) {
 	iterator := timestampedBatch.Iterator()
 	assert.Equal(t, NewStringKeyWithTimestamp("raft", 10), iterator.Key())
 	assert.Equal(t, NewValue([]byte("consensus")), iterator.Value())
+	assert.Equal(t, KeyValuePairKindPut, iterator.Kind())
 
 	_ = iterator.Next()
 	assert.True(t, iterator.IsValid())
 
-	assert.Equal(t, NewStringKeyWithTimestamp("etcd", 10), iterator.Key())
-	assert.Equal(t, NewValue([]byte("distributed")), iterator.Value())
+	assert.Equal(t, NewStringKeyWithTimestamp("foundationDb", 10), iterator.Key())
+	assert.Equal(t, KeyValuePairKindDelete, iterator.Kind())
 
 	_ = iterator.Next()
 	assert.False(t, iterator.IsValid())

@@ -9,19 +9,24 @@ var ErrEmptyBatch = errors.New("batch is empty, can not perform Set")
 type TimestampedBatch struct {
 	keys   []Key
 	values []Value
+	kinds  []KeyValuePairKind
 }
 
 func NewTimestampedBatch(batch *Batch, timestamp uint64) (TimestampedBatch, error) {
 	if batch.IsEmpty() {
 		return TimestampedBatch{}, ErrEmptyBatch
 	}
+
 	keys := make([]Key, 0, len(batch.pairs))
 	values := make([]Value, 0, len(batch.pairs))
+	kinds := make([]KeyValuePairKind, 0, len(batch.pairs))
+
 	for _, pair := range batch.pairs {
 		keys = append(keys, NewKey(pair.key, timestamp))
 		values = append(values, pair.value)
+		kinds = append(kinds, pair.Kind())
 	}
-	return TimestampedBatch{keys, values}, nil
+	return TimestampedBatch{keys, values, kinds}, nil
 }
 
 func (batch TimestampedBatch) Iterator() *TimestampedBatchIterator {
@@ -50,6 +55,10 @@ func (iterator *TimestampedBatchIterator) Key() Key {
 
 func (iterator *TimestampedBatchIterator) Value() Value {
 	return iterator.batch.values[iterator.index]
+}
+
+func (iterator *TimestampedBatchIterator) Kind() KeyValuePairKind {
+	return iterator.batch.kinds[iterator.index]
 }
 
 func (iterator *TimestampedBatchIterator) Next() error {

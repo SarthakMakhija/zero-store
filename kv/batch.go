@@ -8,8 +8,8 @@ import (
 type KeyValuePairKind int
 
 const (
-	KeyValuePairKindPut    = 1
-	KeyValuePairKindDelete = 2
+	KeyValuePairKindPut    KeyValuePairKind = 1
+	KeyValuePairKindDelete KeyValuePairKind = 2
 )
 
 // RawKeyValuePair represents the key/value pair with KeyValuePairKind.
