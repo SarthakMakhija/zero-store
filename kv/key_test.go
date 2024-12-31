@@ -69,27 +69,27 @@ func TestKeyIsNotEqualToOtherBasedOnRawKey(t *testing.T) {
 }
 
 func TestRawStringFromAStringKey(t *testing.T) {
-	key := NewStringKey("store-type")
+	key := NewStringKeyWithTimestamp("store-type", 10)
 	assert.Equal(t, "store-type", key.RawString())
 }
 
 func TestRawStringFromKey(t *testing.T) {
-	key := NewKey([]byte("store-type"), 0)
+	key := NewStringKeyWithTimestamp("store-type", 0)
 	assert.Equal(t, "store-type", key.RawString())
 }
 
 func TestRawKeyIsEmpty(t *testing.T) {
-	key := NewKey(nil, 0)
+	key := NewStringKeyWithTimestamp("", 0)
 	assert.True(t, key.IsRawKeyEmpty())
 }
 
 func TestRawSizeInBytes(t *testing.T) {
-	key := NewKey([]byte("store-type"), 0)
+	key := NewStringKeyWithTimestamp("store-type", 0)
 	assert.Equal(t, 10, key.RawSizeInBytes())
 }
 
 func TestEncodedBytes(t *testing.T) {
-	key := NewKey([]byte("store-type"), 10)
+	key := NewStringKeyWithTimestamp("store-type", 10)
 	decodedKey := DecodeKeyFrom(key.EncodedBytes())
 
 	assert.Equal(t, "store-type", decodedKey.RawString())
@@ -97,6 +97,6 @@ func TestEncodedBytes(t *testing.T) {
 }
 
 func TestEncodedSizeInBytesForAnEmptyKey(t *testing.T) {
-	key := NewKey(nil, 0)
+	key := NewStringKeyWithTimestamp("", 0)
 	assert.Equal(t, 0, key.EncodedSizeInBytes())
 }
