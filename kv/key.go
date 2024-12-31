@@ -122,3 +122,8 @@ func (key Key) IsRawKeyEmpty() bool {
 func (key Key) RawSizeInBytes() int {
 	return len(key.RawBytes())
 }
+
+// Timestamp returns the timestamp of the key.
+func (key Key) Timestamp() uint64 {
+	return key.timestamp
+}

@@ -31,7 +31,7 @@ func NewKeyCache(options KeyCacheOptions) *KeyCache {
 	return cache
 }
 
-func (cache *KeyCache) Set(key kv.Key, timestamp uint64, value kv.Value) {
+func (cache *KeyCache) Set(key kv.Key, value kv.Value) {
 	cache.lock.Lock()
 	defer cache.lock.Unlock()
 
@@ -40,10 +40,10 @@ func (cache *KeyCache) Set(key kv.Key, timestamp uint64, value kv.Value) {
 		slog.Warn("failed to add key in cache", "err", err)
 		return
 	}
-	cache.keyIdCache.set(newTimestampedKeyId(id, timestamp), value)
+	cache.keyIdCache.set(newTimestampedKeyId(id, key.Timestamp()), value)
 }
 
-func (cache *KeyCache) Get(key kv.Key, timestamp uint64) (kv.Value, bool) {
+func (cache *KeyCache) Get(key kv.Key) (kv.Value, bool) {
 	cache.lock.RLock()
 	defer cache.lock.RUnlock()
 
@@ -51,7 +51,7 @@ func (cache *KeyCache) Get(key kv.Key, timestamp uint64) (kv.Value, bool) {
 	if !ok {
 		return kv.EmptyValue, false
 	}
-	value, ok := cache.keyIdCache.get(newTimestampedKeyId(cachedKeyId, timestamp))
+	value, ok := cache.keyIdCache.get(newTimestampedKeyId(cachedKeyId, key.Timestamp()))
 	if !ok {
 		return kv.EmptyValue, false
 	}
