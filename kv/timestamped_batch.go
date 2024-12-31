@@ -7,18 +7,21 @@ import (
 var ErrEmptyBatch = errors.New("batch is empty, can not perform Set")
 
 type TimestampedBatch struct {
-	timestamp        uint64
-	rawKeyValuePairs []RawKeyValuePair
+	keys   []Key
+	values []Value
 }
 
 func NewTimestampedBatch(batch *Batch, timestamp uint64) (TimestampedBatch, error) {
 	if batch.IsEmpty() {
 		return TimestampedBatch{}, ErrEmptyBatch
 	}
-	return TimestampedBatch{
-		rawKeyValuePairs: batch.Pairs(),
-		timestamp:        timestamp,
-	}, nil
+	keys := make([]Key, 0, len(batch.pairs))
+	values := make([]Value, 0, len(batch.pairs))
+	for _, pair := range batch.pairs {
+		keys = append(keys, NewKey(pair.key, timestamp))
+		values = append(values, pair.value)
+	}
+	return TimestampedBatch{keys, values}, nil
 }
 
 func (batch TimestampedBatch) Iterator() *TimestampedBatchIterator {
@@ -34,11 +37,11 @@ type TimestampedBatchIterator struct {
 }
 
 func (iterator *TimestampedBatchIterator) Key() Key {
-	return NewKey(iterator.batch.rawKeyValuePairs[iterator.index].Key(), iterator.batch.timestamp)
+	return iterator.batch.keys[iterator.index]
 }
 
 func (iterator *TimestampedBatchIterator) Value() Value {
-	return iterator.batch.rawKeyValuePairs[iterator.index].Value()
+	return iterator.batch.values[iterator.index]
 }
 
 func (iterator *TimestampedBatchIterator) Next() error {
@@ -47,7 +50,7 @@ func (iterator *TimestampedBatchIterator) Next() error {
 }
 
 func (iterator *TimestampedBatchIterator) IsValid() bool {
-	return iterator.index < len(iterator.batch.rawKeyValuePairs)
+	return iterator.index < len(iterator.batch.keys)
 }
 
 func (iterator *TimestampedBatchIterator) Close() {}
