@@ -13,8 +13,8 @@ func TestBlockMetaListCacheSetAndGetASingleKeyAndMetaList(t *testing.T) {
 	blockMetaList := block.NewBlockMetaList(false)
 	blockMetaList.Add(block.Meta{
 		BlockBeginOffset: 0,
-		StartingKey:      kv.NewStringKey("accurate"),
-		EndingKey:        kv.NewStringKey("consensus"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("accurate", 5),
+		EndingKey:        kv.NewStringKeyWithTimestamp("consensus", 6),
 	})
 
 	cacheOptions := NewComparableKeyCacheOptions[uint64, *block.MetaList](
@@ -39,8 +39,8 @@ func TestBlockMetaListCacheSetAndGetACoupleOfKeyAndMetaList(t *testing.T) {
 	blockMetaList := block.NewBlockMetaList(false)
 	blockMetaList.Add(block.Meta{
 		BlockBeginOffset: 0,
-		StartingKey:      kv.NewStringKey("accurate"),
-		EndingKey:        kv.NewStringKey("consensus"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("accurate", 7),
+		EndingKey:        kv.NewStringKeyWithTimestamp("consensus", 8),
 	})
 
 	cacheOptions := NewComparableKeyCacheOptions[uint64, *block.MetaList](
@@ -57,8 +57,8 @@ func TestBlockMetaListCacheSetAndGetACoupleOfKeyAndMetaList(t *testing.T) {
 	blockMetaList = block.NewBlockMetaList(false)
 	blockMetaList.Add(block.Meta{
 		BlockBeginOffset: 4096,
-		StartingKey:      kv.NewStringKey("distributed"),
-		EndingKey:        kv.NewStringKey("foundationDb"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("distributed", 10),
+		EndingKey:        kv.NewStringKeyWithTimestamp("foundationDb", 11),
 	})
 	assert.True(t, cache.Set(20, blockMetaList))
 
