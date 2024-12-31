@@ -45,9 +45,9 @@ func NewBatch() *Batch {
 	return &Batch{}
 }
 
-// Put puts the key/value pair in Batch.
+// Set puts the key/value pair in Batch.
 // Returns DuplicateKeyInBatchErr if the key is already present in the Batch.
-func (batch *Batch) Put(key, value []byte) error {
+func (batch *Batch) Set(key, value []byte) error {
 	if batch.Contains(key) {
 		return DuplicateKeyInBatchErr
 	}

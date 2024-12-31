@@ -23,7 +23,7 @@ func TestStorageStateSetWithAnEmptyBatch(t *testing.T) {
 
 func TestStorageStateWithASingleSet(t *testing.T) {
 	batch := kv.NewBatch()
-	_ = batch.Put([]byte("consensus"), []byte("raft"))
+	_ = batch.Set([]byte("consensus"), []byte("raft"))
 
 	storageState, err := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
 	assert.NoError(t, err)
@@ -56,7 +56,7 @@ func TestStorageStateWithANonExistingKey(t *testing.T) {
 
 func TestStorageStateWithASetAndDelete(t *testing.T) {
 	batch := kv.NewBatch()
-	_ = batch.Put([]byte("consensus"), []byte("raft"))
+	_ = batch.Set([]byte("consensus"), []byte("raft"))
 	batch.Delete([]byte("consensus"))
 
 	storageState, err := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
@@ -74,8 +74,8 @@ func TestStorageStateWithASetAndDelete(t *testing.T) {
 
 func TestStorageStateWithAFewKeyValuePairsInBatch(t *testing.T) {
 	batch := kv.NewBatch()
-	_ = batch.Put([]byte("consensus"), []byte("raft"))
-	_ = batch.Put([]byte("storage"), []byte("zero disk"))
+	_ = batch.Set([]byte("consensus"), []byte("raft"))
+	_ = batch.Set([]byte("storage"), []byte("zero disk"))
 	batch.Delete([]byte("consensus"))
 
 	storageState, err := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
@@ -110,15 +110,15 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment(t *testing
 	}()
 
 	batch := kv.NewBatch()
-	_ = batch.Put([]byte("consensus"), []byte("raft"))
+	_ = batch.Set([]byte("consensus"), []byte("raft"))
 	_, _ = storageState.Set(batch)
 
 	batch = kv.NewBatch()
-	_ = batch.Put([]byte("storage"), []byte("NVMe"))
+	_ = batch.Set([]byte("storage"), []byte("NVMe"))
 	_, _ = storageState.Set(batch)
 
 	batch = kv.NewBatch()
-	_ = batch.Put([]byte("data-structure"), []byte("LSM"))
+	_ = batch.Set([]byte("data-structure"), []byte("LSM"))
 	_, _ = storageState.Set(batch)
 
 	keepFlushingInactiveSegmentsUntilNoMoreInactiveSegmentToFlush(t, storageState)
@@ -143,11 +143,11 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegmentWhileWaitin
 	}()
 
 	batch := kv.NewBatch()
-	_ = batch.Put([]byte("consensus"), []byte("raft"))
+	_ = batch.Set([]byte("consensus"), []byte("raft"))
 	flushToObjectStoreFuture, _ := storageState.Set(batch)
 
 	batch = kv.NewBatch()
-	_ = batch.Put([]byte("storage"), []byte("NVMe"))
+	_ = batch.Set([]byte("storage"), []byte("NVMe"))
 	_, _ = storageState.Set(batch)
 
 	flushToObjectStoreFuture.Wait()
@@ -171,21 +171,21 @@ func TestStorageStateWithMultiplePutsWhileRunningInMemoryMode(t *testing.T) {
 	}()
 
 	batch := kv.NewBatch()
-	_ = batch.Put([]byte("consensus"), []byte("raft"))
+	_ = batch.Set([]byte("consensus"), []byte("raft"))
 
 	future, _ := storageState.Set(batch)
 	future.Wait()
 	assert.True(t, future.Status().IsOk())
 
 	batch = kv.NewBatch()
-	_ = batch.Put([]byte("storage"), []byte("NVMe"))
+	_ = batch.Set([]byte("storage"), []byte("NVMe"))
 
 	future, _ = storageState.Set(batch)
 	future.Wait()
 	assert.True(t, future.Status().IsOk())
 
 	batch = kv.NewBatch()
-	_ = batch.Put([]byte("data-structure"), []byte("LSM"))
+	_ = batch.Set([]byte("data-structure"), []byte("LSM"))
 
 	future, _ = storageState.Set(batch)
 	future.Wait()
