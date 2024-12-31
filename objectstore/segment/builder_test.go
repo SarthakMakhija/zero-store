@@ -96,7 +96,7 @@ func TestBuildASortedSegmentWithTwoBlocks(t *testing.T) {
 		store.Close()
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
-	segmentBuilder := newSortedSegmentBuilder(store, 30, false)
+	segmentBuilder := newSortedSegmentBuilder(store, 50, false)
 	segmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	segmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 

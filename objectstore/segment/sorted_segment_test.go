@@ -51,7 +51,7 @@ func TestSortedSegmentWithATwoBlocks(t *testing.T) {
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
-	sortedSegmentBuilder := newSortedSegmentBuilder(store, 30, false)
+	sortedSegmentBuilder := newSortedSegmentBuilder(store, 50, false)
 	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
@@ -142,14 +142,14 @@ func TestLoadASortedSegmentWithTwoBlocks(t *testing.T) {
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
-	sortedSegmentBuilder := newSortedSegmentBuilder(store, 30, false)
+	sortedSegmentBuilder := newSortedSegmentBuilder(store, 50, false)
 	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
 	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	segment, blockMetaList, _, err := load(1, 30, false, store)
+	segment, blockMetaList, _, err := load(1, 50, false, store)
 	assert.NoError(t, err)
 
 	iterator, err := segment.seekToFirst(blockMetaList)
@@ -179,14 +179,14 @@ func TestLoadASortedSegmentWithTwoBlocksWithValidationOfStartingAndEndingKey(t *
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
-	sortedSegmentBuilder := newSortedSegmentBuilder(store, 30, false)
+	sortedSegmentBuilder := newSortedSegmentBuilder(store, 50, false)
 	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
 	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	segment, _, _, err := load(1, 30, false, store)
+	segment, _, _, err := load(1, 50, false, store)
 	assert.NoError(t, err)
 	assert.Equal(t, "consensus", segment.startingKey.RawString())
 	assert.Equal(t, "distributed", segment.endingKey.RawString())

@@ -92,9 +92,9 @@ func (state *StorageState) writeToActiveSegment(batch *kv.Batch) {
 	for _, pair := range batch.Pairs() {
 		switch {
 		case pair.Kind() == kv.KeyValuePairKindPut:
-			state.activeSegment.Set(kv.NewKey(pair.Key()), pair.Value())
+			state.activeSegment.Set(kv.NewKey(pair.Key(), 0), pair.Value())
 		case pair.Kind() == kv.KeyValuePairKindDelete:
-			state.activeSegment.Delete(kv.NewKey(pair.Key()))
+			state.activeSegment.Delete(kv.NewKey(pair.Key(), 0))
 		default:
 			panic("unknown key/value pair kind")
 		}

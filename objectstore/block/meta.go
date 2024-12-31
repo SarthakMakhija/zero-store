@@ -101,7 +101,7 @@ func (metaList *MetaList) MaybeBlockMetaContaining(key kv.Key) (Meta, int) {
 	for low <= high {
 		mid := low + (high-low)/2
 		meta := metaList.list[mid]
-		switch key.CompareKeys(meta.StartingKey) { //TODO: replace compare with CompareWithTimestamp ..
+		switch key.CompareKeysWithDescendingTimestamp(meta.StartingKey) {
 		case -1:
 			high = mid - 1
 		case 0:

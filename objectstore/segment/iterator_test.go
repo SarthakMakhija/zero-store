@@ -92,7 +92,7 @@ func TestIterateOverASortedSegmentWithTwoBlocks(t *testing.T) {
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
-	sortedSegmentBuilder := newSortedSegmentBuilder(store, 30, false)
+	sortedSegmentBuilder := newSortedSegmentBuilder(store, 50, false)
 	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
 	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
@@ -268,7 +268,7 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKeyWithTheKeyLessThanT
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 
-	sortedSegmentBuilder := newSortedSegmentBuilder(store, 30, false)
+	sortedSegmentBuilder := newSortedSegmentBuilder(store, 50, false)
 	sortedSegmentBuilder.add(kv.NewStringKey("cart"), kv.NewStringValue("draft"))
 	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
 
