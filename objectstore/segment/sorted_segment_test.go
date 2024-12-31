@@ -22,7 +22,7 @@ func TestSortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.T) {
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 10), kv.NewStringValue("raft"))
 
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
@@ -52,8 +52,8 @@ func TestSortedSegmentWithATwoBlocks(t *testing.T) {
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilder(store, 50, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 20), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 20), kv.NewStringValue("TiKV"))
 
 	segment, _, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
@@ -74,9 +74,9 @@ func TestLoadSortedSegmentWithSingleBlockContainingMultipleKeyValuePairs(t *test
 	}()
 
 	segmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	segmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	segmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
-	segmentBuilder.add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 4), kv.NewStringValue("raft"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 4), kv.NewStringValue("TiKV"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("etcd", 4), kv.NewStringValue("bbolt"))
 
 	_, _, _, err = segmentBuilder.build(segmentId)
 	assert.NoError(t, err)
@@ -117,9 +117,9 @@ func TestLoadSortedSegmentWithSingleBlockContainingMultipleKeyValuePairsWithVali
 	}()
 
 	segmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	segmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	segmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
-	segmentBuilder.add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 10), kv.NewStringValue("raft"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 20), kv.NewStringValue("TiKV"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("etcd", 30), kv.NewStringValue("bbolt"))
 
 	_, _, _, err = segmentBuilder.build(segmentId)
 	assert.NoError(t, err)
@@ -143,8 +143,8 @@ func TestLoadASortedSegmentWithTwoBlocks(t *testing.T) {
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilder(store, 50, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 30), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 40), kv.NewStringValue("TiKV"))
 
 	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
@@ -180,8 +180,8 @@ func TestLoadASortedSegmentWithTwoBlocksWithValidationOfStartingAndEndingKey(t *
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilder(store, 50, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 20), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 30), kv.NewStringValue("TiKV"))
 
 	_, _, _, err = sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
