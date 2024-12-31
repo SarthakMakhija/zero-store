@@ -11,7 +11,7 @@ import (
 
 func TestBloomFilterCacheSetAndGetASingleKeyAndBloomFilter(t *testing.T) {
 	builder := filter.NewBloomFilterBuilder()
-	builder.Add(kv.NewStringKey("consensus"))
+	builder.Add(kv.NewStringKeyWithTimestamp("consensus", 5))
 
 	cacheOptions := NewComparableKeyCacheOptions[uint64, filter.BloomFilter](
 		200,
@@ -27,12 +27,12 @@ func TestBloomFilterCacheSetAndGetASingleKeyAndBloomFilter(t *testing.T) {
 
 	cachedFilter, ok := cache.Get(10)
 	assert.True(t, ok)
-	assert.True(t, cachedFilter.MayContain(kv.NewStringKey("consensus")))
+	assert.True(t, cachedFilter.MayContain(kv.NewStringKeyWithTimestamp("consensus", 5)))
 }
 
 func TestBloomFilterCacheSetAndGetACoupleOfKeyAndBloomFilters(t *testing.T) {
 	builder := filter.NewBloomFilterBuilder()
-	builder.Add(kv.NewStringKey("consensus"))
+	builder.Add(kv.NewStringKeyWithTimestamp("consensus", 7))
 
 	cacheOptions := NewComparableKeyCacheOptions[uint64, filter.BloomFilter](
 		200,
@@ -46,21 +46,21 @@ func TestBloomFilterCacheSetAndGetACoupleOfKeyAndBloomFilters(t *testing.T) {
 	assert.True(t, cache.Set(10, builder.Build()))
 
 	builder = filter.NewBloomFilterBuilder()
-	builder.Add(kv.NewStringKey("raft"))
+	builder.Add(kv.NewStringKeyWithTimestamp("raft", 8))
 	assert.True(t, cache.Set(20, builder.Build()))
 
 	cachedFilter, ok := cache.Get(10)
 	assert.True(t, ok)
-	assert.True(t, cachedFilter.MayContain(kv.NewStringKey("consensus")))
+	assert.True(t, cachedFilter.MayContain(kv.NewStringKeyWithTimestamp("consensus", 9)))
 
 	cachedFilter, ok = cache.Get(20)
 	assert.True(t, ok)
-	assert.True(t, cachedFilter.MayContain(kv.NewStringKey("raft")))
+	assert.True(t, cachedFilter.MayContain(kv.NewStringKeyWithTimestamp("raft", 10)))
 }
 
 func TestBloomFilterCacheWithFewElementsUpToTheSize(t *testing.T) {
 	builder := filter.NewBloomFilterBuilder()
-	builder.Add(kv.NewStringKey("consensus"))
+	builder.Add(kv.NewStringKeyWithTimestamp("consensus", 8))
 
 	cacheOptions := NewComparableKeyCacheOptions[uint64, filter.BloomFilter](
 		200,
@@ -74,7 +74,7 @@ func TestBloomFilterCacheWithFewElementsUpToTheSize(t *testing.T) {
 	assert.True(t, cache.Set(10, builder.Build()))
 
 	builder = filter.NewBloomFilterBuilder()
-	builder.Add(kv.NewStringKey("raft"))
+	builder.Add(kv.NewStringKeyWithTimestamp("raft", 10))
 	bloomFilter := builder.Build()
 
 	//size of an entry is 16 bytes, 12 entries means 192 bytes
