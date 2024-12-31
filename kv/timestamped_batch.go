@@ -31,6 +31,14 @@ func (batch TimestampedBatch) Iterator() *TimestampedBatchIterator {
 	}
 }
 
+func (batch TimestampedBatch) SizeInBytes() int {
+	sizeInBytes := 0
+	for index, key := range batch.keys {
+		sizeInBytes += key.EncodedSizeInBytes() + batch.values[index].SizeInBytes()
+	}
+	return sizeInBytes
+}
+
 type TimestampedBatchIterator struct {
 	index int
 	batch TimestampedBatch

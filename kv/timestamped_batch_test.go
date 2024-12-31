@@ -41,3 +41,13 @@ func TestIterateOverTimestampedBatchWithACoupleOfKeys(t *testing.T) {
 	_ = iterator.Next()
 	assert.False(t, iterator.IsValid())
 }
+
+func TestSizeInBytesOfTimestampedBatch(t *testing.T) {
+	batch := NewBatch()
+	assert.NoError(t, batch.Set([]byte("raft"), []byte("consensus")))
+
+	timestampedBatch, err := NewTimestampedBatch(batch, 10)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 22, timestampedBatch.SizeInBytes())
+}
