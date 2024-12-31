@@ -21,7 +21,7 @@ func TestBuildASortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.
 	}()
 
 	segmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	segmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("raft"))
 
 	segment, blockMetaList, _, err := segmentBuilder.build(segmentId)
 	assert.NoError(t, err)
@@ -40,6 +40,29 @@ func TestBuildASortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.
 	assert.False(t, blockIterator.IsValid())
 }
 
+func TestBuildAnSSTableWithASingleBlockWithStartingAndEndingKey(t *testing.T) {
+	storeDefinition, err := objectstore.NewFileSystemStoreDefinition(".")
+	assert.NoError(t, err)
+
+	store := objectstore.NewStore(".", storeDefinition)
+	segmentId := uint64(1)
+
+	defer func() {
+		store.Close()
+		_ = os.Remove(PathSuffixForSegment(segmentId))
+	}()
+
+	segmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("badgerDB", 5), kv.NewStringValue("LSM"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 6), kv.NewStringValue("raft"))
+
+	segment, _, _, err := segmentBuilder.build(segmentId)
+	assert.NoError(t, err)
+
+	assert.Equal(t, kv.NewStringKeyWithTimestamp("badgerDB", 5), segment.startingKey)
+	assert.Equal(t, kv.NewStringKeyWithTimestamp("consensus", 6), segment.endingKey)
+}
+
 func TestBuildASortedSegmentWithASingleBlockContainingMultipleKeyValues(t *testing.T) {
 	storeDefinition, err := objectstore.NewFileSystemStoreDefinition(".")
 	assert.NoError(t, err)
@@ -53,9 +76,9 @@ func TestBuildASortedSegmentWithASingleBlockContainingMultipleKeyValues(t *testi
 	}()
 
 	segmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	segmentBuilder.add(kv.NewStringKey("badgerDB"), kv.NewStringValue("LSM"))
-	segmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	segmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("etcd"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("badgerDB", 5), kv.NewStringValue("LSM"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 6), kv.NewStringValue("raft"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 7), kv.NewStringValue("etcd"))
 
 	segment, blockMetaList, _, err := segmentBuilder.build(segmentId)
 	assert.NoError(t, err)
@@ -97,8 +120,8 @@ func TestBuildASortedSegmentWithTwoBlocks(t *testing.T) {
 		_ = os.Remove(PathSuffixForSegment(segmentId))
 	}()
 	segmentBuilder := newSortedSegmentBuilder(store, 50, false)
-	segmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	segmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("raft"))
+	segmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 10), kv.NewStringValue("TiKV"))
 
 	segment, blockMetaList, _, err := segmentBuilder.build(segmentId)
 	assert.NoError(t, err)
