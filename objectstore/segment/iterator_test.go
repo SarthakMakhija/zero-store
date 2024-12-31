@@ -21,7 +21,7 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingSingleKeyValue(t *te
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 10), kv.NewStringValue("raft"))
 
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
@@ -51,9 +51,9 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingMultipleKeyValues(t 
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
-	sortedSegmentBuilder.add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 4), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 5), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("etcd", 5), kv.NewStringValue("bbolt"))
 
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
@@ -93,8 +93,8 @@ func TestIterateOverASortedSegmentWithTwoBlocks(t *testing.T) {
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilder(store, 50, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 8), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 9), kv.NewStringValue("TiKV"))
 
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
@@ -129,12 +129,12 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingSingleKeyValueUsingS
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("raft"))
 
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.seekToKey(kv.NewStringKey("consensus"), blockMetaList)
+	iterator, err := segment.seekToKey(kv.NewStringKeyWithTimestamp("consensus", 6), blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -159,14 +159,14 @@ func TestIterateOverAnSortedSegmentWithASingleBlockContainingMultipleKeyValuesUs
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
-	sortedSegmentBuilder.add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 6), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 7), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("etcd", 8), kv.NewStringValue("bbolt"))
 
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.seekToKey(kv.NewStringKey("contribute"), blockMetaList)
+	iterator, err := segment.seekToKey(kv.NewStringKeyWithTimestamp("contribute", 9), blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -196,14 +196,14 @@ func TestIterateOverASortedSegmentWithASingleBlockContainingMultipleKeyValuesUsi
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
-	sortedSegmentBuilder.add(kv.NewStringKey("etcd"), kv.NewStringValue("bbolt"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 6), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("etcd", 8), kv.NewStringValue("bbolt"))
 
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.seekToKey(kv.NewStringKey("consensus"), blockMetaList)
+	iterator, err := segment.seekToKey(kv.NewStringKeyWithTimestamp("consensus", 6), blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -238,13 +238,13 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKey(t *testing.T) {
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("cart"), kv.NewStringValue("draft"))
-	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("cart", 5), kv.NewStringValue("draft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 6), kv.NewStringValue("TiKV"))
 
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.seekToKey(kv.NewStringKey("consensus"), blockMetaList)
+	iterator, err := segment.seekToKey(kv.NewStringKeyWithTimestamp("consensus", 10), blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
@@ -269,13 +269,13 @@ func TestIterateOverASortedSegmentWithTwoBlocksUsingSeekToKeyWithTheKeyLessThanT
 	}()
 
 	sortedSegmentBuilder := newSortedSegmentBuilder(store, 50, false)
-	sortedSegmentBuilder.add(kv.NewStringKey("cart"), kv.NewStringValue("draft"))
-	sortedSegmentBuilder.add(kv.NewStringKey("distributed"), kv.NewStringValue("TiKV"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("cart", 9), kv.NewStringValue("draft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("distributed", 10), kv.NewStringValue("TiKV"))
 
 	segment, blockMetaList, _, err := sortedSegmentBuilder.build(segmentId)
 	assert.NoError(t, err)
 
-	iterator, err := segment.seekToKey(kv.NewStringKey("bolt"), blockMetaList)
+	iterator, err := segment.seekToKey(kv.NewStringKeyWithTimestamp("bolt", 11), blockMetaList)
 	assert.NoError(t, err)
 
 	defer iterator.Close()
