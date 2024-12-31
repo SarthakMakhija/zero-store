@@ -12,7 +12,10 @@ import (
 	"time"
 )
 
-var DbStopped = errors.New("db is stopped, can not perform the operation")
+var (
+	ErrDbStopped  = errors.New("db is stopped, can not perform the operation")
+	ErrEmptyBatch = errors.New("batch is empty, can not perform Set")
+)
 
 type StorageState struct {
 	activeSegment            *memory.SortedSegment
@@ -63,11 +66,14 @@ func (state *StorageState) Get(key kv.Key) (kv.Value, bool) {
 	return state.activeSegment.Get(key)
 }
 
-func (state *StorageState) Set(batch *kv.Batch) *future.Future {
+func (state *StorageState) Set(batch *kv.Batch) (*future.Future, error) {
+	if batch.IsEmpty() {
+		return nil, ErrEmptyBatch
+	}
 	state.mayBeFreezeActiveSegment(batch.SizeInBytes())
 	state.writeToActiveSegment(batch)
 	state.mayBeMarkFlushToObjectStoreFutureDone()
-	return state.activeSegment.FlushToObjectStoreFuture()
+	return state.activeSegment.FlushToObjectStoreFuture(), nil
 }
 
 // mayBeFreezeActiveSegment may freeze the active memory.SortedSegment if it does not have required size.
@@ -107,7 +113,7 @@ func (state *StorageState) Close() {
 	close(state.closeChannel)
 	state.store.Close()
 	for _, segment := range state.inactiveSegments {
-		segment.FlushToObjectStoreAsyncAwait().MarkDoneAsError(DbStopped)
+		segment.FlushToObjectStoreAsyncAwait().MarkDoneAsError(ErrDbStopped)
 	}
 }
 

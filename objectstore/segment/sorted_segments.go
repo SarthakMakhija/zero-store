@@ -10,7 +10,7 @@ import (
 	"github.com/SarthakMakhija/zero-store/objectstore/filter"
 )
 
-var ErrNoSegmentForTheSegmentId = errors.New("no segment for this id")
+var ErrNoSegmentForTheSegmentId = errors.New("no segment for the given id")
 
 type SortedSegments struct {
 	persistentSegments map[uint64]*SortedSegment
