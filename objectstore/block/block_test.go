@@ -9,14 +9,14 @@ import (
 
 func TestAttemptToAddAKeyValueToBlockBuilderWithInsufficientSpaceLeftWithBuilder(t *testing.T) {
 	blockBuilder := NewBlockBuilder(40)
-	assert.True(t, blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft")))
-	assert.False(t, blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft")))
+	assert.True(t, blockBuilder.Add(kv.NewStringKeyWithTimestamp("consensus", 10), kv.NewStringValue("raft")))
+	assert.False(t, blockBuilder.Add(kv.NewStringKeyWithTimestamp("consensus", 10), kv.NewStringValue("raft")))
 }
 
 func TestEncodeAndDecodeBlockWithASingleKeyValueAndSeekToTheFirstKey(t *testing.T) {
 	blockBuilder := NewBlockBuilder(1024)
-	blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	blockBuilder.Add(kv.NewStringKey("distributed"), kv.NewStringValue("etcd"))
+	blockBuilder.Add(kv.NewStringKeyWithTimestamp("consensus", 10), kv.NewStringValue("raft"))
+	blockBuilder.Add(kv.NewStringKeyWithTimestamp("distributed", 11), kv.NewStringValue("etcd"))
 
 	block := blockBuilder.Build()
 	buffer := block.Encode()
@@ -37,15 +37,15 @@ func TestEncodeAndDecodeBlockWithASingleKeyValueAndSeekToTheFirstKey(t *testing.
 	assert.False(t, iterator.IsValid())
 }
 
-func TestEncodeAndDecodeBlockWithASingleKeyValueAndSeekToTheKey(t *testing.T) {
+func TestEncodeAndDecodeBlockWithASingleKeyValueAndSeekToTheKeySuchThatTheTimestampOfTheStoredKeyIsLessThanTheTimestampOfTheGivenKey(t *testing.T) {
 	blockBuilder := NewBlockBuilder(1024)
-	blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
+	blockBuilder.Add(kv.NewStringKeyWithTimestamp("consensus", 10), kv.NewStringValue("raft"))
 
 	block := blockBuilder.Build()
 	buffer := block.Encode()
 
 	decodedBlock := DecodeToBlock(buffer)
-	iterator := decodedBlock.SeekToKey(kv.NewStringKey("consensus"))
+	iterator := decodedBlock.SeekToKey(kv.NewStringKeyWithTimestamp("consensus", 14))
 	defer iterator.Close()
 
 	assert.True(t, iterator.IsValid())
@@ -55,16 +55,30 @@ func TestEncodeAndDecodeBlockWithASingleKeyValueAndSeekToTheKey(t *testing.T) {
 	assert.False(t, iterator.IsValid())
 }
 
-func TestEncodeAndDecodeBlockWithTwoKeyValues(t *testing.T) {
+func TestEncodeAndDecodeBlockWithASingleKeyValueAndAttemptSeekToTheKeySuchThatTheTimestampOfTheStoredKeyIsGreaterThanTheTimestampOfTheGivenKey(t *testing.T) {
 	blockBuilder := NewBlockBuilder(1024)
-	blockBuilder.Add(kv.NewStringKey("consensus"), kv.NewStringValue("raft"))
-	blockBuilder.Add(kv.NewStringKey("etcd"), kv.NewStringValue("kv"))
+	blockBuilder.Add(kv.NewStringKeyWithTimestamp("consensus", 10), kv.NewStringValue("raft"))
 
 	block := blockBuilder.Build()
 	buffer := block.Encode()
 
 	decodedBlock := DecodeToBlock(buffer)
-	iterator := decodedBlock.SeekToKey(kv.NewStringKey("consensus"))
+	iterator := decodedBlock.SeekToKey(kv.NewStringKeyWithTimestamp("consensus", 2))
+	defer iterator.Close()
+
+	assert.False(t, iterator.IsValid())
+}
+
+func TestEncodeAndDecodeBlockWithTwoKeyValues(t *testing.T) {
+	blockBuilder := NewBlockBuilder(1024)
+	blockBuilder.Add(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("raft"))
+	blockBuilder.Add(kv.NewStringKeyWithTimestamp("etcd", 6), kv.NewStringValue("kv"))
+
+	block := blockBuilder.Build()
+	buffer := block.Encode()
+
+	decodedBlock := DecodeToBlock(buffer)
+	iterator := decodedBlock.SeekToKey(kv.NewStringKeyWithTimestamp("consensus", 5))
 	defer iterator.Close()
 
 	assert.True(t, iterator.IsValid())
@@ -83,7 +97,7 @@ func TestEncodeAndDecodeBlockWithFewKeyValues(t *testing.T) {
 	numberOfKeyValues := 9
 
 	for count := 1; count <= numberOfKeyValues; count++ {
-		key := kv.NewStringKey(fmt.Sprintf("consensus%d", count))
+		key := kv.NewStringKeyWithTimestamp(fmt.Sprintf("consensus%d", count), uint64(count))
 		assert.True(t, blockBuilder.Add(key, kv.NewStringValue(fmt.Sprintf("raft%d", count))))
 	}
 
@@ -92,7 +106,7 @@ func TestEncodeAndDecodeBlockWithFewKeyValues(t *testing.T) {
 
 	decodedBlock := DecodeToBlock(buffer)
 	for count := 1; count <= numberOfKeyValues; count++ {
-		iterator := decodedBlock.SeekToKey(kv.NewStringKey(fmt.Sprintf("consensus%d", count)))
+		iterator := decodedBlock.SeekToKey(kv.NewStringKeyWithTimestamp(fmt.Sprintf("consensus%d", count), uint64(count)))
 		assert.True(t, iterator.IsValid())
 		assert.Equal(t, fmt.Sprintf("raft%d", count), iterator.Value().String())
 		iterator.Close()
