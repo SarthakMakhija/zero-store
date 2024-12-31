@@ -49,17 +49,6 @@ func (segment *SortedSegment) Delete(key kv.Key) {
 	segment.Set(key, kv.NewDeletedValue())
 }
 
-// AllEntries returns all the keys present in the Segment.
-func (segment *SortedSegment) AllEntries(callback func(key kv.Key, value kv.Value)) {
-	iterator := segment.entries.NewIterator()
-	defer func() {
-		_ = iterator.Close()
-	}()
-	for iterator.SeekToFirst(); iterator.Valid(); iterator.Next() {
-		callback(iterator.Key(), iterator.Value())
-	}
-}
-
 // IsEmpty returns true if the SortedSegment is empty.
 func (segment *SortedSegment) IsEmpty() bool {
 	return segment.entries.Empty()
