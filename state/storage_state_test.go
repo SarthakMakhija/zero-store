@@ -205,3 +205,6 @@ func keepFlushingInactiveSegmentsUntilNoMoreInactiveSegmentToFlush(t *testing.T,
 		}
 	}
 }
+
+//TODO: change the tests to use NewStringKeyWithTimestamp after changing the batch to timestamped batch in the set method of
+//StorageState.
