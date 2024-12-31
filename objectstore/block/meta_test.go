@@ -1,6 +1,7 @@
 package block
 
 import (
+	"fmt"
 	"github.com/SarthakMakhija/zero-store/kv"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -15,8 +16,8 @@ func TestBlockMetaListWithASingleBlockMeta(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 0,
-		StartingKey:      kv.NewStringKey("accurate"),
-		EndingKey:        kv.NewStringKey("consensus"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("accurate", 2),
+		EndingKey:        kv.NewStringKeyWithTimestamp("consensus", 5),
 	})
 
 	encoded := blockMetaList.Encode()
@@ -32,18 +33,18 @@ func TestBlockMetaListWithThreeBlockMeta(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 0,
-		StartingKey:      kv.NewStringKey("accurate"),
-		EndingKey:        kv.NewStringKey("badger"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("accurate", 2),
+		EndingKey:        kv.NewStringKeyWithTimestamp("badger", 3),
 	})
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 4096,
-		StartingKey:      kv.NewStringKey("bolt"),
-		EndingKey:        kv.NewStringKey("calculator"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("bolt", 5),
+		EndingKey:        kv.NewStringKeyWithTimestamp("calculator", 6),
 	})
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 8192,
-		StartingKey:      kv.NewStringKey("consensus"),
-		EndingKey:        kv.NewStringKey("distributed"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("consensus", 5),
+		EndingKey:        kv.NewStringKeyWithTimestamp("distributed", 6),
 	})
 
 	encoded := blockMetaList.Encode()
@@ -65,18 +66,18 @@ func TestBlockMetaListWithThreeBlockMetaWithEndingKeyOfEachBlock(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 0,
-		StartingKey:      kv.NewStringKey("accurate"),
-		EndingKey:        kv.NewStringKey("amorphous"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("accurate", 2),
+		EndingKey:        kv.NewStringKeyWithTimestamp("amorphous", 5),
 	})
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 4096,
-		StartingKey:      kv.NewStringKey("bolt"),
-		EndingKey:        kv.NewStringKey("bunt"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("bolt", 6),
+		EndingKey:        kv.NewStringKeyWithTimestamp("bunt", 8),
 	})
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 8192,
-		StartingKey:      kv.NewStringKey("consensus"),
-		EndingKey:        kv.NewStringKey("distributed"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("consensus", 9),
+		EndingKey:        kv.NewStringKeyWithTimestamp("distributed", 10),
 	})
 
 	encoded := blockMetaList.Encode()
@@ -104,18 +105,18 @@ func TestBlockMetaListWithStartingKeyOfFirstBlock(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 0,
-		StartingKey:      kv.NewStringKey("accurate"),
-		EndingKey:        kv.NewStringKey("badger"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("accurate", 2),
+		EndingKey:        kv.NewStringKeyWithTimestamp("badger", 5),
 	})
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 4096,
-		StartingKey:      kv.NewStringKey("bolt"),
-		EndingKey:        kv.NewStringKey("calculator"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("bolt", 6),
+		EndingKey:        kv.NewStringKeyWithTimestamp("calculator", 7),
 	})
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 8192,
-		StartingKey:      kv.NewStringKey("consensus"),
-		EndingKey:        kv.NewStringKey("distributed"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("consensus", 8),
+		EndingKey:        kv.NewStringKeyWithTimestamp("distributed", 10),
 	})
 
 	encoded := blockMetaList.Encode()
@@ -130,18 +131,18 @@ func TestBlockMetaListWithEndingKeyOfLastBlock(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 0,
-		StartingKey:      kv.NewStringKey("accurate"),
-		EndingKey:        kv.NewStringKey("amorphous"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("accurate", 2),
+		EndingKey:        kv.NewStringKeyWithTimestamp("amorphous", 5),
 	})
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 4096,
-		StartingKey:      kv.NewStringKey("bolt"),
-		EndingKey:        kv.NewStringKey("bunt"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("bolt", 6),
+		EndingKey:        kv.NewStringKeyWithTimestamp("bunt", 8),
 	})
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 8192,
-		StartingKey:      kv.NewStringKey("consensus"),
-		EndingKey:        kv.NewStringKey("distributed"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("consensus", 9),
+		EndingKey:        kv.NewStringKeyWithTimestamp("distributed", 10),
 	})
 
 	encoded := blockMetaList.Encode()
@@ -157,18 +158,18 @@ func TestBlockMetaListWithFewBlockMetaAndCompressionEnabled(t *testing.T) {
 
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 0,
-		StartingKey:      kv.NewStringKey("accurate"),
-		EndingKey:        kv.NewStringKey("badger"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("accurate", 2),
+		EndingKey:        kv.NewStringKeyWithTimestamp("badger", 5),
 	})
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 4096,
-		StartingKey:      kv.NewStringKey("bolt"),
-		EndingKey:        kv.NewStringKey("calculator"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("bolt", 6),
+		EndingKey:        kv.NewStringKeyWithTimestamp("calculator", 8),
 	})
 	blockMetaList.Add(Meta{
 		BlockBeginOffset: 8192,
-		StartingKey:      kv.NewStringKey("consensus"),
-		EndingKey:        kv.NewStringKey("distributed"),
+		StartingKey:      kv.NewStringKeyWithTimestamp("consensus", 9),
+		EndingKey:        kv.NewStringKeyWithTimestamp("distributed", 10),
 	})
 
 	encoded := blockMetaList.Encode()
@@ -188,66 +189,70 @@ func TestBlockMetaListWithFewBlockMetaAndCompressionEnabled(t *testing.T) {
 
 func TestBlockMetaListGetBlockContainingTheKey1(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
-	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKey("accurate")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKey("bolt")})
+	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKeyWithTimestamp("accurate", 10)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKeyWithTimestamp("bolt", 11)})
 
-	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("bolt"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKeyWithTimestamp("bolt", 10))
 	assert.Equal(t, "bolt", meta.StartingKey.RawString())
 	assert.Equal(t, 1, blockIndex)
 }
 
 func TestBlockMetaListGetBlockContainingTheKey2(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
-	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKey("accurate")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKey("bolt")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKey("db")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKey("exact")})
+	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKeyWithTimestamp("accurate", 2)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKeyWithTimestamp("bolt", 5)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKeyWithTimestamp("db", 6)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKeyWithTimestamp("exact", 8)})
 
-	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("accurate"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKeyWithTimestamp("accurate", 2))
 	assert.Equal(t, "accurate", meta.StartingKey.RawString())
 	assert.Equal(t, 0, blockIndex)
 }
 
 func TestBlockMetaListGetBlockContainingTheKey3(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
-	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKey("accurate")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKey("bolt")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKey("db")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKey("exact")})
+	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKeyWithTimestamp("accurate", 2)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKeyWithTimestamp("bolt", 5)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKeyWithTimestamp("db", 6)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKeyWithTimestamp("exact", 8)})
 
-	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("exact"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKeyWithTimestamp("exact", 8))
 	assert.Equal(t, "exact", meta.StartingKey.RawString())
 	assert.Equal(t, 3, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey1(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
-	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKey("accurate")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKey("bolt")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKey("db")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKey("exact")})
+	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKeyWithTimestamp("accurate", 2)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKeyWithTimestamp("bolt", 5)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKeyWithTimestamp("db", 6)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKeyWithTimestamp("exact", 8)})
 
-	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("consensus"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKeyWithTimestamp("consensus", 6))
 	assert.Equal(t, "bolt", meta.StartingKey.RawString())
 	assert.Equal(t, 1, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey2(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
-	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKey("consensus")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKey("distributed")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKey("etcd")})
+	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKeyWithTimestamp("consensus", 2)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKeyWithTimestamp("distributed", 5)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKeyWithTimestamp("etcd", 6)})
 
-	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("contribute"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKeyWithTimestamp("contribute", 6))
 	assert.Equal(t, "consensus", meta.StartingKey.RawString())
 	assert.Equal(t, 0, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey3(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
-	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKey("consensus"), EndingKey: kv.NewStringKey("demo")})
+	blockMetaList.Add(Meta{
+		BlockBeginOffset: 0,
+		StartingKey:      kv.NewStringKeyWithTimestamp("consensus", 2),
+		EndingKey:        kv.NewStringKeyWithTimestamp("demo", 5),
+	})
 
-	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("contribute"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKeyWithTimestamp("contribute", 3))
 	assert.Equal(t, "consensus", meta.StartingKey.RawString())
 	assert.Equal(t, "demo", meta.EndingKey.RawString())
 	assert.Equal(t, 0, blockIndex)
@@ -255,44 +260,58 @@ func TestBlockMetaListGetBlockWhichMayContainTheGivenKey3(t *testing.T) {
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey4(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
-	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKey("accurate")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKey("bolt")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKey("db")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKey("exact")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 80, StartingKey: kv.NewStringKey("foundation")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 100, StartingKey: kv.NewStringKey("gossip")})
+	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKeyWithTimestamp("accurate", 2)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKeyWithTimestamp("bolt", 3)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKeyWithTimestamp("db", 4)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKeyWithTimestamp("exact", 5)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 80, StartingKey: kv.NewStringKeyWithTimestamp("foundation", 6)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 100, StartingKey: kv.NewStringKeyWithTimestamp("gossip", 7)})
 
-	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("group"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKeyWithTimestamp("group", 8))
 	assert.Equal(t, "gossip", meta.StartingKey.RawString())
 	assert.Equal(t, 5, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey5(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
-	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKey("accurate")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKey("bolt")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKey("db")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKey("exact")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 80, StartingKey: kv.NewStringKey("foundation")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 100, StartingKey: kv.NewStringKey("gossip")})
+	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKeyWithTimestamp("accurate", 2)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKeyWithTimestamp("bolt", 3)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKeyWithTimestamp("db", 4)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKeyWithTimestamp("exact", 5)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 80, StartingKey: kv.NewStringKeyWithTimestamp("foundation", 6)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 100, StartingKey: kv.NewStringKeyWithTimestamp("gossip", 7)})
 
-	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("yugabyte"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKeyWithTimestamp("yugabyte", 8))
 	assert.Equal(t, "gossip", meta.StartingKey.RawString())
 	assert.Equal(t, 5, blockIndex)
 }
 
 func TestBlockMetaListGetBlockWhichMayContainTheGivenKey6(t *testing.T) {
 	blockMetaList := NewBlockMetaList(doNotEnableCompression)
-	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKey("accurate")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKey("bolt")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKey("db")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKey("exact")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 80, StartingKey: kv.NewStringKey("foundation")})
-	blockMetaList.Add(Meta{BlockBeginOffset: 100, StartingKey: kv.NewStringKey("gossip")})
+	blockMetaList.Add(Meta{BlockBeginOffset: 0, StartingKey: kv.NewStringKeyWithTimestamp("accurate", 2)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 20, StartingKey: kv.NewStringKeyWithTimestamp("bolt", 3)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 40, StartingKey: kv.NewStringKeyWithTimestamp("db", 4)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 60, StartingKey: kv.NewStringKeyWithTimestamp("exact", 5)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 80, StartingKey: kv.NewStringKeyWithTimestamp("foundation", 6)})
+	blockMetaList.Add(Meta{BlockBeginOffset: 100, StartingKey: kv.NewStringKeyWithTimestamp("gossip", 7)})
 
-	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKey("fixed"))
+	meta, blockIndex := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKeyWithTimestamp("fixed", 6))
 	assert.Equal(t, "exact", meta.StartingKey.RawString())
 	assert.Equal(t, 3, blockIndex)
 }
 
-//TODO: tests for may contain ..
+func TestBlockMetaListGetBlockWhichMayContainTheGivenKey7(t *testing.T) {
+	blockMetaList := NewBlockMetaList(doNotEnableCompression)
+	for count := 2; count <= 8; count += 2 {
+		key := fmt.Sprintf("key-%d", count)
+		timestamp := uint64(count)
+		blockMetaList.Add(Meta{
+			BlockBeginOffset: uint32(count),
+			StartingKey:      kv.NewStringKeyWithTimestamp(key, timestamp),
+		})
+	}
+
+	meta, index := blockMetaList.MaybeBlockMetaContaining(kv.NewStringKeyWithTimestamp("key-7", 7))
+	assert.Equal(t, "key-6", meta.StartingKey.RawString())
+	assert.Equal(t, 2, index)
+}
