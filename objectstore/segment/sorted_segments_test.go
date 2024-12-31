@@ -56,7 +56,7 @@ func TestSortedSegmentsWithASingleKeyValue(t *testing.T) {
 
 	_, err = segments.BuildAndWritePersistentSortedSegment(
 		&testKeyValueIterator{
-			keys:   []kv.Key{kv.NewStringKey("raft")},
+			keys:   []kv.Key{kv.NewStringKeyWithTimestamp("raft", 10)},
 			values: []kv.Value{kv.NewStringValue("consensus")},
 		},
 		segmentId,
@@ -90,7 +90,7 @@ func TestSortedSegmentsWithMultipleKeyValues(t *testing.T) {
 
 	_, err = segments.BuildAndWritePersistentSortedSegment(
 		&testKeyValueIterator{
-			keys:   []kv.Key{kv.NewStringKey("algorithm"), kv.NewStringKey("distributed"), kv.NewStringKey("etcd")},
+			keys:   []kv.Key{kv.NewStringKeyWithTimestamp("algorithm", 10), kv.NewStringKeyWithTimestamp("distributed", 10), kv.NewStringKeyWithTimestamp("etcd", 10)},
 			values: []kv.Value{kv.NewStringValue("graph"), kv.NewStringValue("foundation"), kv.NewStringValue("key-value")},
 		},
 		segmentId,
@@ -135,14 +135,14 @@ func TestSortedSegmentsSeekToKeyWithMultipleKeyValues(t *testing.T) {
 
 	_, err = segments.BuildAndWritePersistentSortedSegment(
 		&testKeyValueIterator{
-			keys:   []kv.Key{kv.NewStringKey("algorithm"), kv.NewStringKey("distributed"), kv.NewStringKey("etcd")},
+			keys:   []kv.Key{kv.NewStringKeyWithTimestamp("algorithm", 10), kv.NewStringKeyWithTimestamp("distributed", 10), kv.NewStringKeyWithTimestamp("etcd", 10)},
 			values: []kv.Value{kv.NewStringValue("graph"), kv.NewStringValue("foundation"), kv.NewStringValue("key-value")},
 		},
 		segmentId,
 	)
 	assert.NoError(t, err)
 
-	iterator, err := segments.SeekToKey(kv.NewStringKey("distributed"), segmentId)
+	iterator, err := segments.SeekToKey(kv.NewStringKeyWithTimestamp("distributed", 11), segmentId)
 	assert.NoError(t, err)
 
 	assert.True(t, iterator.IsValid())
@@ -175,7 +175,7 @@ func TestLoadASortedSegmentWithMultipleKeyValues(t *testing.T) {
 
 	_, err = segments.BuildAndWritePersistentSortedSegment(
 		&testKeyValueIterator{
-			keys:   []kv.Key{kv.NewStringKey("algorithm"), kv.NewStringKey("distributed"), kv.NewStringKey("etcd")},
+			keys:   []kv.Key{kv.NewStringKeyWithTimestamp("algorithm", 10), kv.NewStringKeyWithTimestamp("distributed", 10), kv.NewStringKeyWithTimestamp("etcd", 10)},
 			values: []kv.Value{kv.NewStringValue("graph"), kv.NewStringValue("foundation"), kv.NewStringValue("key-value")},
 		},
 		segmentId,
