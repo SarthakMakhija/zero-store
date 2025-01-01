@@ -17,7 +17,7 @@ func TestStorageStateSetWithAnEmptyBatch(t *testing.T) {
 		storageState.Close()
 	}()
 
-	_, err = storageState.Set(batch)
+	_, err = kv.NewTimestampedBatch(batch, 10)
 	assert.Error(t, err)
 }
 
@@ -32,14 +32,18 @@ func TestStorageStateWithASingleSet(t *testing.T) {
 		storageState.Close()
 	}()
 
-	_, _ = storageState.Set(batch)
-	value, ok := storageState.Get(kv.NewStringKey("consensus"))
+	timestampedBatch, err := kv.NewTimestampedBatch(batch, 10)
+	assert.NoError(t, err)
+	_, _ = storageState.Set(timestampedBatch)
+
+	value, ok := storageState.Get(kv.NewStringKeyWithTimestamp("consensus", 10))
 	assert.True(t, ok)
 	assert.Equal(t, "raft", value.String())
 }
 
 func TestStorageStateWithANonExistingKey(t *testing.T) {
 	batch := kv.NewBatch()
+	_ = batch.Set([]byte("consensus"), []byte("raft"))
 
 	storageState, err := NewStorageState(NewStorageOptionsBuilder().WithFileSystemStoreType(".").Build())
 	assert.NoError(t, err)
@@ -48,8 +52,11 @@ func TestStorageStateWithANonExistingKey(t *testing.T) {
 		storageState.Close()
 	}()
 
-	_, _ = storageState.Set(batch)
-	value, ok := storageState.Get(kv.NewStringKey("non-existing"))
+	timestampedBatch, err := kv.NewTimestampedBatch(batch, 10)
+	assert.NoError(t, err)
+	_, _ = storageState.Set(timestampedBatch)
+
+	value, ok := storageState.Get(kv.NewStringKeyWithTimestamp("non-existing", 11))
 	assert.False(t, ok)
 	assert.Equal(t, "", value.String())
 }
@@ -66,8 +73,11 @@ func TestStorageStateWithASetAndDelete(t *testing.T) {
 		storageState.Close()
 	}()
 
-	_, _ = storageState.Set(batch)
-	value, ok := storageState.Get(kv.NewStringKey("consensus"))
+	timestampedBatch, err := kv.NewTimestampedBatch(batch, 10)
+	assert.NoError(t, err)
+	_, _ = storageState.Set(timestampedBatch)
+
+	value, ok := storageState.Get(kv.NewStringKeyWithTimestamp("consensus", 11))
 	assert.False(t, ok)
 	assert.Equal(t, "", value.String())
 }
@@ -85,12 +95,15 @@ func TestStorageStateWithAFewKeyValuePairsInBatch(t *testing.T) {
 		storageState.Close()
 	}()
 
-	_, _ = storageState.Set(batch)
-	value, ok := storageState.Get(kv.NewStringKey("consensus"))
+	timestampedBatch, err := kv.NewTimestampedBatch(batch, 10)
+	assert.NoError(t, err)
+	_, _ = storageState.Set(timestampedBatch)
+
+	value, ok := storageState.Get(kv.NewStringKeyWithTimestamp("consensus", 11))
 	assert.False(t, ok)
 	assert.Equal(t, "", value.String())
 
-	value, ok = storageState.Get(kv.NewStringKey("storage"))
+	value, ok = storageState.Get(kv.NewStringKeyWithTimestamp("storage", 11))
 	assert.True(t, ok)
 	assert.Equal(t, "zero disk", value.String())
 }
@@ -98,7 +111,7 @@ func TestStorageStateWithAFewKeyValuePairsInBatch(t *testing.T) {
 func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment(t *testing.T) {
 	storageState, err := NewStorageState(NewStorageOptionsBuilder().
 		WithFileSystemStoreType(".").
-		WithSortedSegmentSizeInBytes(220).
+		WithSortedSegmentSizeInBytes(260).
 		WithFlushInactiveSegmentDuration(5 * time.Minute).
 		Build(),
 	)
@@ -111,15 +124,21 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment(t *testing
 
 	batch := kv.NewBatch()
 	_ = batch.Set([]byte("consensus"), []byte("raft"))
-	_, _ = storageState.Set(batch)
+	timestampedBatch, err := kv.NewTimestampedBatch(batch, 10)
+	assert.NoError(t, err)
+	_, _ = storageState.Set(timestampedBatch)
 
 	batch = kv.NewBatch()
 	_ = batch.Set([]byte("storage"), []byte("NVMe"))
-	_, _ = storageState.Set(batch)
+	timestampedBatch, err = kv.NewTimestampedBatch(batch, 20)
+	assert.NoError(t, err)
+	_, _ = storageState.Set(timestampedBatch)
 
 	batch = kv.NewBatch()
 	_ = batch.Set([]byte("data-structure"), []byte("LSM"))
-	_, _ = storageState.Set(batch)
+	timestampedBatch, err = kv.NewTimestampedBatch(batch, 30)
+	assert.NoError(t, err)
+	_, _ = storageState.Set(timestampedBatch)
 
 	keepFlushingInactiveSegmentsUntilNoMoreInactiveSegmentToFlush(t, storageState)
 
@@ -131,7 +150,7 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment(t *testing
 func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegmentWhileWaitingForFlushToObjectStoreToComplete(t *testing.T) {
 	storageState, err := NewStorageState(NewStorageOptionsBuilder().
 		WithFileSystemStoreType(".").
-		WithSortedSegmentSizeInBytes(220).
+		WithSortedSegmentSizeInBytes(250).
 		WithFlushInactiveSegmentDuration(10 * time.Millisecond).
 		Build(),
 	)
@@ -144,11 +163,17 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegmentWhileWaitin
 
 	batch := kv.NewBatch()
 	_ = batch.Set([]byte("consensus"), []byte("raft"))
-	flushToObjectStoreFuture, _ := storageState.Set(batch)
+	timestampedBatch, err := kv.NewTimestampedBatch(batch, 10)
+	assert.NoError(t, err)
+	flushToObjectStoreFuture, err := storageState.Set(timestampedBatch)
+	assert.NoError(t, err)
 
 	batch = kv.NewBatch()
 	_ = batch.Set([]byte("storage"), []byte("NVMe"))
-	_, _ = storageState.Set(batch)
+	timestampedBatch, err = kv.NewTimestampedBatch(batch, 20)
+	assert.NoError(t, err)
+	_, err = storageState.Set(timestampedBatch)
+	assert.NoError(t, err)
 
 	flushToObjectStoreFuture.Wait()
 
@@ -160,7 +185,7 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegmentWhileWaitin
 func TestStorageStateWithMultiplePutsWhileRunningInMemoryMode(t *testing.T) {
 	storageState, err := NewStorageState(NewStorageOptionsBuilder().
 		WithFileSystemStoreType(".").
-		WithSortedSegmentSizeInBytes(220).
+		WithSortedSegmentSizeInBytes(250).
 		EnableInMemoryMode().
 		Build(),
 	)
@@ -172,24 +197,27 @@ func TestStorageStateWithMultiplePutsWhileRunningInMemoryMode(t *testing.T) {
 
 	batch := kv.NewBatch()
 	_ = batch.Set([]byte("consensus"), []byte("raft"))
-
-	future, _ := storageState.Set(batch)
-	future.Wait()
-	assert.True(t, future.Status().IsOk())
+	timestampedBatch, err := kv.NewTimestampedBatch(batch, 10)
+	assert.NoError(t, err)
+	waitingFuture, _ := storageState.Set(timestampedBatch)
+	waitingFuture.Wait()
+	assert.True(t, waitingFuture.Status().IsOk())
 
 	batch = kv.NewBatch()
 	_ = batch.Set([]byte("storage"), []byte("NVMe"))
-
-	future, _ = storageState.Set(batch)
-	future.Wait()
-	assert.True(t, future.Status().IsOk())
+	timestampedBatch, err = kv.NewTimestampedBatch(batch, 20)
+	assert.NoError(t, err)
+	waitingFuture, _ = storageState.Set(timestampedBatch)
+	waitingFuture.Wait()
+	assert.True(t, waitingFuture.Status().IsOk())
 
 	batch = kv.NewBatch()
 	_ = batch.Set([]byte("data-structure"), []byte("LSM"))
-
-	future, _ = storageState.Set(batch)
-	future.Wait()
-	assert.True(t, future.Status().IsOk())
+	timestampedBatch, err = kv.NewTimestampedBatch(batch, 30)
+	assert.NoError(t, err)
+	waitingFuture, _ = storageState.Set(timestampedBatch)
+	waitingFuture.Wait()
+	assert.True(t, waitingFuture.Status().IsOk())
 
 	assert.Equal(t, uint64(3), storageState.activeSegment.Id())
 	assert.True(t, storageState.hasInactiveSegments())
@@ -206,5 +234,4 @@ func keepFlushingInactiveSegmentsUntilNoMoreInactiveSegmentToFlush(t *testing.T,
 	}
 }
 
-//TODO: change the tests to use NewStringKeyWithTimestamp after changing the batch to timestamped batch in the set method of
-//StorageState.
+//TODO: add tests for checking versioned get, after the get implementation is done

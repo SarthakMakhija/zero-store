@@ -66,12 +66,11 @@ func (state *StorageState) Get(key kv.Key) (kv.Value, bool) {
 	return state.activeSegment.Get(key)
 }
 
-func (state *StorageState) Set(batch *kv.Batch) (*future.Future, error) {
-	if batch.IsEmpty() {
-		return nil, ErrEmptyBatch
-	}
+func (state *StorageState) Set(batch kv.TimestampedBatch) (*future.Future, error) {
 	state.mayBeFreezeActiveSegment(batch.SizeInBytes())
-	state.writeToActiveSegment(batch)
+	if err := state.writeToActiveSegment(batch); err != nil {
+		return nil, err
+	}
 	state.mayBeMarkFlushToObjectStoreFutureDone()
 	return state.activeSegment.FlushToObjectStoreFuture(), nil
 }
@@ -88,17 +87,22 @@ func (state *StorageState) mayBeFreezeActiveSegment(sizeInBytes int) {
 }
 
 // writeToActiveSegment writes the batch to the active segment.
-func (state *StorageState) writeToActiveSegment(batch *kv.Batch) {
-	for _, pair := range batch.Pairs() {
+func (state *StorageState) writeToActiveSegment(batch kv.TimestampedBatch) error {
+	iterator := batch.Iterator()
+	for iterator.IsValid() {
 		switch {
-		case pair.Kind() == kv.KeyValuePairKindPut:
-			state.activeSegment.Set(kv.NewKey(pair.Key(), 0), pair.Value())
-		case pair.Kind() == kv.KeyValuePairKindDelete:
-			state.activeSegment.Delete(kv.NewKey(pair.Key(), 0))
+		case iterator.Kind() == kv.KeyValuePairKindPut:
+			state.activeSegment.Set(iterator.Key(), iterator.Value())
+		case iterator.Kind() == kv.KeyValuePairKindDelete:
+			state.activeSegment.Delete(iterator.Key())
 		default:
 			panic("unknown key/value pair kind")
 		}
+		if err := iterator.Next(); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // mayBeMarkFlushToObjectStoreFutureDone marks the future representing the flush to object store as done, if the mode is in-memory.
