@@ -2,25 +2,6 @@
 
 package state
 
-import (
-	"slices"
-)
-
-// hasInactiveSegments returns true if there are inactive segments, it is only for testing.
-func (state *StorageState) hasInactiveSegments() bool {
-	return len(state.inactiveSegments) > 0
-}
-
-// sortedInactiveSegmentIds returns the sorted segment ids for inactive segments,  it is only for testing.
-func (state *StorageState) sortedInactiveSegmentIds() []uint64 {
-	ids := make([]uint64, 0, len(state.inactiveSegments))
-	for _, segment := range state.inactiveSegments {
-		ids = append(ids, segment.Id())
-	}
-	slices.Sort(ids)
-	return ids
-}
-
 // hasPersistentSortedSegmentFor returns true if there is a persistent-sorted segment for the given segment id.
 func (state *StorageState) hasPersistentSortedSegmentFor(id uint64) bool {
 	return state.persistentSortedSegments.HasPersistentSortedSegmentFor(id)
