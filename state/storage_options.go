@@ -39,7 +39,7 @@ type StorageOptionsBuilder struct {
 
 func NewStorageOptionsBuilder() *StorageOptionsBuilder {
 	return &StorageOptionsBuilder{
-		sortedSegmentSizeInBytes:      1 << 20,
+		sortedSegmentSizeInBytes:      1 << 15, //32 Kib
 		sortedSegmentBlockCompression: false,
 		flushInactiveSegmentDuration:  60 * time.Second,
 		bloomFilterCacheOptions: cache.NewComparableKeyCacheOptions[uint64, filter.BloomFilter](
