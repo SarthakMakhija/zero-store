@@ -4,6 +4,7 @@ import (
 	"github.com/SarthakMakhija/zero-store/kv"
 	"github.com/SarthakMakhija/zero-store/memory"
 	"github.com/stretchr/testify/assert"
+	"slices"
 	"testing"
 )
 
@@ -37,7 +38,8 @@ func TestNonDurableOnlyGetFromActiveAndSingleInactiveSegment(t *testing.T) {
 	inactiveSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 6), kv.NewStringValue("raft"))
 	inactiveSegment.Set(kv.NewStringKeyWithTimestamp("distributed", 5), kv.NewStringValue("etcd"))
 
-	getOperation := newNonDurableOnlyGet(activeSegment, []*memory.SortedSegment{inactiveSegment})
+	inactiveSegments := []*memory.SortedSegment{inactiveSegment}
+	getOperation := newNonDurableOnlyGet(activeSegment, slices.Backward(inactiveSegments))
 	value, ok := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 10))
 
 	assert.True(t, ok)
@@ -56,7 +58,8 @@ func TestNonDurableOnlyGetFromActiveAndACoupleOfInactiveSegmentsWithGetForAKeyWi
 	oldInactiveSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("paxos"))
 	oldInactiveSegment.Set(kv.NewStringKeyWithTimestamp("distributed", 4), kv.NewStringValue("foundation"))
 
-	getOperation := newNonDurableOnlyGet(activeSegment, []*memory.SortedSegment{oldInactiveSegment, freshInactiveSegment})
+	inactiveSegments := []*memory.SortedSegment{oldInactiveSegment, freshInactiveSegment}
+	getOperation := newNonDurableOnlyGet(activeSegment, slices.Backward(inactiveSegments))
 	value, ok := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 7))
 
 	assert.True(t, ok)
@@ -75,7 +78,8 @@ func TestNonDurableOnlyGetFromActiveAndACoupleOfInactiveSegmentsWithGetForAKeyWi
 	oldInactiveSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("paxos"))
 	oldInactiveSegment.Set(kv.NewStringKeyWithTimestamp("distributed", 4), kv.NewStringValue("foundation"))
 
-	getOperation := newNonDurableOnlyGet(activeSegment, []*memory.SortedSegment{oldInactiveSegment, freshInactiveSegment})
+	inactiveSegments := []*memory.SortedSegment{oldInactiveSegment, freshInactiveSegment}
+	getOperation := newNonDurableOnlyGet(activeSegment, slices.Backward(inactiveSegments))
 	value, ok := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 8))
 
 	assert.True(t, ok)
