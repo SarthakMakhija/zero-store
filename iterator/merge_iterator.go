@@ -60,7 +60,7 @@ func (indexedIterator IndexedIterator) IsPrioritizedOver(other IndexedIterator) 
 // The MergeIterator will return the keys in the following order:
 // ("consensus", 7) -> ("paxos") | ("consensus", 6) -> ("raft") | ("diskType", 7) -> ("etcd") | ("storage", 8) -> ("NVMe")
 // It does not eliminate same keys with multiple versions (/commit-timestamp).
-// It is possible that multiple iterators may have the same key, in such a case, iterator with smaller gets has the higher
+// It is possible that multiple iterators may have the same key, in such a case, iterator with smaller index gets has the higher
 // priority.
 type MergeIterator struct {
 	current   IndexedIterator

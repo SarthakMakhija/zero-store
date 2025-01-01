@@ -110,6 +110,26 @@ func TestMergeIteratorWithTwoIterators(t *testing.T) {
 	assert.False(t, mergeIterator.IsValid())
 }
 
+func TestMergeIteratorWithTwoIteratorsWithSameKeyHavingSameTimestamp(t *testing.T) {
+	iteratorOne := newTestIteratorNoEndKey(
+		[]kv.Key{kv.NewStringKeyWithTimestamp("consensus", 3)},
+		[]kv.Value{kv.NewStringValue("paxos")},
+	)
+	iteratorTwo := newTestIteratorNoEndKey(
+		[]kv.Key{kv.NewStringKeyWithTimestamp("consensus", 3)},
+		[]kv.Value{kv.NewStringValue("raft")},
+	)
+	mergeIterator := NewMergeIterator([]Iterator{iteratorOne, iteratorTwo})
+	defer mergeIterator.Close()
+
+	assert.True(t, mergeIterator.IsValid())
+	assert.Equal(t, kv.NewStringKeyWithTimestamp("consensus", 3), mergeIterator.Key())
+	assert.Equal(t, kv.NewStringValue("paxos"), mergeIterator.Value())
+
+	_ = mergeIterator.Next()
+	assert.False(t, mergeIterator.IsValid())
+}
+
 func TestMergeIteratorWithTwoIteratorsHavingSameKey1(t *testing.T) {
 	iteratorOne := newTestIteratorNoEndKey(
 		[]kv.Key{kv.NewStringKeyWithTimestamp("consensus", 6), kv.NewStringKeyWithTimestamp("diskType", 7), kv.NewStringKeyWithTimestamp("distributed-db", 8)},

@@ -18,7 +18,7 @@ var (
 
 type StorageState struct {
 	activeSegment            *memory.SortedSegment
-	inactiveSegments         []*memory.SortedSegment
+	inactiveSegments         []*memory.SortedSegment //oldest to latest
 	persistentSortedSegments *objectStore.SortedSegments
 	segmentIdGenerator       *SegmentIdGenerator
 	closeChannel             chan struct{}
