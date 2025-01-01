@@ -182,48 +182,6 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegmentWhileWaitin
 	assert.True(t, storageState.hasPersistentSortedSegmentFor(1))
 }
 
-func TestStorageStateWithMultiplePutsWhileRunningInMemoryMode(t *testing.T) {
-	storageState, err := NewStorageState(NewStorageOptionsBuilder().
-		WithFileSystemStoreType(".").
-		WithSortedSegmentSizeInBytes(250).
-		EnableInMemoryMode().
-		Build(),
-	)
-	assert.NoError(t, err)
-
-	defer func() {
-		storageState.Close()
-	}()
-
-	batch := kv.NewBatch()
-	_ = batch.Set([]byte("consensus"), []byte("raft"))
-	timestampedBatch, err := kv.NewTimestampedBatch(batch, 10)
-	assert.NoError(t, err)
-	waitingFuture, _ := storageState.Set(timestampedBatch)
-	waitingFuture.Wait()
-	assert.True(t, waitingFuture.Status().IsOk())
-
-	batch = kv.NewBatch()
-	_ = batch.Set([]byte("storage"), []byte("NVMe"))
-	timestampedBatch, err = kv.NewTimestampedBatch(batch, 20)
-	assert.NoError(t, err)
-	waitingFuture, _ = storageState.Set(timestampedBatch)
-	waitingFuture.Wait()
-	assert.True(t, waitingFuture.Status().IsOk())
-
-	batch = kv.NewBatch()
-	_ = batch.Set([]byte("data-structure"), []byte("LSM"))
-	timestampedBatch, err = kv.NewTimestampedBatch(batch, 30)
-	assert.NoError(t, err)
-	waitingFuture, _ = storageState.Set(timestampedBatch)
-	waitingFuture.Wait()
-	assert.True(t, waitingFuture.Status().IsOk())
-
-	assert.Equal(t, uint64(3), storageState.activeSegment.Id())
-	assert.True(t, storageState.hasInactiveSegments())
-	assert.Equal(t, []uint64{1, 2}, storageState.sortedInactiveSegmentIds())
-}
-
 func keepFlushingInactiveSegmentsUntilNoMoreInactiveSegmentToFlush(t *testing.T, storageState *StorageState) {
 	for {
 		flushed, err := storageState.mayBeFlushOldestInactiveSegment()

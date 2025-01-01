@@ -51,9 +51,7 @@ func NewStorageState(options StorageOptions) (*StorageState, error) {
 		store:                    store,
 	}
 
-	if !options.inMemoryMode {
-		storageState.spawnObjectStoreMovement()
-	}
+	storageState.spawnObjectStoreMovement()
 	return storageState, nil
 }
 
@@ -62,7 +60,6 @@ func (state *StorageState) Get(key kv.Key) (kv.Value, bool) {
 	defer state.stateLock.RUnlock()
 
 	//TODO: May change as transactions come in .. will not read from the segment unless it is made durable.
-	//TODO: Handle in-memory mode.
 	return state.activeSegment.Get(key)
 }
 
@@ -71,7 +68,6 @@ func (state *StorageState) Set(batch kv.TimestampedBatch) (*future.Future, error
 	if err := state.writeToActiveSegment(batch); err != nil {
 		return nil, err
 	}
-	state.mayBeMarkFlushToObjectStoreFutureDone()
 	return state.activeSegment.FlushToObjectStoreFuture(), nil
 }
 
@@ -103,13 +99,6 @@ func (state *StorageState) writeToActiveSegment(batch kv.TimestampedBatch) error
 		}
 	}
 	return nil
-}
-
-// mayBeMarkFlushToObjectStoreFutureDone marks the future representing the flush to object store as done, if the mode is in-memory.
-func (state *StorageState) mayBeMarkFlushToObjectStoreFutureDone() {
-	if state.options.inMemoryMode {
-		state.activeSegment.FlushToObjectStoreAsyncAwait().MarkDoneAsOk()
-	}
 }
 
 // Close closes the StorageState.

@@ -22,7 +22,6 @@ type StorageOptions struct {
 	storeType                     objectstore.StoreType
 	rootDirectory                 string
 	sortedSegmentBlockCompression bool
-	inMemoryMode                  bool
 	flushInactiveSegmentDuration  time.Duration
 	bloomFilterCacheOptions       cache.ComparableKeyCacheOptions[uint64, filter.BloomFilter]
 	blockMetaListCacheOptions     cache.ComparableKeyCacheOptions[uint64, *block.MetaList]
@@ -33,7 +32,6 @@ type StorageOptionsBuilder struct {
 	storeType                     objectstore.StoreType
 	rootDirectory                 string
 	sortedSegmentBlockCompression bool
-	inMemoryMode                  bool
 	flushInactiveSegmentDuration  time.Duration
 	bloomFilterCacheOptions       cache.ComparableKeyCacheOptions[uint64, filter.BloomFilter]
 	blockMetaListCacheOptions     cache.ComparableKeyCacheOptions[uint64, *block.MetaList]
@@ -43,7 +41,6 @@ func NewStorageOptionsBuilder() *StorageOptionsBuilder {
 	return &StorageOptionsBuilder{
 		sortedSegmentSizeInBytes:      1 << 20,
 		sortedSegmentBlockCompression: false,
-		inMemoryMode:                  false,
 		flushInactiveSegmentDuration:  60 * time.Second,
 		bloomFilterCacheOptions: cache.NewComparableKeyCacheOptions[uint64, filter.BloomFilter](
 			bloomFilterCacheSizeInBytes,
@@ -82,11 +79,6 @@ func (builder *StorageOptionsBuilder) EnableSortedSegmentBlockCompression() *Sto
 	return builder
 }
 
-func (builder *StorageOptionsBuilder) EnableInMemoryMode() *StorageOptionsBuilder {
-	builder.inMemoryMode = true
-	return builder
-}
-
 func (builder *StorageOptionsBuilder) WithFlushInactiveSegmentDuration(duration time.Duration) *StorageOptionsBuilder {
 	builder.flushInactiveSegmentDuration = duration
 	return builder
@@ -114,7 +106,6 @@ func (builder *StorageOptionsBuilder) Build() StorageOptions {
 		storeType:                     builder.storeType,
 		rootDirectory:                 builder.rootDirectory,
 		sortedSegmentBlockCompression: builder.sortedSegmentBlockCompression,
-		inMemoryMode:                  builder.inMemoryMode,
 		flushInactiveSegmentDuration:  builder.flushInactiveSegmentDuration,
 		bloomFilterCacheOptions:       builder.bloomFilterCacheOptions,
 		blockMetaListCacheOptions:     builder.blockMetaListCacheOptions,
