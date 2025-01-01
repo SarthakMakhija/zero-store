@@ -40,7 +40,7 @@ func TestBuildASortedSegmentWithASingleBlockContainingSingleKeyValue(t *testing.
 	assert.False(t, blockIterator.IsValid())
 }
 
-func TestBuildAnSSTableWithASingleBlockWithStartingAndEndingKey(t *testing.T) {
+func TestBuildASortedSegmentWithASingleBlockWithStartingAndEndingKey(t *testing.T) {
 	storeDefinition, err := objectstore.NewFileSystemStoreDefinition(".")
 	assert.NoError(t, err)
 

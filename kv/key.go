@@ -67,7 +67,8 @@ func (key Key) EncodedSizeInBytes() int {
 // 1) It returns 0, if the timestamps of the two keys are same.
 // 2) It returns -1, if the timestamp of key is greater than the timestamp of the other key.
 // 3) It returns 1, if the timestamp of key is less than the timestamp of the other key.
-// Timestamp plays an important role in ordering of keys. Consider a key "consensus" with timestamps 15 and 13 in memtable,
+// Timestamp plays an important role in ordering of keys.
+// Consider a key "consensus" with timestamps 15 and 13 in a sorted segment,
 // and user wants to perform a scan between "consensus" to "decimal" with timestamp as 16. This means we would like to return
 // all the keys falling between the two, such that: timestamp of the keys in system <= 16.
 // However, "consensus" is present with 15 and 13 timestamps. We would only return "consensus" with timestamp 15. If the key
