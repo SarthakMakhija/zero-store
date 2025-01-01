@@ -13,8 +13,7 @@ import (
 )
 
 var (
-	ErrDbStopped  = errors.New("db is stopped, can not perform the operation")
-	ErrEmptyBatch = errors.New("batch is empty, can not perform Set")
+	ErrDbStopped = errors.New("db is stopped, can not perform the operation")
 )
 
 type StorageState struct {
