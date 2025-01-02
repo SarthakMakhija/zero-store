@@ -18,16 +18,16 @@ func newNonDurableOnlyGet(activeSegment *memory.SortedSegment, inactiveSegmentsS
 	}
 }
 
-func (getOperation nonDurableOnlyGet) get(key kv.Key) (kv.Value, bool) {
+func (getOperation nonDurableOnlyGet) get(key kv.Key) GetResponse {
 	if value, ok := getOperation.activeSegment.Get(key); ok {
-		return value, true
+		return positiveResponse(value)
 	}
 	if getOperation.inactiveSegmentsSequence != nil {
 		for _, inactiveSegment := range getOperation.inactiveSegmentsSequence {
 			if value, ok := inactiveSegment.Get(key); ok {
-				return value, true
+				return positiveResponse(value)
 			}
 		}
 	}
-	return kv.EmptyValue, false
+	return negativeResponse()
 }

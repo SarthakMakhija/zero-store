@@ -13,10 +13,10 @@ func TestNonDurableOnlyGetFromActiveSegment(t *testing.T) {
 	activeSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 1), kv.NewStringValue("raft"))
 
 	getOperation := newNonDurableOnlyGet(activeSegment, nil)
-	value, ok := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 2))
+	getResponse := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 2))
 
-	assert.True(t, ok)
-	assert.Equal(t, kv.NewStringValue("raft"), value)
+	assert.True(t, getResponse.IsValueAvailable())
+	assert.Equal(t, kv.NewStringValue("raft"), getResponse.Value())
 }
 
 func TestNonDurableOnlyGetForANonExistingKeyFromActiveSegment(t *testing.T) {
@@ -24,10 +24,10 @@ func TestNonDurableOnlyGetForANonExistingKeyFromActiveSegment(t *testing.T) {
 	activeSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 1), kv.NewStringValue("raft"))
 
 	getOperation := newNonDurableOnlyGet(activeSegment, nil)
-	value, ok := getOperation.get(kv.NewStringKeyWithTimestamp("non-existing", 2))
+	getResponse := getOperation.get(kv.NewStringKeyWithTimestamp("non-existing", 2))
 
-	assert.False(t, ok)
-	assert.Equal(t, kv.EmptyValue, value)
+	assert.False(t, getResponse.IsValueAvailable())
+	assert.Equal(t, kv.EmptyValue, getResponse.Value())
 }
 
 func TestNonDurableOnlyGetFromActiveAndSingleInactiveSegment(t *testing.T) {
@@ -40,10 +40,10 @@ func TestNonDurableOnlyGetFromActiveAndSingleInactiveSegment(t *testing.T) {
 
 	inactiveSegments := []*memory.SortedSegment{inactiveSegment}
 	getOperation := newNonDurableOnlyGet(activeSegment, slices.Backward(inactiveSegments))
-	value, ok := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 10))
+	getResponse := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 10))
 
-	assert.True(t, ok)
-	assert.Equal(t, kv.NewStringValue("raft"), value)
+	assert.True(t, getResponse.IsValueAvailable())
+	assert.Equal(t, kv.NewStringValue("raft"), getResponse.Value())
 }
 
 func TestNonDurableOnlyGetFromActiveAndACoupleOfInactiveSegmentsWithGetForAKeyWithOldTimestamp(t *testing.T) {
@@ -60,10 +60,10 @@ func TestNonDurableOnlyGetFromActiveAndACoupleOfInactiveSegmentsWithGetForAKeyWi
 
 	inactiveSegments := []*memory.SortedSegment{oldInactiveSegment, freshInactiveSegment}
 	getOperation := newNonDurableOnlyGet(activeSegment, slices.Backward(inactiveSegments))
-	value, ok := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 7))
+	getResponse := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 7))
 
-	assert.True(t, ok)
-	assert.Equal(t, kv.NewStringValue("paxos"), value)
+	assert.True(t, getResponse.IsValueAvailable())
+	assert.Equal(t, kv.NewStringValue("paxos"), getResponse.Value())
 }
 
 func TestNonDurableOnlyGetFromActiveAndACoupleOfInactiveSegmentsWithGetForAKeyWithNearlyLatestTimestamp(t *testing.T) {
@@ -80,8 +80,8 @@ func TestNonDurableOnlyGetFromActiveAndACoupleOfInactiveSegmentsWithGetForAKeyWi
 
 	inactiveSegments := []*memory.SortedSegment{oldInactiveSegment, freshInactiveSegment}
 	getOperation := newNonDurableOnlyGet(activeSegment, slices.Backward(inactiveSegments))
-	value, ok := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 8))
+	getResponse := getOperation.get(kv.NewStringKeyWithTimestamp("consensus", 8))
 
-	assert.True(t, ok)
-	assert.Equal(t, kv.NewStringValue("raft"), value)
+	assert.True(t, getResponse.IsValueAvailable())
+	assert.Equal(t, kv.NewStringValue("raft"), getResponse.Value())
 }
