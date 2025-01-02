@@ -20,3 +20,8 @@ func (sortedSegments *SortedSegments) RemoveAllPersistentSortedSegmentsIn(direct
 		_ = os.Remove(filepath.Join(directory, PathSuffixForSegment(segmentId)))
 	}
 }
+
+// sortedSegmentFor returns the SortedSegment for the given segment id.
+func (sortedSegments *SortedSegments) sortedSegmentFor(id uint64) *SortedSegment {
+	return sortedSegments.persistentSegments[id]
+}

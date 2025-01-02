@@ -10,7 +10,10 @@ import (
 	"github.com/SarthakMakhija/zero-store/objectstore/filter"
 )
 
-var ErrNoSegmentForTheSegmentId = errors.New("no segment for the given id")
+var (
+	ErrNoSegmentForTheSegmentId = errors.New("no segment for the given id")
+	ErrNilSegment               = errors.New("nil segment")
+)
 
 type SortedSegments struct {
 	persistentSegments map[uint64]*SortedSegment
@@ -83,10 +86,12 @@ func (sortedSegments *SortedSegments) SeekToKey(key kv.Key, segmentId uint64) (*
 	return sortedSegment.seekToKey(key, blockMetaList)
 }
 
-func (sortedSegments *SortedSegments) MayContain(key kv.Key, segmentId uint64) (bool, error) {
-	sortedSegment, ok := sortedSegments.persistentSegments[segmentId]
-	if !ok {
-		return false, ErrNoSegmentForTheSegmentId
+func (sortedSegments *SortedSegments) MayContain(key kv.Key, sortedSegment *SortedSegment) (bool, error) {
+	if sortedSegment == nil {
+		return false, ErrNilSegment
+	}
+	if !sortedSegment.containsInItsRange(key) {
+		return false, nil
 	}
 	bloomFilter, err := sortedSegments.getOrFetchBloomFilter(sortedSegment)
 	if err != nil {
