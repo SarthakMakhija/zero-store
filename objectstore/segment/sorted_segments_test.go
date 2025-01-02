@@ -142,7 +142,7 @@ func TestSortedSegmentsSeekToKeyWithMultipleKeyValues(t *testing.T) {
 	)
 	assert.NoError(t, err)
 
-	iterator, err := segments.SeekToKey(kv.NewStringKeyWithTimestamp("distributed", 11), segmentId)
+	iterator, err := segments.SeekToKey(kv.NewStringKeyWithTimestamp("distributed", 11), segments.sortedSegmentFor(segmentId))
 	assert.NoError(t, err)
 
 	assert.True(t, iterator.IsValid())

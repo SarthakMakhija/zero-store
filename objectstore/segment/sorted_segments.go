@@ -78,8 +78,11 @@ func (sortedSegments *SortedSegments) SeekToFirst(segmentId uint64) (*Iterator, 
 	return sortedSegment.seekToFirst(blockMetaList)
 }
 
-func (sortedSegments *SortedSegments) SeekToKey(key kv.Key, segmentId uint64) (*Iterator, error) {
-	sortedSegment, blockMetaList, err := sortedSegments.getBlockMetaListFor(segmentId)
+func (sortedSegments *SortedSegments) SeekToKey(key kv.Key, sortedSegment *SortedSegment) (*Iterator, error) {
+	if sortedSegment == nil {
+		return nil, ErrNilSegment
+	}
+	blockMetaList, err := sortedSegments.getOrFetchBlockMetaList(sortedSegment)
 	if err != nil {
 		return nil, err
 	}
