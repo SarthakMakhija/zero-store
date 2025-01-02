@@ -14,7 +14,7 @@ Below image shows the high-level architecture.
 - **Write-Optimized Design**: Flushes writes to object storage in an sequential menner.
 - **Sorted In-Memory Structures**: Utilizes sorted structures (e.g., skiplists) to organize data for fast access and efficient flushing.
 - **Immutable Segments**: Writes are converted into immutable segment files for faster reads.
-- **Seamless Object Storage Integration**: Fully supports S3-compatible object storage as the primary durability layer.
+- **Seamless Object Storage Integration**: Supports S3 as the primary durability layer.
 - **Advanced Caching**:
   - Key/Value Cache for frequent lookups.
   - Bloom Filter Cache to avoid unnecessary I/O.
