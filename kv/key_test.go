@@ -83,6 +83,31 @@ func TestRawKeyIsEmpty(t *testing.T) {
 	assert.True(t, key.IsRawKeyEmpty())
 }
 
+func TestRawKeyIsNotEmpty(t *testing.T) {
+	key := NewStringKeyWithTimestamp("consensus", 1)
+	assert.False(t, key.IsRawKeyEmpty())
+}
+
+func TestRawKeyIsGreaterThanTheOtherKey(t *testing.T) {
+	key := NewStringKeyWithTimestamp("consensus", 0)
+	assert.True(t, key.IsRawKeyGreaterThan(NewStringKeyWithTimestamp("alphabet", 0)))
+}
+
+func TestRawKeyIsNotGreaterThanTheOtherKey(t *testing.T) {
+	key := NewStringKeyWithTimestamp("consensus", 0)
+	assert.False(t, key.IsRawKeyGreaterThan(NewStringKeyWithTimestamp("diagram", 0)))
+}
+
+func TestRawKeyIsLesserThanTheOtherKey(t *testing.T) {
+	key := NewStringKeyWithTimestamp("consensus", 0)
+	assert.True(t, key.IsRawKeyLesserThan(NewStringKeyWithTimestamp("diagram", 0)))
+}
+
+func TestRawKeyIsNotLesserThanTheOtherKey(t *testing.T) {
+	key := NewStringKeyWithTimestamp("consensus", 0)
+	assert.False(t, key.IsRawKeyLesserThan(NewStringKeyWithTimestamp("alphabet", 0)))
+}
+
 func TestRawSizeInBytes(t *testing.T) {
 	key := NewStringKeyWithTimestamp("store-type", 0)
 	assert.Equal(t, 10, key.RawSizeInBytes())

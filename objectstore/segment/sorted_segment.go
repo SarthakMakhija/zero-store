@@ -88,7 +88,7 @@ func (segment *SortedSegment) seekToFirst(blockMetaList *block.MetaList) (*Itera
 	}, nil
 }
 
-// seekToKey seeks to the block that contains a key greater than or equal to the given key.
+// seekToKey seeks to the block that containsInItsRange a key greater than or equal to the given key.
 // It involves the following:
 // 1) Identify the block.Meta that may contain the key.
 // 2) Read the block identified by blockIndex.
@@ -118,6 +118,21 @@ func (segment *SortedSegment) seekToKey(key kv.Key, blockMetaList *block.MetaLis
 		blockIterator: blockIterator,
 		blockMetaList: blockMetaList,
 	}, nil
+}
+
+// containsInItsRange returns true if the given key falls in the startingKey and the ending key of the SortedSegment.
+// It returns false:
+// If the given key is greater than the ending key of the SortedSegment, Or
+// If the given key is less than the starting key of the SortedSegment.
+// Returns true otherwise.
+func (segment *SortedSegment) containsInItsRange(key kv.Key) bool {
+	if key.IsRawKeyGreaterThan(segment.endingKey) {
+		return false
+	}
+	if key.IsRawKeyLesserThan(segment.startingKey) {
+		return false
+	}
+	return true
 }
 
 // noOfBlocks returns the number of blocks in SortedSegment.

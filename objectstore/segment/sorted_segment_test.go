@@ -191,3 +191,69 @@ func TestLoadASortedSegmentWithTwoBlocksWithValidationOfStartingAndEndingKey(t *
 	assert.Equal(t, "consensus", segment.startingKey.RawString())
 	assert.Equal(t, "distributed", segment.endingKey.RawString())
 }
+
+func TestSortedSegmentContainsTheKeyInItsRange(t *testing.T) {
+	storeDefinition, err := objectstore.NewFileSystemStoreDefinition(".")
+	assert.NoError(t, err)
+
+	store := objectstore.NewStore(".", storeDefinition)
+	segmentId := uint64(1)
+
+	defer func() {
+		store.Close()
+		_ = os.Remove(PathSuffixForSegment(segmentId))
+	}()
+
+	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 20), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("etcd", 30), kv.NewStringValue("TiKV"))
+
+	segment, _, _, err := sortedSegmentBuilder.build(segmentId)
+	assert.NoError(t, err)
+
+	assert.True(t, segment.containsInItsRange(kv.NewStringKeyWithTimestamp("distributed", 32)))
+}
+
+func TestSortedSegmentDoesNotContainTheKeyInItsRangeGivenTheKeyIsSmallerThanTheStartingKeyOfTheSegment(t *testing.T) {
+	storeDefinition, err := objectstore.NewFileSystemStoreDefinition(".")
+	assert.NoError(t, err)
+
+	store := objectstore.NewStore(".", storeDefinition)
+	segmentId := uint64(1)
+
+	defer func() {
+		store.Close()
+		_ = os.Remove(PathSuffixForSegment(segmentId))
+	}()
+
+	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 20), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("etcd", 30), kv.NewStringValue("TiKV"))
+
+	segment, _, _, err := sortedSegmentBuilder.build(segmentId)
+	assert.NoError(t, err)
+
+	assert.False(t, segment.containsInItsRange(kv.NewStringKeyWithTimestamp("alphabet", 32)))
+}
+
+func TestSortedSegmentDoesNotContainTheKeyInItsRangeGivenTheKeyIsGreaterThanTheEndingKeyOfTheSegment(t *testing.T) {
+	storeDefinition, err := objectstore.NewFileSystemStoreDefinition(".")
+	assert.NoError(t, err)
+
+	store := objectstore.NewStore(".", storeDefinition)
+	segmentId := uint64(1)
+
+	defer func() {
+		store.Close()
+		_ = os.Remove(PathSuffixForSegment(segmentId))
+	}()
+
+	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(store, false)
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("consensus", 20), kv.NewStringValue("raft"))
+	sortedSegmentBuilder.add(kv.NewStringKeyWithTimestamp("etcd", 30), kv.NewStringValue("TiKV"))
+
+	segment, _, _, err := sortedSegmentBuilder.build(segmentId)
+	assert.NoError(t, err)
+
+	assert.False(t, segment.containsInItsRange(kv.NewStringKeyWithTimestamp("foundation", 32)))
+}

@@ -119,6 +119,16 @@ func (key Key) IsRawKeyEmpty() bool {
 	return key.RawSizeInBytes() == 0
 }
 
+// IsRawKeyGreaterThan returns true if the raw key of the key is greater than the raw key of the other.
+func (key Key) IsRawKeyGreaterThan(other Key) bool {
+	return bytes.Compare(key.key, other.key) > 0
+}
+
+// IsRawKeyLesserThan returns true if the raw key of key is lesser than the raw key of the other.
+func (key Key) IsRawKeyLesserThan(other Key) bool {
+	return bytes.Compare(key.key, other.key) < 0
+}
+
 // RawSizeInBytes returns the size of the raw key.
 func (key Key) RawSizeInBytes() int {
 	return len(key.RawBytes())
