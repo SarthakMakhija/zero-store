@@ -68,6 +68,26 @@ func TestKeyIsNotEqualToOtherBasedOnRawKey(t *testing.T) {
 	assert.False(t, key.IsEqualTo(otherKey))
 }
 
+func TestKeyIsLessThanOrEqualToOtherBasedOnRawKey(t *testing.T) {
+	key := NewStringKeyWithTimestamp("consensus", 0)
+	assert.True(t, key.IsLessThanOrEqualTo(NewStringKeyWithTimestamp("diagram", 0)))
+}
+
+func TestKeyIsNotLessThanOrEqualToOtherBasedOnRawKey(t *testing.T) {
+	key := NewStringKeyWithTimestamp("consensus", 0)
+	assert.False(t, key.IsLessThanOrEqualTo(NewStringKeyWithTimestamp("alphabet", 0)))
+}
+
+func TestKeyIsLessThanOrEqualToOtherBasedOnTimestamp(t *testing.T) {
+	key := NewStringKeyWithTimestamp("consensus", 0)
+	assert.True(t, key.IsLessThanOrEqualTo(NewStringKeyWithTimestamp("consensus", 2)))
+}
+
+func TestKeyIsNotLessThanOrEqualToOtherBasedOnTimestamp(t *testing.T) {
+	key := NewStringKeyWithTimestamp("consensus", 5)
+	assert.False(t, key.IsLessThanOrEqualTo(NewStringKeyWithTimestamp("consensus", 2)))
+}
+
 func TestRawStringFromAStringKey(t *testing.T) {
 	key := NewStringKeyWithTimestamp("store-type", 10)
 	assert.Equal(t, "store-type", key.RawString())

@@ -99,9 +99,17 @@ func (key Key) IsEqualTo(other Key) bool {
 	return bytes.Equal(key.key, other.key) && key.timestamp == other.timestamp
 }
 
-// IsRawKeyEqualTo returns true if the raw key two keys is the same.
-func (key Key) IsRawKeyEqualTo(other Key) bool {
-	return bytes.Equal(key.key, other.key)
+// IsLessThanOrEqualTo returns true if the Key is less than or equal to the other Key.
+func (key Key) IsLessThanOrEqualTo(other Key) bool {
+	comparison := bytes.Compare(key.key, other.key)
+	if comparison > 0 {
+		return false
+	}
+	if comparison < 0 {
+		return true
+	}
+	//comparison == 0
+	return key.timestamp <= other.timestamp
 }
 
 // RawString returns the string representation of raw key.
@@ -117,6 +125,11 @@ func (key Key) RawBytes() []byte {
 // IsRawKeyEmpty returns true if the raw key is empty.
 func (key Key) IsRawKeyEmpty() bool {
 	return key.RawSizeInBytes() == 0
+}
+
+// IsRawKeyEqualTo returns true if the raw key two keys is the same.
+func (key Key) IsRawKeyEqualTo(other Key) bool {
+	return bytes.Equal(key.key, other.key)
 }
 
 // IsRawKeyGreaterThan returns true if the raw key of the key is greater than the raw key of the other.
