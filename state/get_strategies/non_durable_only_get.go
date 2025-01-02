@@ -1,4 +1,4 @@
-package state
+package get_strategies
 
 import (
 	"github.com/SarthakMakhija/zero-store/kv"
