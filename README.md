@@ -11,10 +11,10 @@ Below image shows the high-level architecture.
 
 ### Key Features
 - **Hybrid Architecture**: Leverages in-memory structures for low-latency operations while persisting data to object storage for durability.
-- **Write-Optimized Design**: Flushes writes to object storage in an sequential menner.
 - **Sorted In-Memory Structures**: Utilizes sorted structures (e.g., skiplists) to organize data for fast access and efficient flushing.
 - **Immutable Segments**: Writes are converted into immutable segment files for faster reads.
 - **Seamless Object Storage Integration**: Supports S3 as the primary durability layer.
+- **Write-Optimized**: Flushes writes to object storage in sequential menner.
 - **Advanced Caching**:
   - Key/Value Cache for frequent lookups.
   - Bloom Filter Cache to avoid unnecessary I/O.
