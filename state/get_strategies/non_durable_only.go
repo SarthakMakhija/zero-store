@@ -7,11 +7,11 @@ import (
 )
 
 type NonDurableOnlyGet struct {
-	activeSegment            *memory.SortedSegment
-	inactiveSegmentsSequence iter.Seq2[int, *memory.SortedSegment]
+	activeSegment            memory.SortedSegment
+	inactiveSegmentsSequence iter.Seq2[int, memory.SortedSegment]
 }
 
-func NewNonDurableOnlyGet(activeSegment *memory.SortedSegment, inactiveSegmentsSequence iter.Seq2[int, *memory.SortedSegment]) NonDurableOnlyGet {
+func NewNonDurableOnlyGet(activeSegment memory.SortedSegment, inactiveSegmentsSequence iter.Seq2[int, memory.SortedSegment]) NonDurableOnlyGet {
 	return NonDurableOnlyGet{
 		activeSegment:            activeSegment,
 		inactiveSegmentsSequence: inactiveSegmentsSequence,

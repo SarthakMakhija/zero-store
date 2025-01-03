@@ -19,7 +19,7 @@ var (
 )
 
 type StorageState struct {
-	activeSegment            *memory.SortedSegment
+	activeSegment            memory.SortedSegment
 	inactiveSegments         *inactiveSegments
 	persistentSortedSegments *objectStore.SortedSegments
 	segmentIdGenerator       *SegmentIdGenerator
@@ -178,23 +178,20 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 		defer state.stateLock.Unlock()
 		state.inactiveSegments.dropOldest()
 	}
-	buildAndWritePersistentSortedSegment := func(inMemorySegmentToFlush *memory.SortedSegment) (*objectStore.SortedSegment, error) {
+	buildAndWritePersistentSortedSegment := func(inMemorySegmentToFlush memory.SortedSegment) (*objectStore.SortedSegment, error) {
 		return state.persistentSortedSegments.BuildAndWritePersistentSortedSegment(
 			memory.NewAllEntriesSortedSegmentIterator(inMemorySegmentToFlush),
 			inMemorySegmentToFlush.Id(),
 		)
 	}
-	oldestInactiveSegmentIfAvailable := func() *memory.SortedSegment {
+	oldestInactiveSegmentIfAvailable := func() (memory.SortedSegment, bool) {
 		state.stateLock.RLock()
 		defer state.stateLock.RUnlock()
 
-		if segment, ok := state.inactiveSegments.oldest(); ok {
-			return segment
-		}
-		return nil
+		return state.inactiveSegments.oldest()
 	}
 
-	if oldestInMemorySegmentToFlush := oldestInactiveSegmentIfAvailable(); oldestInMemorySegmentToFlush != nil {
+	if oldestInMemorySegmentToFlush, ok := oldestInactiveSegmentIfAvailable(); ok {
 		_, err := buildAndWritePersistentSortedSegment(oldestInMemorySegmentToFlush)
 		if err != nil {
 			//TODO: what if flush succeeds later on, how will AsyncAwait handle it?
@@ -209,22 +206,22 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 }
 
 type inactiveSegments struct {
-	segments []*memory.SortedSegment //oldest to latest
+	segments []memory.SortedSegment //oldest to latest
 }
 
 func newInactiveSegments() *inactiveSegments {
 	return &inactiveSegments{}
 }
 
-func (segments *inactiveSegments) append(segment *memory.SortedSegment) {
+func (segments *inactiveSegments) append(segment memory.SortedSegment) {
 	segments.segments = append(segments.segments, segment)
 }
 
-func (segments *inactiveSegments) oldest() (*memory.SortedSegment, bool) {
+func (segments *inactiveSegments) oldest() (memory.SortedSegment, bool) {
 	if len(segments.segments) > 0 {
 		return segments.segments[0], true
 	}
-	return nil, false
+	return memory.EmptySortedSegment, false
 }
 
 func (segments *inactiveSegments) dropOldest() {
@@ -237,8 +234,8 @@ func (segments *inactiveSegments) flushAllToObjectStoreMarkAsError() {
 	}
 }
 
-func (segments *inactiveSegments) copySegments() []*memory.SortedSegment {
-	clonedSegments := make([]*memory.SortedSegment, len(segments.segments))
+func (segments *inactiveSegments) copySegments() []memory.SortedSegment {
+	clonedSegments := make([]memory.SortedSegment, len(segments.segments))
 	copy(clonedSegments, segments.segments)
 	return clonedSegments
 }

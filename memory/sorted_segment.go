@@ -20,9 +20,11 @@ type SortedSegment struct {
 	flushToObjectStoreAsyncAwait *future.AsyncAwait
 }
 
+var EmptySortedSegment = SortedSegment{}
+
 // NewSortedSegment creates a new instance of SortedSegment
-func NewSortedSegment(id uint64, allowedSizeInBytes int64) *SortedSegment {
-	return &SortedSegment{
+func NewSortedSegment(id uint64, allowedSizeInBytes int64) SortedSegment {
+	return SortedSegment{
 		id:                           id,
 		allowedSizeInBytes:           allowedSizeInBytes,
 		entries:                      external.NewSkipList(allowedSizeInBytes),
@@ -31,7 +33,7 @@ func NewSortedSegment(id uint64, allowedSizeInBytes int64) *SortedSegment {
 }
 
 // Get returns the value for the key if found.
-func (segment *SortedSegment) Get(key kv.Key) (kv.Value, bool) {
+func (segment SortedSegment) Get(key kv.Key) (kv.Value, bool) {
 	value, ok := segment.entries.Get(key)
 	if !ok || value.IsDeleted() {
 		return kv.EmptyValue, false
@@ -40,44 +42,44 @@ func (segment *SortedSegment) Get(key kv.Key) (kv.Value, bool) {
 }
 
 // Set sets the key/value pair in the system. It involves writing the key/value pair in the Skiplist.
-func (segment *SortedSegment) Set(key kv.Key, value kv.Value) {
+func (segment SortedSegment) Set(key kv.Key, value kv.Value) {
 	segment.entries.Put(key, value)
 }
 
 // Delete is an append operation. It involves writing the key/value pair with kv.EmptyValue in the Skiplist.
-func (segment *SortedSegment) Delete(key kv.Key) {
+func (segment SortedSegment) Delete(key kv.Key) {
 	segment.Set(key, kv.NewDeletedValue())
 }
 
 // IsEmpty returns true if the SortedSegment is empty.
-func (segment *SortedSegment) IsEmpty() bool {
+func (segment SortedSegment) IsEmpty() bool {
 	return segment.entries.Empty()
 }
 
 // CanFit returns true if the SortedSegment has the size enough for the requiredSizeInBytes.
-func (segment *SortedSegment) CanFit(requiredSizeInBytes int64) bool {
+func (segment SortedSegment) CanFit(requiredSizeInBytes int64) bool {
 	return segment.sizeInBytes()+requiredSizeInBytes+int64(external.MaxNodeSize) < segment.allowedSizeInBytes
 }
 
 // Id returns the id of SortedSegment.
-func (segment *SortedSegment) Id() uint64 {
+func (segment SortedSegment) Id() uint64 {
 	return segment.id
 }
 
 // FlushToObjectStoreFuture returns the future.Future object which signifies the flush to object store.
 // future.Future allows the clients to wait for the flush operation to complete.
-func (segment *SortedSegment) FlushToObjectStoreFuture() *future.Future {
+func (segment SortedSegment) FlushToObjectStoreFuture() *future.Future {
 	return segment.flushToObjectStoreAsyncAwait.Future()
 }
 
 // FlushToObjectStoreAsyncAwait returns the future.AsyncAwait object which signifies the flush to object store.
 // future.AsyncAwait allows mutation on the future.Future object like marking it complete.
-func (segment *SortedSegment) FlushToObjectStoreAsyncAwait() *future.AsyncAwait {
+func (segment SortedSegment) FlushToObjectStoreAsyncAwait() *future.AsyncAwait {
 	return segment.flushToObjectStoreAsyncAwait
 }
 
 // sizeInBytes returns the size of the SortedSegment.
-func (segment *SortedSegment) sizeInBytes() int64 {
+func (segment SortedSegment) sizeInBytes() int64 {
 	return segment.entries.MemSize()
 }
 
@@ -87,7 +89,7 @@ type AllEntriesSortedSegmentIterator struct {
 }
 
 // NewAllEntriesSortedSegmentIterator creates a new instance of AllEntriesSortedSegmentIterator.
-func NewAllEntriesSortedSegmentIterator(segment *SortedSegment) *AllEntriesSortedSegmentIterator {
+func NewAllEntriesSortedSegmentIterator(segment SortedSegment) *AllEntriesSortedSegmentIterator {
 	iterator := segment.entries.NewIterator()
 	iterator.SeekToFirst()
 

@@ -38,7 +38,7 @@ func TestNonDurableOnlyGetFromActiveAndSingleInactiveSegment(t *testing.T) {
 	inactiveSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 6), kv.NewStringValue("raft"))
 	inactiveSegment.Set(kv.NewStringKeyWithTimestamp("distributed", 5), kv.NewStringValue("etcd"))
 
-	inactiveSegments := []*memory.SortedSegment{inactiveSegment}
+	inactiveSegments := []memory.SortedSegment{inactiveSegment}
 	getOperation := NewNonDurableOnlyGet(activeSegment, slices.Backward(inactiveSegments))
 	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("consensus", 10))
 
@@ -58,7 +58,7 @@ func TestNonDurableOnlyGetFromActiveAndACoupleOfInactiveSegmentsWithGetForAKeyWi
 	oldInactiveSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("paxos"))
 	oldInactiveSegment.Set(kv.NewStringKeyWithTimestamp("distributed", 4), kv.NewStringValue("foundation"))
 
-	inactiveSegments := []*memory.SortedSegment{oldInactiveSegment, freshInactiveSegment}
+	inactiveSegments := []memory.SortedSegment{oldInactiveSegment, freshInactiveSegment}
 	getOperation := NewNonDurableOnlyGet(activeSegment, slices.Backward(inactiveSegments))
 	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("consensus", 7))
 
@@ -78,7 +78,7 @@ func TestNonDurableOnlyGetFromActiveAndACoupleOfInactiveSegmentsWithGetForAKeyWi
 	oldInactiveSegment.Set(kv.NewStringKeyWithTimestamp("consensus", 5), kv.NewStringValue("paxos"))
 	oldInactiveSegment.Set(kv.NewStringKeyWithTimestamp("distributed", 4), kv.NewStringValue("foundation"))
 
-	inactiveSegments := []*memory.SortedSegment{oldInactiveSegment, freshInactiveSegment}
+	inactiveSegments := []memory.SortedSegment{oldInactiveSegment, freshInactiveSegment}
 	getOperation := NewNonDurableOnlyGet(activeSegment, slices.Backward(inactiveSegments))
 	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("consensus", 8))
 
