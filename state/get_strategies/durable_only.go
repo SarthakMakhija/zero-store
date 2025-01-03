@@ -9,10 +9,10 @@ import (
 
 type DurableOnlyGet struct {
 	segments                   *segment.SortedSegments
-	persistentSegmentsSequence iter.Seq2[int, *segment.SortedSegment]
+	persistentSegmentsSequence iter.Seq2[int, segment.SortedSegment]
 }
 
-func NewDurableOnlyGet(segments *segment.SortedSegments, persistentSegmentsSequence iter.Seq2[int, *segment.SortedSegment]) DurableOnlyGet {
+func NewDurableOnlyGet(segments *segment.SortedSegments, persistentSegmentsSequence iter.Seq2[int, segment.SortedSegment]) DurableOnlyGet {
 	return DurableOnlyGet{
 		segments:                   segments,
 		persistentSegmentsSequence: persistentSegmentsSequence,

@@ -178,7 +178,7 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 		defer state.stateLock.Unlock()
 		state.inactiveSegments.dropOldest()
 	}
-	buildAndWritePersistentSortedSegment := func(inMemorySegmentToFlush memory.SortedSegment) (*objectStore.SortedSegment, error) {
+	buildAndWritePersistentSortedSegment := func(inMemorySegmentToFlush memory.SortedSegment) (objectStore.SortedSegment, error) {
 		return state.persistentSortedSegments.BuildAndWritePersistentSortedSegment(
 			memory.NewAllEntriesSortedSegmentIterator(inMemorySegmentToFlush),
 			inMemorySegmentToFlush.Id(),

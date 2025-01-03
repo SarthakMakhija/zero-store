@@ -65,7 +65,7 @@ func TestDurableOnlyGetWithASingleSegmentContainingTheKey(t *testing.T) {
 	)
 	assert.NoError(t, err)
 
-	getOperation := NewDurableOnlyGet(segments, slices.Backward([]*segment.SortedSegment{aSegment}))
+	getOperation := NewDurableOnlyGet(segments, slices.Backward([]segment.SortedSegment{aSegment}))
 	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("raft", 11))
 
 	assert.True(t, getResponse.IsValueAvailable())
@@ -96,7 +96,7 @@ func TestDurableOnlyGetWithASingleSegmentNotContainingTheKey(t *testing.T) {
 	)
 	assert.NoError(t, err)
 
-	getOperation := NewDurableOnlyGet(segments, slices.Backward([]*segment.SortedSegment{aSegment}))
+	getOperation := NewDurableOnlyGet(segments, slices.Backward([]segment.SortedSegment{aSegment}))
 	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("paxos", 11))
 
 	assert.False(t, getResponse.IsValueAvailable())
@@ -138,7 +138,7 @@ func TestDurableOnlyGetWithMultipleSegmentsOneOfWhichContainsTheKey(t *testing.T
 	)
 	assert.NoError(t, err)
 
-	getOperation := NewDurableOnlyGet(segments, slices.Backward([]*segment.SortedSegment{aSegment, anotherSegment}))
+	getOperation := NewDurableOnlyGet(segments, slices.Backward([]segment.SortedSegment{aSegment, anotherSegment}))
 	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("paxos", 18))
 
 	assert.True(t, getResponse.IsValueAvailable())
@@ -180,7 +180,7 @@ func TestDurableOnlyGetWithMultipleSegmentsManyOfWhichContainTheKey(t *testing.T
 	)
 	assert.NoError(t, err)
 
-	getOperation := NewDurableOnlyGet(segments, slices.Backward([]*segment.SortedSegment{anotherSegment, aSegment}))
+	getOperation := NewDurableOnlyGet(segments, slices.Backward([]segment.SortedSegment{anotherSegment, aSegment}))
 
 	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("raft", 16))
 	assert.True(t, getResponse.IsValueAvailable())

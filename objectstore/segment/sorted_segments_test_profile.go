@@ -22,6 +22,6 @@ func (sortedSegments *SortedSegments) RemoveAllPersistentSortedSegmentsIn(direct
 }
 
 // sortedSegmentFor returns the SortedSegment for the given segment id.
-func (sortedSegments *SortedSegments) sortedSegmentFor(id uint64) *SortedSegment {
+func (sortedSegments *SortedSegments) sortedSegmentFor(id uint64) SortedSegment {
 	return sortedSegments.persistentSegments[id]
 }

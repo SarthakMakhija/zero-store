@@ -74,7 +74,7 @@ func (builder *SortedSegmentBuilder) add(key kv.Key, value kv.Value) {
 // The size of the data blocks is fixed, defaults to block.DefaultBlockSize.
 // Metadata and bloom filter are variable length byte sections.
 // Footer block is a fixed size block, defaults to block.DefaultBlockSize.
-func (builder *SortedSegmentBuilder) build(id uint64) (*SortedSegment, *block.MetaList, filter.BloomFilter, error) {
+func (builder *SortedSegmentBuilder) build(id uint64) (SortedSegment, *block.MetaList, filter.BloomFilter, error) {
 	blockMetaBeginOffset := func() uint32 {
 		return uint32(len(builder.allBlocksData))
 	}
@@ -102,7 +102,7 @@ func (builder *SortedSegmentBuilder) build(id uint64) (*SortedSegment, *block.Me
 	bloomFilter := builder.bloomFilterBuilder.Build()
 	encodedFilter, err := bloomFilter.Encode()
 	if err != nil {
-		return nil, nil, filter.BloomFilter{}, err
+		return EmptySortedSegment, nil, filter.BloomFilter{}, err
 	}
 	footerBlock.AddOffset(bloomFilterBeginOffset(buffer))
 	buffer.Write(encodedFilter)
@@ -112,11 +112,11 @@ func (builder *SortedSegmentBuilder) build(id uint64) (*SortedSegment, *block.Me
 
 	// write the result to the object store.
 	if err := builder.store.Set(PathSuffixForSegment(id), buffer.Bytes()); err != nil {
-		return nil, nil, filter.BloomFilter{}, err
+		return EmptySortedSegment, nil, filter.BloomFilter{}, err
 	}
 	startingKey, _ := builder.blockMetaList.StartingKeyOfFirstBlock()
 	endingKey, _ := builder.blockMetaList.EndingKeyOfLastBlock()
-	return &SortedSegment{
+	return SortedSegment{
 		id:                   id,
 		blockMetaBeginOffset: uint32(len(builder.allBlocksData)),
 		blockSize:            builder.blockSize,

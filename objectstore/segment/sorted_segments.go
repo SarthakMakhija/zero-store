@@ -13,11 +13,11 @@ import (
 
 var (
 	ErrNoSegmentForTheSegmentId = errors.New("no segment for the given id")
-	ErrNilSegment               = errors.New("nil segment")
+	ErrEmptySegment             = errors.New("empty segment")
 )
 
 type SortedSegments struct {
-	persistentSegments map[uint64]*SortedSegment
+	persistentSegments map[uint64]SortedSegment
 	store              objectstore.Store
 	bloomFilterCache   cache.BloomFilterCache
 	blockMetaListCache cache.BlockMetaListCache
@@ -34,7 +34,7 @@ func NewSortedSegments(store objectstore.Store, options SortedSegmentCacheOption
 		return nil, err
 	}
 	return &SortedSegments{
-		persistentSegments: make(map[uint64]*SortedSegment),
+		persistentSegments: make(map[uint64]SortedSegment),
 		store:              store,
 		bloomFilterCache:   bloomFilterCache,
 		blockMetaListCache: blockMetaListCache,
@@ -42,30 +42,30 @@ func NewSortedSegments(store objectstore.Store, options SortedSegmentCacheOption
 	}, nil
 }
 
-func (sortedSegments *SortedSegments) BuildAndWritePersistentSortedSegment(iterator iterator.Iterator, segmentId uint64) (*SortedSegment, error) {
+func (sortedSegments *SortedSegments) BuildAndWritePersistentSortedSegment(iterator iterator.Iterator, segmentId uint64) (SortedSegment, error) {
 	sortedSegmentBuilder := newSortedSegmentBuilderWithDefaultBlockSize(sortedSegments.store, sortedSegments.enableCompression)
 	for iterator.IsValid() {
 		sortedSegmentBuilder.add(iterator.Key(), iterator.Value())
 		if err := iterator.Next(); err != nil {
-			return nil, err
+			return EmptySortedSegment, err
 		}
 	}
 	persistentSortedSegment, blockMetaList, bloomFilter, err := sortedSegmentBuilder.build(segmentId)
 	if err != nil {
-		return nil, err
+		return EmptySortedSegment, err
 	}
 	sortedSegments.updateState(segmentId, persistentSortedSegment, bloomFilter, blockMetaList)
 	return persistentSortedSegment, nil
 }
 
-func (sortedSegments *SortedSegments) Load(segmentId uint64, blockSize uint, enableCompression bool) (*SortedSegment, error) {
+func (sortedSegments *SortedSegments) Load(segmentId uint64, blockSize uint, enableCompression bool) (SortedSegment, error) {
 	sortedSegment, ok := sortedSegments.persistentSegments[segmentId]
 	if ok {
 		return sortedSegment, nil
 	}
 	sortedSegment, blockMetaList, bloomFilter, err := load(segmentId, blockSize, enableCompression, sortedSegments.store)
 	if err != nil {
-		return nil, err
+		return EmptySortedSegment, err
 	}
 	sortedSegments.updateState(segmentId, sortedSegment, bloomFilter, blockMetaList)
 	return sortedSegment, nil
@@ -79,9 +79,9 @@ func (sortedSegments *SortedSegments) SeekToFirst(segmentId uint64) (*Iterator, 
 	return sortedSegment.seekToFirst(blockMetaList)
 }
 
-func (sortedSegments *SortedSegments) SeekToKey(key kv.Key, sortedSegment *SortedSegment) (*Iterator, error) {
-	if sortedSegment == nil {
-		return nil, ErrNilSegment
+func (sortedSegments *SortedSegments) SeekToKey(key kv.Key, sortedSegment SortedSegment) (*Iterator, error) {
+	if sortedSegment.isEmpty() {
+		return nil, ErrEmptySegment
 	}
 	blockMetaList, err := sortedSegments.getOrFetchBlockMetaList(sortedSegment)
 	if err != nil {
@@ -90,9 +90,9 @@ func (sortedSegments *SortedSegments) SeekToKey(key kv.Key, sortedSegment *Sorte
 	return sortedSegment.seekToKey(key, blockMetaList)
 }
 
-func (sortedSegments *SortedSegments) MayContain(key kv.Key, sortedSegment *SortedSegment) (bool, error) {
-	if sortedSegment == nil {
-		return false, ErrNilSegment
+func (sortedSegments *SortedSegments) MayContain(key kv.Key, sortedSegment SortedSegment) (bool, error) {
+	if sortedSegment.isEmpty() {
+		return false, ErrEmptySegment
 	}
 	if !sortedSegment.containsInItsRange(key) {
 		return false, nil
@@ -104,8 +104,8 @@ func (sortedSegments *SortedSegments) MayContain(key kv.Key, sortedSegment *Sort
 	return bloomFilter.MayContain(key), nil
 }
 
-func (sortedSegments *SortedSegments) OrderedSegmentsByDescendingSegmentId() []*SortedSegment {
-	allSegments := make([]*SortedSegment, 0, len(sortedSegments.persistentSegments))
+func (sortedSegments *SortedSegments) OrderedSegmentsByDescendingSegmentId() []SortedSegment {
+	allSegments := make([]SortedSegment, 0, len(sortedSegments.persistentSegments))
 	for _, segment := range sortedSegments.persistentSegments {
 		allSegments = append(allSegments, segment)
 	}
@@ -115,19 +115,19 @@ func (sortedSegments *SortedSegments) OrderedSegmentsByDescendingSegmentId() []*
 	return allSegments
 }
 
-func (sortedSegments *SortedSegments) getBlockMetaListFor(segmentId uint64) (*SortedSegment, *block.MetaList, error) {
+func (sortedSegments *SortedSegments) getBlockMetaListFor(segmentId uint64) (SortedSegment, *block.MetaList, error) {
 	sortedSegment, ok := sortedSegments.persistentSegments[segmentId]
 	if !ok {
-		return nil, nil, ErrNoSegmentForTheSegmentId
+		return EmptySortedSegment, nil, ErrNoSegmentForTheSegmentId
 	}
 	blockMetaList, err := sortedSegments.getOrFetchBlockMetaList(sortedSegment)
 	if err != nil {
-		return nil, nil, err
+		return EmptySortedSegment, nil, err
 	}
 	return sortedSegment, blockMetaList, nil
 }
 
-func (sortedSegments *SortedSegments) getOrFetchBlockMetaList(sortedSegment *SortedSegment) (*block.MetaList, error) {
+func (sortedSegments *SortedSegments) getOrFetchBlockMetaList(sortedSegment SortedSegment) (*block.MetaList, error) {
 	blockMetaList, ok := sortedSegments.blockMetaListCache.Get(sortedSegment.id)
 	if !ok {
 		blockMetaList, err := loadBlockMetaList(sortedSegment.id, sortedSegment.footerBlock, sortedSegments.enableCompression, sortedSegments.store)
@@ -140,7 +140,7 @@ func (sortedSegments *SortedSegments) getOrFetchBlockMetaList(sortedSegment *Sor
 	return blockMetaList, nil
 }
 
-func (sortedSegments *SortedSegments) getOrFetchBloomFilter(sortedSegment *SortedSegment) (filter.BloomFilter, error) {
+func (sortedSegments *SortedSegments) getOrFetchBloomFilter(sortedSegment SortedSegment) (filter.BloomFilter, error) {
 	bloomFilter, ok := sortedSegments.bloomFilterCache.Get(sortedSegment.id)
 	if !ok {
 		bloomFilter, err := loadBloomFilter(sortedSegment.id, sortedSegment.footerBlock, sortedSegments.store)
@@ -153,7 +153,7 @@ func (sortedSegments *SortedSegments) getOrFetchBloomFilter(sortedSegment *Sorte
 	return bloomFilter, nil
 }
 
-func (sortedSegments *SortedSegments) updateState(segmentId uint64, persistentSortedSegment *SortedSegment, bloomFilter filter.BloomFilter, blockMetaList *block.MetaList) {
+func (sortedSegments *SortedSegments) updateState(segmentId uint64, persistentSortedSegment SortedSegment, bloomFilter filter.BloomFilter, blockMetaList *block.MetaList) {
 	sortedSegments.persistentSegments[segmentId] = persistentSortedSegment
 	sortedSegments.bloomFilterCache.Set(segmentId, bloomFilter)
 	sortedSegments.blockMetaListCache.Set(segmentId, blockMetaList)

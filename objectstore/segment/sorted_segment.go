@@ -23,9 +23,11 @@ type SortedSegment struct {
 	footerBlock          *block.FooterBlock
 }
 
+var EmptySortedSegment = SortedSegment{}
+
 // load loads the entire SortedSegment from the given rootPath.
 // Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
-func load(id uint64, blockSize uint, enableCompression bool, store objectstore.Store) (*SortedSegment, *block.MetaList, filter.BloomFilter, error) {
+func load(id uint64, blockSize uint, enableCompression bool, store objectstore.Store) (SortedSegment, *block.MetaList, filter.BloomFilter, error) {
 	// loadFooterBlock loads the footer block from the actual object-store.
 	// The last block of the SortedSegment contains offsets.
 	// Please take a look at segment.SortedSegmentBuilder to understand the encoding of SortedSegment.
@@ -45,21 +47,21 @@ func load(id uint64, blockSize uint, enableCompression bool, store objectstore.S
 
 	footerBlock, err := loadFooterBlock(id, store, blockSize)
 	if err != nil {
-		return nil, nil, filter.BloomFilter{}, err
+		return EmptySortedSegment, nil, filter.BloomFilter{}, err
 	}
 	blockMetaList, err := loadBlockMetaList(id, footerBlock, enableCompression, store)
 	if err != nil {
-		return nil, nil, filter.BloomFilter{}, err
+		return EmptySortedSegment, nil, filter.BloomFilter{}, err
 	}
 	bloomFilter, err := loadBloomFilter(id, footerBlock, store)
 	if err != nil {
-		return nil, nil, filter.BloomFilter{}, err
+		return EmptySortedSegment, nil, filter.BloomFilter{}, err
 	}
 
 	startingKey, _ := blockMetaList.StartingKeyOfFirstBlock()
 	endingKey, _ := blockMetaList.EndingKeyOfLastBlock()
 	blockMetaBeginOffset, _ := footerBlock.GetOffsetAt(0)
-	return &SortedSegment{
+	return SortedSegment{
 		id:                   id,
 		blockSize:            blockSize,
 		blockMetaBeginOffset: blockMetaBeginOffset,
@@ -75,7 +77,7 @@ func load(id uint64, blockSize uint, enableCompression bool, store objectstore.S
 // First key is a part of the first block, so the block at index 0 is read and a block.Iterator
 // is created over the read block.
 // It is used in compact.Compaction.
-func (segment *SortedSegment) seekToFirst(blockMetaList *block.MetaList) (*Iterator, error) {
+func (segment SortedSegment) seekToFirst(blockMetaList *block.MetaList) (*Iterator, error) {
 	readBlock, err := segment.readBlock(0, blockMetaList)
 	if err != nil {
 		return nil, err
@@ -94,7 +96,7 @@ func (segment *SortedSegment) seekToFirst(blockMetaList *block.MetaList) (*Itera
 // 2) Read the block identified by blockIndex.
 // 3) Seek to the key within the read block (seeks to the offset where the key >= the given key)
 // 4) Handle the case where block.Iterator may become invalid.
-func (segment *SortedSegment) seekToKey(key kv.Key, blockMetaList *block.MetaList) (*Iterator, error) {
+func (segment SortedSegment) seekToKey(key kv.Key, blockMetaList *block.MetaList) (*Iterator, error) {
 	_, blockIndex := blockMetaList.MaybeBlockMetaContaining(key)
 	readBlock, err := segment.readBlock(blockIndex, blockMetaList)
 	if err != nil {
@@ -125,7 +127,7 @@ func (segment *SortedSegment) seekToKey(key kv.Key, blockMetaList *block.MetaLis
 // If the given key is greater than the ending key of the SortedSegment, Or
 // If the given key is less than the starting key of the SortedSegment.
 // Returns true otherwise.
-func (segment *SortedSegment) containsInItsRange(key kv.Key) bool {
+func (segment SortedSegment) containsInItsRange(key kv.Key) bool {
 	if key.IsRawKeyGreaterThan(segment.endingKey) {
 		return false
 	}
@@ -136,12 +138,16 @@ func (segment *SortedSegment) containsInItsRange(key kv.Key) bool {
 }
 
 // noOfBlocks returns the number of blocks in SortedSegment.
-func (segment *SortedSegment) noOfBlocks() int {
+func (segment SortedSegment) noOfBlocks() int {
 	return segment.numberOfBlocks
 }
 
+func (segment SortedSegment) isEmpty() bool {
+	return segment.noOfBlocks() == 0
+}
+
 // readBlock reads the block at the given blockIndex.
-func (segment *SortedSegment) readBlock(blockIndex int, blockMetaList *block.MetaList) (block.Block, error) {
+func (segment SortedSegment) readBlock(blockIndex int, blockMetaList *block.MetaList) (block.Block, error) {
 	startingOffset, endOffset := segment.offsetRangeOfBlockAt(blockIndex, blockMetaList)
 	buffer, err := segment.store.GetRange(PathSuffixForSegment(segment.id), int64(startingOffset), int64(endOffset-startingOffset))
 	if err != nil {
@@ -157,7 +163,7 @@ func (segment *SortedSegment) readBlock(blockIndex int, blockMetaList *block.Met
 // If the block.Meta is not available at the next index, it returns the BlockBeginOffset of block.Meta at the given index,
 // and table.blockMetaOffsetMarker, which is essentially the offset which denotes the meta starting offset.
 // Please take a look at the segment.SortedSegmentBuilder for encoding of SortedSegment.
-func (segment *SortedSegment) offsetRangeOfBlockAt(blockIndex int, blockMetaList *block.MetaList) (uint32, uint32) {
+func (segment SortedSegment) offsetRangeOfBlockAt(blockIndex int, blockMetaList *block.MetaList) (uint32, uint32) {
 	blockMeta, blockPresent := blockMetaList.GetAt(blockIndex)
 	if !blockPresent {
 		panic(fmt.Errorf("block meta not found at index %v", blockIndex))

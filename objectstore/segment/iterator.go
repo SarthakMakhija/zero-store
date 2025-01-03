@@ -11,7 +11,7 @@ import (
 // blockIterator is a pointer to the block.Iterator.
 // Effectively, a SortedSegment Iterator is an iterator which iterates over the blocks of SortedSegment.
 type Iterator struct {
-	sortedSegment *SortedSegment
+	sortedSegment SortedSegment
 	blockIndex    int
 	blockIterator *block.Iterator
 	blockMetaList *block.MetaList

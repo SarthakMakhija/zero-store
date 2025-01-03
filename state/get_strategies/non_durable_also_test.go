@@ -40,7 +40,7 @@ func TestNonDurableAlsoGetFromActiveSegmentAndPersistentSegmentForAnExistingKey(
 
 	getOperation := NewNonDurableAlsoGet(
 		NewNonDurableOnlyGet(activeSegment, nil),
-		NewDurableOnlyGet(segments, slices.Backward([]*segment.SortedSegment{persistentSegment})),
+		NewDurableOnlyGet(segments, slices.Backward([]segment.SortedSegment{persistentSegment})),
 	)
 
 	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("raft", 15))
@@ -81,7 +81,7 @@ func TestNonDurableAlsoGetFromActiveSegmentAndPersistentSegmentForANonExistingKe
 
 	getOperation := NewNonDurableAlsoGet(
 		NewNonDurableOnlyGet(activeSegment, nil),
-		NewDurableOnlyGet(segments, slices.Backward([]*segment.SortedSegment{persistentSegment})),
+		NewDurableOnlyGet(segments, slices.Backward([]segment.SortedSegment{persistentSegment})),
 	)
 
 	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("non-existing", 15))
