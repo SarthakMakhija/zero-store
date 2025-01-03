@@ -205,3 +205,9 @@ func (segments *inactiveSegments) flushAllToObjectStoreMarkAsError() {
 		segment.FlushToObjectStoreAsyncAwait().MarkDoneAsError(ErrDbStopped)
 	}
 }
+
+func (segments *inactiveSegments) copySegments() []*memory.SortedSegment {
+	clonedSegments := make([]*memory.SortedSegment, len(segments.segments))
+	copy(clonedSegments, segments.segments)
+	return clonedSegments
+}
