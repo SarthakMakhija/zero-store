@@ -7,7 +7,9 @@ import (
 	"github.com/SarthakMakhija/zero-store/memory"
 	"github.com/SarthakMakhija/zero-store/objectstore"
 	objectStore "github.com/SarthakMakhija/zero-store/objectstore/segment"
+	"github.com/SarthakMakhija/zero-store/state/get_strategies"
 	"log"
+	"slices"
 	"sync"
 	"time"
 )
@@ -55,12 +57,41 @@ func NewStorageState(options StorageOptions) (*StorageState, error) {
 	return storageState, nil
 }
 
-func (state *StorageState) Get(key kv.Key) (kv.Value, bool) {
-	state.stateLock.RLock()
-	defer state.stateLock.RUnlock()
+func (state *StorageState) Get(key kv.Key, strategy get_strategies.GetStrategyType) get_strategies.GetResponse {
+	//TODO: resolveGetStrategy acquires a RLock for getting the current snapshot of the segments.
+	//The lock is released after the segments have been acquired.
+	//The following issue can happen:
+	//A get request comes for nonDurableOnlyGet. resolveGetStrategy acquires the RLock and gets the current active segment,
+	//and then releases the lock.
+	//In the meantime, a Set request comes in which tries to add the batch to the active segment just to realize that the
+	//active segment is full. This changes the active segment to refer to the newly created empty segment by acquiring the write lock.
+	//This can now cause issues in the read operation, because the read operation is running on a segment which has been replaced.
 
-	//TODO: May change as transactions come in .. will not read from the segment unless it is made durable.
-	return state.activeSegment.Get(key)
+	newNonDurableOnlyGet := func() get_strategies.NonDurableOnlyGet {
+		return get_strategies.NewNonDurableOnlyGet(state.activeSegment, slices.Backward(state.inactiveSegments.copySegments()))
+	}
+	newDurableOnlyGet := func() get_strategies.DurableOnlyGet {
+		return get_strategies.NewDurableOnlyGet(state.persistentSortedSegments, slices.All(state.persistentSortedSegments.OrderedSegmentsByDescendingSegmentId()))
+	}
+	newNonDurableAlsoGet := func() get_strategies.NonDurableAlsoGet {
+		return get_strategies.NewNonDurableAlsoGet(newNonDurableOnlyGet(), newDurableOnlyGet())
+	}
+	resolveGetStrategy := func() get_strategies.GetStrategy {
+		state.stateLock.RLock()
+		defer state.stateLock.RUnlock()
+
+		switch strategy {
+		case get_strategies.NonDurableOnlyType:
+			return newNonDurableOnlyGet()
+		case get_strategies.DurableOnlyType:
+			return newDurableOnlyGet()
+		case get_strategies.NonDurableAlsoType:
+			return newNonDurableAlsoGet()
+		default:
+			panic("unknown get strategy")
+		}
+	}
+	return resolveGetStrategy().Get(key)
 }
 
 func (state *StorageState) Set(batch kv.TimestampedBatch) (*future.Future, error) {

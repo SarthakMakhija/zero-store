@@ -38,16 +38,16 @@ func TestNonDurableAlsoGetFromActiveSegmentAndPersistentSegmentForAnExistingKey(
 	)
 	assert.NoError(t, err)
 
-	getOperation := newNonDurableAlsoGet(
-		newNonDurableOnlyGet(activeSegment, nil),
-		newDurableOnlyGet(segments, slices.Backward([]*segment.SortedSegment{persistentSegment})),
+	getOperation := NewNonDurableAlsoGet(
+		NewNonDurableOnlyGet(activeSegment, nil),
+		NewDurableOnlyGet(segments, slices.Backward([]*segment.SortedSegment{persistentSegment})),
 	)
 
-	getResponse := getOperation.get(kv.NewStringKeyWithTimestamp("raft", 15))
+	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("raft", 15))
 	assert.True(t, getResponse.IsValueAvailable())
 	assert.Equal(t, kv.NewStringValue("consensus"), getResponse.Value())
 
-	getResponse = getOperation.get(kv.NewStringKeyWithTimestamp("raft", 11))
+	getResponse = getOperation.Get(kv.NewStringKeyWithTimestamp("raft", 11))
 	assert.True(t, getResponse.IsValueAvailable())
 	assert.Equal(t, kv.NewStringValue("another consensus"), getResponse.Value())
 }
@@ -79,12 +79,12 @@ func TestNonDurableAlsoGetFromActiveSegmentAndPersistentSegmentForANonExistingKe
 	)
 	assert.NoError(t, err)
 
-	getOperation := newNonDurableAlsoGet(
-		newNonDurableOnlyGet(activeSegment, nil),
-		newDurableOnlyGet(segments, slices.Backward([]*segment.SortedSegment{persistentSegment})),
+	getOperation := NewNonDurableAlsoGet(
+		NewNonDurableOnlyGet(activeSegment, nil),
+		NewDurableOnlyGet(segments, slices.Backward([]*segment.SortedSegment{persistentSegment})),
 	)
 
-	getResponse := getOperation.get(kv.NewStringKeyWithTimestamp("non-existing", 15))
+	getResponse := getOperation.Get(kv.NewStringKeyWithTimestamp("non-existing", 15))
 	assert.False(t, getResponse.IsValueAvailable())
 	assert.Equal(t, kv.EmptyValue, getResponse.Value())
 }

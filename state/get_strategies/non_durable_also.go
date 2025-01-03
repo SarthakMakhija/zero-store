@@ -2,22 +2,22 @@ package get_strategies
 
 import "github.com/SarthakMakhija/zero-store/kv"
 
-type nonDurableAlsoGet struct {
-	nonDurableOnlyGetOperation nonDurableOnlyGet
-	durableOnlyGetOperation    durableOnlyGet
+type NonDurableAlsoGet struct {
+	nonDurableOnlyGetOperation NonDurableOnlyGet
+	durableOnlyGetOperation    DurableOnlyGet
 }
 
-func newNonDurableAlsoGet(nonDurableOnlyGetOperation nonDurableOnlyGet, durableOnlyGetOperation durableOnlyGet) nonDurableAlsoGet {
-	return nonDurableAlsoGet{
+func NewNonDurableAlsoGet(nonDurableOnlyGetOperation NonDurableOnlyGet, durableOnlyGetOperation DurableOnlyGet) NonDurableAlsoGet {
+	return NonDurableAlsoGet{
 		nonDurableOnlyGetOperation: nonDurableOnlyGetOperation,
 		durableOnlyGetOperation:    durableOnlyGetOperation,
 	}
 }
 
-func (getOperation nonDurableAlsoGet) get(key kv.Key) GetResponse {
-	getResponse := getOperation.nonDurableOnlyGetOperation.get(key)
+func (getOperation NonDurableAlsoGet) Get(key kv.Key) GetResponse {
+	getResponse := getOperation.nonDurableOnlyGetOperation.Get(key)
 	if getResponse.IsValueAvailable() {
 		return getResponse
 	}
-	return getOperation.durableOnlyGetOperation.get(key)
+	return getOperation.durableOnlyGetOperation.Get(key)
 }

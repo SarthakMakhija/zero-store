@@ -7,19 +7,19 @@ import (
 	"iter"
 )
 
-type durableOnlyGet struct {
+type DurableOnlyGet struct {
 	segments                   *segment.SortedSegments
 	persistentSegmentsSequence iter.Seq2[int, *segment.SortedSegment]
 }
 
-func newDurableOnlyGet(segments *segment.SortedSegments, persistentSegmentsSequence iter.Seq2[int, *segment.SortedSegment]) durableOnlyGet {
-	return durableOnlyGet{
+func NewDurableOnlyGet(segments *segment.SortedSegments, persistentSegmentsSequence iter.Seq2[int, *segment.SortedSegment]) DurableOnlyGet {
+	return DurableOnlyGet{
 		segments:                   segments,
 		persistentSegmentsSequence: persistentSegmentsSequence,
 	}
 }
 
-func (getOperation durableOnlyGet) get(key kv.Key) GetResponse {
+func (getOperation DurableOnlyGet) Get(key kv.Key) GetResponse {
 	mergeIterator, err := getOperation.mergeAllIteratorsFor(key)
 	if err != nil {
 		return errorResponse(err)
@@ -33,7 +33,7 @@ func (getOperation durableOnlyGet) get(key kv.Key) GetResponse {
 	return negativeResponse()
 }
 
-func (getOperation durableOnlyGet) mergeAllIteratorsFor(key kv.Key) (*iterator.MergeIterator, error) {
+func (getOperation DurableOnlyGet) mergeAllIteratorsFor(key kv.Key) (*iterator.MergeIterator, error) {
 	var iterators []iterator.Iterator
 	for _, sortedSegment := range getOperation.persistentSegmentsSequence {
 		mayContain, err := getOperation.segments.MayContain(key, sortedSegment)

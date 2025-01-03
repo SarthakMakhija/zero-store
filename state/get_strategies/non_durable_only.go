@@ -6,19 +6,19 @@ import (
 	"iter"
 )
 
-type nonDurableOnlyGet struct {
+type NonDurableOnlyGet struct {
 	activeSegment            *memory.SortedSegment
 	inactiveSegmentsSequence iter.Seq2[int, *memory.SortedSegment]
 }
 
-func newNonDurableOnlyGet(activeSegment *memory.SortedSegment, inactiveSegmentsSequence iter.Seq2[int, *memory.SortedSegment]) nonDurableOnlyGet {
-	return nonDurableOnlyGet{
+func NewNonDurableOnlyGet(activeSegment *memory.SortedSegment, inactiveSegmentsSequence iter.Seq2[int, *memory.SortedSegment]) NonDurableOnlyGet {
+	return NonDurableOnlyGet{
 		activeSegment:            activeSegment,
 		inactiveSegmentsSequence: inactiveSegmentsSequence,
 	}
 }
 
-func (getOperation nonDurableOnlyGet) get(key kv.Key) GetResponse {
+func (getOperation NonDurableOnlyGet) Get(key kv.Key) GetResponse {
 	if value, ok := getOperation.activeSegment.Get(key); ok {
 		return positiveResponse(value)
 	}
