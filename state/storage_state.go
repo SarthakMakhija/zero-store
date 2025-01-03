@@ -18,7 +18,7 @@ var (
 
 type StorageState struct {
 	activeSegment            *memory.SortedSegment
-	inactiveSegments         []*memory.SortedSegment //oldest to latest
+	inactiveSegments         *inactiveSegments
 	persistentSortedSegments *objectStore.SortedSegments
 	segmentIdGenerator       *SegmentIdGenerator
 	closeChannel             chan struct{}
@@ -43,6 +43,7 @@ func NewStorageState(options StorageOptions) (*StorageState, error) {
 	}
 	storageState := &StorageState{
 		activeSegment:            memory.NewSortedSegment(segmentIdGenerator.NextId(), options.sortedSegmentSizeInBytes),
+		inactiveSegments:         newInactiveSegments(),
 		persistentSortedSegments: persistentSortedSegments,
 		segmentIdGenerator:       segmentIdGenerator,
 		closeChannel:             make(chan struct{}),
@@ -75,7 +76,7 @@ func (state *StorageState) Set(batch kv.TimestampedBatch) (*future.Future, error
 func (state *StorageState) mayBeFreezeActiveSegment(sizeInBytes int) {
 	if !state.activeSegment.CanFit(int64(sizeInBytes)) {
 		state.stateLock.Lock()
-		state.inactiveSegments = append(state.inactiveSegments, state.activeSegment)
+		state.inactiveSegments.append(state.activeSegment)
 		state.activeSegment = memory.NewSortedSegment(state.segmentIdGenerator.NextId(), state.options.sortedSegmentSizeInBytes)
 		state.stateLock.Unlock()
 	}
@@ -104,9 +105,7 @@ func (state *StorageState) writeToActiveSegment(batch kv.TimestampedBatch) error
 func (state *StorageState) Close() {
 	close(state.closeChannel)
 	state.store.Close()
-	for _, segment := range state.inactiveSegments {
-		segment.FlushToObjectStoreAsyncAwait().MarkDoneAsError(ErrDbStopped)
-	}
+	state.inactiveSegments.flushAllToObjectStoreMarkAsError()
 }
 
 // spawnObjectStoreMovement starts a goroutine that moves the segments ready to move to object store.
@@ -146,8 +145,7 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 	updateState := func(segmentId uint64) {
 		state.stateLock.Lock()
 		defer state.stateLock.Unlock()
-
-		state.inactiveSegments = state.inactiveSegments[1:]
+		state.inactiveSegments.dropOldest()
 	}
 	buildAndWritePersistentSortedSegment := func(inMemorySegmentToFlush *memory.SortedSegment) (*objectStore.SortedSegment, error) {
 		return state.persistentSortedSegments.BuildAndWritePersistentSortedSegment(
@@ -159,8 +157,8 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 		state.stateLock.RLock()
 		defer state.stateLock.RUnlock()
 
-		if len(state.inactiveSegments) > 0 {
-			return state.inactiveSegments[0]
+		if segment, ok := state.inactiveSegments.oldest(); ok {
+			return segment
 		}
 		return nil
 	}
@@ -177,4 +175,33 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+type inactiveSegments struct {
+	segments []*memory.SortedSegment //oldest to latest
+}
+
+func newInactiveSegments() *inactiveSegments {
+	return &inactiveSegments{}
+}
+
+func (segments *inactiveSegments) append(segment *memory.SortedSegment) {
+	segments.segments = append(segments.segments, segment)
+}
+
+func (segments *inactiveSegments) oldest() (*memory.SortedSegment, bool) {
+	if len(segments.segments) > 0 {
+		return segments.segments[0], true
+	}
+	return nil, false
+}
+
+func (segments *inactiveSegments) dropOldest() {
+	segments.segments = segments.segments[1:]
+}
+
+func (segments *inactiveSegments) flushAllToObjectStoreMarkAsError() {
+	for _, segment := range segments.segments {
+		segment.FlushToObjectStoreAsyncAwait().MarkDoneAsError(ErrDbStopped)
+	}
 }
