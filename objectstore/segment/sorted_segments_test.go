@@ -206,6 +206,47 @@ func TestLoadASortedSegmentWithMultipleKeyValues(t *testing.T) {
 	assert.False(t, iterator.IsValid())
 }
 
+func TestSortedSegmentsInDescendingOrder(t *testing.T) {
+	storeDefinition, err := objectstore.NewFileSystemStoreDefinition(".")
+	assert.NoError(t, err)
+
+	store := objectstore.NewStore(".", storeDefinition)
+	segmentId := uint64(1)
+	anotherSegmentId := uint64(2)
+
+	defer func() {
+		store.Close()
+		_ = os.Remove(PathSuffixForSegment(segmentId))
+		_ = os.Remove(PathSuffixForSegment(anotherSegmentId))
+	}()
+
+	segments, err := testInstantiateSortedSegments(store)
+	assert.NoError(t, err)
+
+	_, err = segments.BuildAndWritePersistentSortedSegment(
+		&testKeyValueIterator{
+			keys:   []kv.Key{kv.NewStringKeyWithTimestamp("algorithm", 10)},
+			values: []kv.Value{kv.NewStringValue("graph")},
+		},
+		segmentId,
+	)
+	assert.NoError(t, err)
+
+	_, err = segments.BuildAndWritePersistentSortedSegment(
+		&testKeyValueIterator{
+			keys:   []kv.Key{kv.NewStringKeyWithTimestamp("algorithm", 20)},
+			values: []kv.Value{kv.NewStringValue("graph")},
+		},
+		anotherSegmentId,
+	)
+	assert.NoError(t, err)
+
+	orderedSegments := segments.OrderedSegmentsByDescendingSegmentId()
+	assert.Equal(t, 2, len(orderedSegments))
+	assert.Equal(t, uint64(2), orderedSegments[0].id)
+	assert.Equal(t, uint64(1), orderedSegments[1].id)
+}
+
 func testInstantiateSortedSegments(store objectstore.Store) (*SortedSegments, error) {
 	return NewSortedSegments(store,
 		NewSortedSegmentCacheOptions(

@@ -8,6 +8,7 @@ import (
 	"github.com/SarthakMakhija/zero-store/objectstore"
 	"github.com/SarthakMakhija/zero-store/objectstore/block"
 	"github.com/SarthakMakhija/zero-store/objectstore/filter"
+	"sort"
 )
 
 var (
@@ -101,6 +102,17 @@ func (sortedSegments *SortedSegments) MayContain(key kv.Key, sortedSegment *Sort
 		return false, err
 	}
 	return bloomFilter.MayContain(key), nil
+}
+
+func (sortedSegments *SortedSegments) OrderedSegmentsByDescendingSegmentId() []*SortedSegment {
+	allSegments := make([]*SortedSegment, 0, len(sortedSegments.persistentSegments))
+	for _, segment := range sortedSegments.persistentSegments {
+		allSegments = append(allSegments, segment)
+	}
+	sort.Slice(allSegments, func(index, otherIndex int) bool {
+		return allSegments[index].id > allSegments[otherIndex].id
+	})
+	return allSegments
 }
 
 func (sortedSegments *SortedSegments) getBlockMetaListFor(segmentId uint64) (*SortedSegment, *block.MetaList, error) {
