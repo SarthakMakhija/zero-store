@@ -235,7 +235,7 @@ func (segments *inactiveSegments) flushAllToObjectStoreMarkAsError() {
 }
 
 func (segments *inactiveSegments) copySegments() []memory.SortedSegment {
-	clonedSegments := make([]memory.SortedSegment, len(segments.segments))
-	copy(clonedSegments, segments.segments)
-	return clonedSegments
+	copiedSegments := make([]memory.SortedSegment, len(segments.segments))
+	copy(copiedSegments, segments.segments)
+	return copiedSegments
 }
