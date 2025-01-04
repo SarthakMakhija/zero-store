@@ -58,15 +58,6 @@ func NewStorageState(options StorageOptions) (*StorageState, error) {
 }
 
 func (state *StorageState) Get(key kv.Key, strategy get_strategies.GetStrategyType) get_strategies.GetResponse {
-	//TODO: resolveGetStrategy acquires a RLock for getting the current snapshot of the segments.
-	//The lock is released after the segments have been acquired.
-	//The following issue can happen:
-	//A get request comes for nonDurableOnlyGet. resolveGetStrategy acquires the RLock and gets the current active segment,
-	//and then releases the lock.
-	//In the meantime, a Set request comes in which tries to add the batch to the active segment just to realize that the
-	//active segment is full. This changes the active segment to refer to the newly created empty segment by acquiring the write lock.
-	//This can now cause issues in the read operation, because the read operation is running on a segment which has been replaced.
-
 	newNonDurableOnlyGet := func() get_strategies.NonDurableOnlyGet {
 		return get_strategies.NewNonDurableOnlyGet(state.activeSegment, slices.Backward(state.inactiveSegments.copySegments()))
 	}
@@ -166,13 +157,6 @@ func (state *StorageState) spawnObjectStoreMovement() {
 // It returns (true, nil), if an inactive segment was flushed without any error.
 // It returns (false, nil), if there was no inactive segment to be flushed.
 func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
-	//TODO: what if an inactive segment is being flushed (in buildAndWritePersistentSortedSegment),
-	//other goroutine comes and starts reading from the same inactive segment in StorageState,
-	//and finally that inactive segment gets dropped in updateState (and GCed).
-	//Solutions:
-	//Maybe, acquire exclusive lock in mayBeFlushOldestInactiveSegment()
-	//Or, in updateState, drop the segment from inactiveSegments but move it to another collection "dropped segments"
-	//and when reference count of inactive segment reaches zero, move it out.
 	updateState := func(segmentId uint64) {
 		state.stateLock.Lock()
 		defer state.stateLock.Unlock()
@@ -185,8 +169,8 @@ func (state *StorageState) mayBeFlushOldestInactiveSegment() (bool, error) {
 		)
 	}
 	oldestInactiveSegmentIfAvailable := func() (memory.SortedSegment, bool) {
-		state.stateLock.RLock()
-		defer state.stateLock.RUnlock()
+		state.stateLock.Lock()
+		defer state.stateLock.Unlock()
 
 		return state.inactiveSegments.oldest()
 	}
