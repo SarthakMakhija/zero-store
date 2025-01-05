@@ -2,23 +2,23 @@ package future
 
 // AsyncAwait wraps a Future.
 // The client is exposed a Future, while AsyncAwait remains an internal object.
-type AsyncAwait struct {
-	future *Future
+type AsyncAwait[T any] struct {
+	future *Future[T]
 }
 
 // Future represents the result of asynchronous computation.
 // Eg; flushing an inactive segment to object store.
-type Future struct {
-	responseChannel chan struct{}
+type Future[T any] struct {
+	responseChannel chan T
 	isDone          bool
 	status          Status
 }
 
 // NewAsyncAwait creates a new instance of AsyncAwait.
-func NewAsyncAwait() *AsyncAwait {
-	return &AsyncAwait{
-		future: &Future{
-			responseChannel: make(chan struct{}),
+func NewAsyncAwait[T any]() *AsyncAwait[T] {
+	return &AsyncAwait[T]{
+		future: &Future[T]{
+			responseChannel: make(chan T),
 			isDone:          false,
 			status:          PendingStatus(),
 		},
@@ -26,7 +26,7 @@ func NewAsyncAwait() *AsyncAwait {
 }
 
 // MarkDoneAsOk marks the Future as done with Status Ok.
-func (asyncAwait *AsyncAwait) MarkDoneAsOk() {
+func (asyncAwait *AsyncAwait[T]) MarkDoneAsOk() {
 	if !asyncAwait.future.isDone {
 		close(asyncAwait.future.responseChannel)
 		asyncAwait.future.isDone = true
@@ -35,7 +35,7 @@ func (asyncAwait *AsyncAwait) MarkDoneAsOk() {
 }
 
 // MarkDoneAsError marks the Future as done with Status Error.
-func (asyncAwait *AsyncAwait) MarkDoneAsError(err error) {
+func (asyncAwait *AsyncAwait[T]) MarkDoneAsError(err error) {
 	if !asyncAwait.future.isDone {
 		close(asyncAwait.future.responseChannel)
 		asyncAwait.future.isDone = true
@@ -44,16 +44,16 @@ func (asyncAwait *AsyncAwait) MarkDoneAsError(err error) {
 }
 
 // Future returns the Future object.
-func (asyncAwait *AsyncAwait) Future() *Future {
+func (asyncAwait *AsyncAwait[T]) Future() *Future[T] {
 	return asyncAwait.future
 }
 
 // Wait waits until the Future is marked as done.
-func (future *Future) Wait() {
+func (future *Future[T]) Wait() {
 	<-future.responseChannel
 }
 
 // Status returns the status.
-func (future *Future) Status() Status {
+func (future *Future[T]) Status() Status {
 	return future.status
 }

@@ -85,7 +85,7 @@ func (state *StorageState) Get(key kv.Key, strategy get_strategies.GetStrategyTy
 	return resolveGetStrategy().Get(key)
 }
 
-func (state *StorageState) Set(batch kv.TimestampedBatch) (*future.Future, error) {
+func (state *StorageState) Set(batch kv.TimestampedBatch) (*future.Future[struct{}], error) {
 	state.mayBeFreezeActiveSegment(batch.SizeInBytes())
 	if err := state.writeToActiveSegment(batch); err != nil {
 		return nil, err

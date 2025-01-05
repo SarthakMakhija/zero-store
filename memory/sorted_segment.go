@@ -17,7 +17,7 @@ type SortedSegment struct {
 	id                           uint64
 	allowedSizeInBytes           int64
 	entries                      *external.SkipList
-	flushToObjectStoreAsyncAwait *future.AsyncAwait
+	flushToObjectStoreAsyncAwait *future.AsyncAwait[struct{}]
 }
 
 var EmptySortedSegment = SortedSegment{}
@@ -28,7 +28,7 @@ func NewSortedSegment(id uint64, allowedSizeInBytes int64) SortedSegment {
 		id:                           id,
 		allowedSizeInBytes:           allowedSizeInBytes,
 		entries:                      external.NewSkipList(allowedSizeInBytes),
-		flushToObjectStoreAsyncAwait: future.NewAsyncAwait(),
+		flushToObjectStoreAsyncAwait: future.NewAsyncAwait[struct{}](),
 	}
 }
 
@@ -68,13 +68,13 @@ func (segment SortedSegment) Id() uint64 {
 
 // FlushToObjectStoreFuture returns the future.Future object which signifies the flush to object store.
 // future.Future allows the clients to wait for the flush operation to complete.
-func (segment SortedSegment) FlushToObjectStoreFuture() *future.Future {
+func (segment SortedSegment) FlushToObjectStoreFuture() *future.Future[struct{}] {
 	return segment.flushToObjectStoreAsyncAwait.Future()
 }
 
 // FlushToObjectStoreAsyncAwait returns the future.AsyncAwait object which signifies the flush to object store.
 // future.AsyncAwait allows mutation on the future.Future object like marking it complete.
-func (segment SortedSegment) FlushToObjectStoreAsyncAwait() *future.AsyncAwait {
+func (segment SortedSegment) FlushToObjectStoreAsyncAwait() *future.AsyncAwait[struct{}] {
 	return segment.flushToObjectStoreAsyncAwait
 }
 

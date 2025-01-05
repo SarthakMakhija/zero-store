@@ -8,7 +8,7 @@ import (
 )
 
 func TestFutureWithOkStatus(t *testing.T) {
-	asyncAwait := NewAsyncAwait()
+	asyncAwait := NewAsyncAwait[struct{}]()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -26,7 +26,7 @@ func TestFutureWithOkStatus(t *testing.T) {
 }
 
 func TestFutureWithErrorStatus(t *testing.T) {
-	asyncAwait := NewAsyncAwait()
+	asyncAwait := NewAsyncAwait[struct{}]()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
