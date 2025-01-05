@@ -2,6 +2,7 @@ package future
 
 // AsyncAwait wraps a Future.
 // The client is exposed a Future, while AsyncAwait remains an internal object.
+// This layer of abstraction allows exposing `Wait() and Status()` like methods to the client.
 type AsyncAwait[T any] struct {
 	future *Future[T]
 }
@@ -18,7 +19,7 @@ type Future[T any] struct {
 func NewAsyncAwait[T any]() *AsyncAwait[T] {
 	return &AsyncAwait[T]{
 		future: &Future[T]{
-			responseChannel: make(chan T),
+			responseChannel: make(chan T, 1),
 			isDone:          false,
 			status:          PendingStatus(),
 		},
@@ -30,6 +31,17 @@ func (asyncAwait *AsyncAwait[T]) MarkDoneAsOk() {
 	if !asyncAwait.future.isDone {
 		close(asyncAwait.future.responseChannel)
 		asyncAwait.future.isDone = true
+	}
+	asyncAwait.future.status = OkStatus()
+}
+
+// MarkDoneAsOkWith marks the Future as done with Status Ok and returns the response of type T on the responseChannel of the
+// encapsulating Future.
+func (asyncAwait *AsyncAwait[T]) MarkDoneAsOkWith(response T) {
+	if !asyncAwait.future.isDone {
+		asyncAwait.future.responseChannel <- response
+		asyncAwait.future.isDone = true
+		close(asyncAwait.future.responseChannel)
 	}
 	asyncAwait.future.status = OkStatus()
 }
@@ -50,7 +62,12 @@ func (asyncAwait *AsyncAwait[T]) Future() *Future[T] {
 
 // Wait waits until the Future is marked as done.
 func (future *Future[T]) Wait() {
-	<-future.responseChannel
+	_ = future.WaitForResponse()
+}
+
+// WaitForResponse waits until the Future is marked as done and returns the response of type T.
+func (future *Future[T]) WaitForResponse() T {
+	return <-future.responseChannel
 }
 
 // Status returns the status.
