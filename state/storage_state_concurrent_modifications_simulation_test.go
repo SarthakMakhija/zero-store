@@ -24,7 +24,7 @@ func TestStorageStateWithAGetAgainstAnActiveSegmentWhileItBecomesInactiveByAConc
 
 	defer func() {
 		storageState.Close()
-		storageState.removeAllPersistentSortedSegmentsIn(".")
+		storageState.RemoveAllPersistentSortedSegmentsIn(".")
 	}()
 
 	batch := kv.NewBatch()
@@ -69,7 +69,7 @@ func TestStorageStateWithAGetAgainstAnInActiveSegmentWhileItGetsDroppedByAConcur
 
 	defer func() {
 		storageState.Close()
-		storageState.removeAllPersistentSortedSegmentsIn(".")
+		storageState.RemoveAllPersistentSortedSegmentsIn(".")
 	}()
 
 	batch := kv.NewBatch()
@@ -117,7 +117,7 @@ func TestStorageStateWithAGetAgainstAnInActiveSegmentWhileItGetsDroppedByAConcur
 
 	defer func() {
 		storageState.Close()
-		storageState.removeAllPersistentSortedSegmentsIn(".")
+		storageState.RemoveAllPersistentSortedSegmentsIn(".")
 	}()
 
 	batch := kv.NewBatch()

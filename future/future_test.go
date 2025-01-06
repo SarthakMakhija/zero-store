@@ -76,3 +76,25 @@ func TestFutureWithErrorStatus(t *testing.T) {
 	asyncAwait.MarkDoneAsError(errors.New("test error"))
 	wg.Wait()
 }
+
+func TestFutureWithErrorAndAClientWaitingOnItsResponse(t *testing.T) {
+	type nothingResponse struct{}
+
+	asyncAwait := NewAsyncAwait[nothingResponse]()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		defer wg.Done()
+		response := asyncAwait.Future().WaitForResponse()
+
+		assert.Equal(t, nothingResponse{}, response)
+		assert.True(t, asyncAwait.Future().isDone)
+		assert.True(t, asyncAwait.Future().Status().IsError())
+		assert.Equal(t, "test error", asyncAwait.Future().status.Error().Error())
+	}()
+
+	asyncAwait.MarkDoneAsError(errors.New("test error"))
+	wg.Wait()
+}

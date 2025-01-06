@@ -121,7 +121,7 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegment(t *testing
 
 	defer func() {
 		storageState.Close()
-		storageState.removeAllPersistentSortedSegmentsIn(".")
+		storageState.RemoveAllPersistentSortedSegmentsIn(".")
 	}()
 
 	batch := kv.NewBatch()
@@ -160,7 +160,7 @@ func TestStorageStateWithAMultiplePutsInvolvingFreezeOfCurrentSegmentWhileWaitin
 
 	defer func() {
 		storageState.Close()
-		storageState.removeAllPersistentSortedSegmentsIn(".")
+		storageState.RemoveAllPersistentSortedSegmentsIn(".")
 	}()
 
 	batch := kv.NewBatch()
@@ -195,7 +195,7 @@ func TestStorageStateWithAMultiplePutsAndDurableOnlyGet(t *testing.T) {
 
 	defer func() {
 		storageState.Close()
-		storageState.removeAllPersistentSortedSegmentsIn(".")
+		storageState.RemoveAllPersistentSortedSegmentsIn(".")
 	}()
 
 	batch := kv.NewBatch()
@@ -238,7 +238,7 @@ func TestStorageStateWithAMultiplePutsAndNonDurableAlsoGet(t *testing.T) {
 
 	defer func() {
 		storageState.Close()
-		storageState.removeAllPersistentSortedSegmentsIn(".")
+		storageState.RemoveAllPersistentSortedSegmentsIn(".")
 	}()
 
 	batch := kv.NewBatch()
