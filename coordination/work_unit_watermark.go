@@ -30,7 +30,7 @@ type Mark struct {
 }
 
 // WorkUnitTimestampWaterMark keeps track of the timestamps that are processed.
-// It could be beginTimestamp or the commitTimestamp.
+// It could be readTimestamp or the commitTimestamp.
 // Let's say a coordination.WorkUnit begins with a timestamp = 2.
 // It will invoke Begin method to indicate that a coordination.WorkUnit with timestamp = 2 has started.
 // At some later point in time, the same coordination.WorkUnit will end.
